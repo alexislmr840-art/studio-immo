@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
@@ -8,12 +10,12 @@ export default function Home() {
           </h1>
 
           <div className="flex gap-3">
-            <button className="rounded-lg border border-blue-900 px-4 py-2 font-medium text-blue-950">
+            <Link href="/connexion" className="rounded-lg border border-blue-900 px-4 py-2 font-medium text-blue-950">
               Connexion
-            </button>
-            <button className="rounded-lg bg-blue-950 px-4 py-2 font-medium text-white">
+            </Link>
+            <Link href="/connexion" className="rounded-lg bg-blue-950 px-4 py-2 font-medium text-white">
               Inscription
-            </button>
+            </Link>
           </div>
         </div>
       </header>
@@ -34,12 +36,12 @@ export default function Home() {
           </p>
 
           <div className="flex flex-wrap gap-4">
-            <button className="rounded-xl bg-blue-950 px-6 py-4 font-semibold text-white shadow-lg">
+            <Link href="/connexion" className="rounded-xl bg-blue-950 px-6 py-4 font-semibold text-white shadow-lg">
               Commencer gratuitement
-            </button>
-            <button className="rounded-xl border border-slate-300 bg-white px-6 py-4 font-semibold text-blue-950">
+            </Link>
+            <Link href="/dashboard" className="rounded-xl border border-slate-300 bg-white px-6 py-4 font-semibold text-blue-950">
               Voir un exemple
-            </button>
+            </Link>
           </div>
         </div>
 

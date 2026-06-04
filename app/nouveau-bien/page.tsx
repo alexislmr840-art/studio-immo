@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function NouveauBienPage() {
   const [titre, setTitre] = useState("");
@@ -136,7 +137,11 @@ export default function NouveauBienPage() {
   return (
     <main className="min-h-screen bg-blue-950 text-white">
       <div className="mx-auto max-w-5xl px-6 py-12">
-        <h1 className="text-5xl font-bold">
+        <Link href="/dashboard" className="mb-8 inline-flex items-center gap-2 font-medium text-amber-400">
+          ← Retour au tableau de bord
+        </Link>
+
+        <h1 className="mt-4 text-5xl font-bold">
           Nouveau <span className="text-amber-400">Bien</span>
         </h1>
 
