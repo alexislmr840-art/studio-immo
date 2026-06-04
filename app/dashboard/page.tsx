@@ -1,4 +1,10 @@
-export default function DashboardPage() {
+import { currentUser } from "@clerk/nextjs/server";
+import { UserButton } from "@clerk/nextjs";
+
+export default async function DashboardPage() {
+  const user = await currentUser();
+  const prenom = user?.firstName || "Agent";
+
   return (
     <main className="min-h-screen bg-blue-950 text-white">
       <header className="border-b border-white/10">
@@ -7,12 +13,15 @@ export default function DashboardPage() {
             Studio <span className="text-amber-400">Immo</span>
           </h1>
 
-          <a
-            href="/nouveau-bien"
-            className="rounded-xl bg-amber-400 px-5 py-3 font-bold text-blue-950"
-          >
-            Nouveau bien
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href="/nouveau-bien"
+              className="rounded-xl bg-amber-400 px-5 py-3 font-bold text-blue-950"
+            >
+              Nouveau bien
+            </a>
+            <UserButton />
+          </div>
         </div>
       </header>
 
@@ -22,7 +31,7 @@ export default function DashboardPage() {
         </p>
 
         <h2 className="mt-3 text-5xl font-bold">
-          Bonjour Alexis 👋
+          Bonjour {prenom} 👋
         </h2>
 
         <p className="mt-4 text-xl text-white">

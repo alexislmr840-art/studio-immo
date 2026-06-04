@@ -8,12 +8,18 @@ export default function Home() {
           </h1>
 
           <div className="flex gap-3">
-            <button className="rounded-lg border border-blue-900 px-4 py-2 font-medium text-blue-950">
+            <a
+              href="/connexion"
+              className="rounded-lg border border-blue-900 px-4 py-2 font-medium text-blue-950"
+            >
               Connexion
-            </button>
-            <button className="rounded-lg bg-blue-950 px-4 py-2 font-medium text-white">
+            </a>
+            <a
+              href="/connexion"
+              className="rounded-lg bg-blue-950 px-4 py-2 font-medium text-white"
+            >
               Inscription
-            </button>
+            </a>
           </div>
         </div>
       </header>
@@ -34,12 +40,18 @@ export default function Home() {
           </p>
 
           <div className="flex flex-wrap gap-4">
-            <button className="rounded-xl bg-blue-950 px-6 py-4 font-semibold text-white shadow-lg">
+            <a
+              href="/connexion"
+              className="rounded-xl bg-blue-950 px-6 py-4 font-semibold text-white shadow-lg"
+            >
               Commencer gratuitement
-            </button>
-            <button className="rounded-xl border border-slate-300 bg-white px-6 py-4 font-semibold text-blue-950">
+            </a>
+            <a
+              href="/connexion"
+              className="rounded-xl border border-slate-300 bg-white px-6 py-4 font-semibold text-blue-950"
+            >
               Voir un exemple
-            </button>
+            </a>
           </div>
         </div>
 
