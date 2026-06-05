@@ -1,5 +1,6 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const user = await currentUser();
@@ -9,17 +10,17 @@ export default async function DashboardPage() {
     <main className="min-h-screen bg-blue-950 text-white">
       <header className="border-b border-white/10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <h1 className="text-2xl font-bold">
+          <Link href="/" className="text-2xl font-bold">
             Studio <span className="text-amber-400">Immo</span>
-          </h1>
+          </Link>
 
           <div className="flex items-center gap-4">
-            <a
+            <Link
               href="/nouveau-bien"
               className="rounded-xl bg-amber-400 px-5 py-3 font-bold text-blue-950"
             >
               Nouveau bien
-            </a>
+            </Link>
             <UserButton />
           </div>
         </div>
@@ -67,12 +68,12 @@ export default async function DashboardPage() {
               Commencez par ajouter votre premier mandat immobilier.
             </p>
 
-            <a
+            <Link
               href="/nouveau-bien"
               className="mt-6 inline-block rounded-xl bg-blue-950 px-6 py-4 font-bold text-white"
             >
               Créer mon premier bien
-            </a>
+            </Link>
           </div>
         </div>
       </section>

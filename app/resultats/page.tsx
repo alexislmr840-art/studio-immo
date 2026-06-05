@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 // FIX — types stricts à la place de any
 interface Publication {
@@ -38,32 +40,41 @@ interface Agence {
 }
 
 export default function ResultatsPage() {
+  const router = useRouter();
   const [data, setData] = useState<ResultatIA | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [bien, setBien] = useState<Bien | null>(null);
   const [agence, setAgence] = useState<Agence | null>(null);
   const [logo, setLogo] = useState("");
   const [photoPrincipale, setPhotoPrincipale] = useState(0);
-  // FIX — état de copie pour feedback visuel
   const [copiéIndex, setCopiéIndex] = useState<string | null>(null);
+  const [photosPerduesToastVisible, setPhotosPerduesToastVisible] = useState(false);
 
   useEffect(() => {
     const savedResult = localStorage.getItem("studio_immo_resultat");
+
+    if (!savedResult) {
+      router.replace("/nouveau-bien");
+      return;
+    }
+
     const savedBien = localStorage.getItem("studio_immo_bien");
     const savedAgence = localStorage.getItem("studio_immo_agence");
     const savedPhotoPrincipale = localStorage.getItem("studio_immo_photo_principale");
-
-    // FIX — photos et logo depuis sessionStorage
     const savedPhotos = sessionStorage.getItem("studio_immo_photos");
     const savedLogo = sessionStorage.getItem("studio_immo_logo");
 
-    if (savedResult) setData(JSON.parse(savedResult));
-    if (savedPhotos) setPhotos(JSON.parse(savedPhotos));
+    setData(JSON.parse(savedResult));
+    if (savedPhotos) {
+      setPhotos(JSON.parse(savedPhotos));
+    } else {
+      setPhotosPerduesToastVisible(true);
+    }
     if (savedBien) setBien(JSON.parse(savedBien));
     if (savedAgence) setAgence(JSON.parse(savedAgence));
     if (savedLogo) setLogo(savedLogo);
     if (savedPhotoPrincipale) setPhotoPrincipale(Number(savedPhotoPrincipale));
-  }, []);
+  }, [router]);
 
   // FIX — feedback visuel "Copié !" au lieu d'un alert bloquant
   function copierTexte(texte: string, id: string) {
@@ -230,7 +241,17 @@ export default function ResultatsPage() {
   return (
     <main className="min-h-screen bg-slate-100">
       <div className="mx-auto max-w-7xl px-6 py-10">
+
+        {photosPerduesToastVisible && (
+          <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-800 font-medium">
+            ⚠️ Les photos ne sont plus disponibles après un rechargement de la page. Retournez sur le formulaire pour les remettre.
+          </div>
+        )}
+
         <div className="rounded-3xl bg-blue-950 p-8 text-white">
+          <Link href="/nouveau-bien" className="mb-6 inline-flex items-center gap-2 font-medium text-amber-400">
+            ← Nouveau bien
+          </Link>
           <h1 className="text-5xl font-bold">
             Stratégie <span className="text-amber-400">générée</span>
           </h1>
@@ -256,6 +277,13 @@ export default function ResultatsPage() {
             </ul>
           </div>
         </div>
+
+        {data.strategie && (
+          <div className="mt-6 rounded-3xl bg-white p-6 shadow">
+            <h2 className="text-2xl font-bold text-blue-950">📋 Stratégie de publication</h2>
+            <p className="mt-4 leading-relaxed text-slate-700">{data.strategie}</p>
+          </div>
+        )}
 
         <div className="mt-8 space-y-8">
           {data.publications?.map((publication, index) => {
@@ -312,7 +340,7 @@ export default function ResultatsPage() {
 
                   <div className="space-y-5">
                     {(["A", "B"] as const).map((variante) => (
-                      <div key={variante} className="rounded-3xl bg-slate-900 p-4">
+                      <div key={variante} className="rounded-3xl bg-slate-900 p-4 space-y-3">
                         <div className="overflow-hidden rounded-2xl bg-white">
                           <div className="bg-blue-950 p-4">
                             <div className="flex items-center justify-between">
@@ -386,10 +414,16 @@ export default function ResultatsPage() {
 
                         <button
                           onClick={() => telechargerVisuel(publication, index, variante)}
-                          className="mt-3 w-full rounded-xl bg-amber-400 py-3 font-bold text-blue-950"
+                          className="w-full rounded-xl bg-amber-400 py-3 font-bold text-blue-950"
                         >
                           Télécharger visuel {variante}
                         </button>
+
+                        {(variante === "A" ? publication.ideeVisuelA : publication.ideeVisuelB) && (
+                          <p className="rounded-xl bg-slate-800 px-4 py-3 text-sm text-slate-300 leading-relaxed">
+                            💡 {variante === "A" ? publication.ideeVisuelA : publication.ideeVisuelB}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
