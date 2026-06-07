@@ -7,142 +7,248 @@ import { useClerk } from "@clerk/nextjs";
 interface Props {
   prenom: string;
   initiale: string;
+  email?: string;
 }
 
-const NAV_ITEMS = [
+const NAV_GROUPS = [
   {
-    href: "/dashboard",
-    label: "Tableau de bord",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
-        <rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
-      </svg>
-    ),
-    exact: true,
+    label: null,
+    items: [
+      {
+        href: "/dashboard",
+        label: "Vue d'ensemble",
+        exact: true,
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+          </svg>
+        ),
+      },
+      {
+        href: "/dashboard/biens",
+        label: "Mes biens",
+        exact: false,
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
+            <path d="M9 21V12h6v9"/>
+          </svg>
+        ),
+      },
+      {
+        href: "/dashboard/statistiques",
+        label: "Statistiques",
+        exact: false,
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+          </svg>
+        ),
+      },
+    ],
   },
   {
-    href: "/nouveau-bien",
-    label: "Nouveau bien",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
-        <path d="M9 21V12h6v9" />
-      </svg>
-    ),
-    exact: false,
+    label: "Communication",
+    items: [
+      {
+        href: "/dashboard/messages",
+        label: "Messages",
+        exact: false,
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+        ),
+      },
+      {
+        href: "/dashboard/notifications",
+        label: "Notifications",
+        exact: false,
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
+        ),
+      },
+      {
+        href: "/dashboard/documents",
+        label: "Documents",
+        exact: false,
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/>
+          </svg>
+        ),
+      },
+    ],
   },
   {
-    href: "/dashboard/statistiques",
-    label: "Statistiques",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" />
-        <line x1="6" y1="20" x2="6" y2="14" /><line x1="2" y1="20" x2="22" y2="20" />
-      </svg>
-    ),
-    exact: false,
-  },
-  {
-    href: "/dashboard/parametres",
-    label: "Paramètres",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-      </svg>
-    ),
-    exact: false,
+    label: "Compte",
+    items: [
+      {
+        href: "/dashboard/abonnement",
+        label: "Abonnement",
+        exact: false,
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+          </svg>
+        ),
+      },
+      {
+        href: "/dashboard/parametres",
+        label: "Paramètres",
+        exact: false,
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+        ),
+      },
+      {
+        href: "/dashboard/profil",
+        label: "Profil",
+        exact: false,
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        ),
+      },
+    ],
   },
 ];
 
-export default function SidebarNav({ prenom, initiale }: Props) {
+export default function SidebarNav({ prenom, initiale, email }: Props) {
   const pathname = usePathname();
   const { signOut } = useClerk();
 
-  function isActive(item: (typeof NAV_ITEMS)[0]) {
+  function isActive(item: { href: string; exact: boolean }) {
     if (item.exact) return pathname === item.href;
     return pathname.startsWith(item.href);
   }
 
   return (
     <aside
-      className="hidden lg:flex w-64 flex-shrink-0 flex-col h-screen sticky top-0"
-      style={{ background: "#0d0d0d", borderRight: "1px solid #1a1a1a" }}
+      className="hidden lg:flex w-60 flex-shrink-0 flex-col h-screen sticky top-0 select-none"
+      style={{ background: "var(--bg-1)", borderRight: "1px solid var(--border-s)" }}
     >
       {/* Logo */}
-      <div className="px-6 pt-7 pb-6" style={{ borderBottom: "1px solid #1a1a1a" }}>
-        <Link href="/" className="text-xl font-bold text-white tracking-tight">
-          Studio{" "}
-          <span style={{ color: "#c9a84c" }}>Immo</span>
+      <div className="px-5 pt-6 pb-5" style={{ borderBottom: "1px solid var(--border-s)" }}>
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div
+            className="flex h-7 w-7 items-center justify-center rounded-lg flex-shrink-0"
+            style={{ background: "var(--gold)", boxShadow: "0 2px 8px rgba(201,168,76,0.3)" }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
+            </svg>
+          </div>
+          <span className="text-[15px] font-bold text-white tracking-tight">
+            Studio <span style={{ color: "var(--gold)" }}>Immo</span>
+          </span>
         </Link>
-        <p className="mt-1 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-          Marketing immobilier IA
-        </p>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
-        {NAV_ITEMS.map((item) => {
-          const active = isActive(item);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150"
-              style={{
-                color: active ? "#ffffff" : "rgba(255,255,255,0.45)",
-                background: active ? "rgba(201,168,76,0.12)" : "transparent",
-                borderLeft: active ? "2px solid #c9a84c" : "2px solid transparent",
-              }}
-            >
-              <span style={{ color: active ? "#c9a84c" : "rgba(255,255,255,0.35)" }}>
-                {item.icon}
-              </span>
-              {item.label}
-            </Link>
-          );
-        })}
+      {/* CTA Nouveau bien */}
+      <div className="px-4 py-3">
+        <Link
+          href="/nouveau-bien"
+          className="btn btn-primary w-full text-xs"
+          style={{ padding: "9px 14px" }}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nouveau bien
+        </Link>
+      </div>
 
-        <div className="pt-4" style={{ borderTop: "1px solid #1a1a1a", marginTop: "16px" }}>
-          <Link
-            href="/tarifs"
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150"
-            style={{ color: "#c9a84c", background: "rgba(201,168,76,0.08)" }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-            </svg>
-            Passer à Pro
-          </Link>
-        </div>
+      {/* Nav groups */}
+      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
+        {NAV_GROUPS.map((group, gi) => (
+          <div key={gi}>
+            {group.label && (
+              <p className="label px-2 mb-1.5" style={{ color: "var(--txt-4)" }}>
+                {group.label}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const active = isActive(item);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px] font-medium transition-all duration-150"
+                    style={{
+                      color: active ? "#fff" : "var(--txt-3)",
+                      background: active ? "var(--gold-10)" : "transparent",
+                      borderLeft: active ? "2px solid var(--gold)" : "2px solid transparent",
+                    }}
+                  >
+                    <span style={{ color: active ? "var(--gold)" : "var(--txt-4)", flexShrink: 0 }}>
+                      {item.icon}
+                    </span>
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
+      {/* Upgrade banner */}
+      <div className="px-4 py-3">
+        <Link
+          href="/tarifs"
+          className="block rounded-[12px] p-3.5 transition-all duration-200 hover:opacity-90"
+          style={{
+            background: "linear-gradient(135deg, rgba(201,168,76,0.12) 0%, rgba(201,168,76,0.06) 100%)",
+            border: "1px solid var(--gold-20)",
+          }}
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <p style={{ fontSize: "11.5px", fontWeight: 700, color: "var(--gold)" }}>Passer à Pro</p>
+          </div>
+          <p style={{ fontSize: "11px", color: "var(--txt-4)", lineHeight: 1.4 }}>
+            Générations illimitées dès 29€/mois
+          </p>
+        </Link>
+      </div>
+
       {/* User */}
-      <div className="px-4 py-4" style={{ borderTop: "1px solid #1a1a1a" }}>
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
-            style={{ background: "#c9a84c", color: "#0a0a0a" }}
-          >
-            {initiale}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-white truncate">{prenom}</p>
-            <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.3)" }}>
-              Plan Gratuit
-            </p>
-          </div>
+      <div className="px-4 pb-4" style={{ borderTop: "1px solid var(--border-s)", paddingTop: "14px" }}>
+        <div className="flex items-center gap-2.5">
+          <Link href="/dashboard/profil" className="flex items-center gap-2.5 flex-1 min-w-0 group">
+            <div
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold transition-transform group-hover:scale-105"
+              style={{ background: "var(--gold)", color: "#0a0a0a" }}
+            >
+              {initiale}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-semibold text-white truncate">{prenom}</p>
+              {email && <p className="text-[11px] truncate" style={{ color: "var(--txt-4)" }}>{email}</p>}
+            </div>
+          </Link>
           <button
             onClick={() => signOut({ redirectUrl: "/" })}
-            className="rounded-md p-1.5 transition-colors"
-            style={{ color: "rgba(255,255,255,0.3)" }}
+            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg transition-all duration-150 hover:bg-[var(--bg-3)]"
+            style={{ color: "var(--txt-4)" }}
             title="Se déconnecter"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+              <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
             </svg>
           </button>
         </div>
