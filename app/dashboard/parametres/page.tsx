@@ -2,12 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
+
+type Tab = "agence" | "notifications" | "affichage";
 
 export default function ParametresPage() {
   const { user } = useUser();
+  const [tab, setTab] = useState<Tab>("agence");
   const [nomAgence, setNomAgence] = useState("");
   const [telephone, setTelephone] = useState("");
   const [saved, setSaved] = useState(false);
+  const [notifEmail, setNotifEmail] = useState(true);
+  const [notifPush, setNotifPush] = useState(false);
+  const [displayPrix, setDisplayPrix] = useState(true);
 
   useEffect(() => {
     const stored = localStorage.getItem("studio_immo_agence");
@@ -24,147 +31,238 @@ export default function ParametresPage() {
     setTimeout(() => setSaved(false), 2500);
   }
 
+  const TABS: { key: Tab; label: string }[] = [
+    { key: "agence", label: "Agence" },
+    { key: "notifications", label: "Notifications" },
+    { key: "affichage", label: "Affichage" },
+  ];
+
   return (
     <main className="flex-1 px-6 py-8 lg:px-8">
-      <div className="mx-auto max-w-2xl space-y-8">
+      <div style={{ maxWidth: "700px" }}>
 
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em" }}>
-            Configuration
-          </p>
-          <h1 className="mt-1 text-2xl font-bold text-white tracking-tight">Paramètres</h1>
+        <div className="mb-8">
+          <p className="label mb-1" style={{ color: "var(--txt-4)" }}>Configuration</p>
+          <h1 className="font-bold text-white tracking-tight" style={{ fontSize: "24px", letterSpacing: "-0.025em" }}>
+            Paramètres
+          </h1>
         </div>
 
-        {/* Compte */}
-        <section className="rounded-2xl overflow-hidden" style={{ background: "#111111", border: "1px solid #1f1f1f" }}>
-          <div className="px-6 py-4" style={{ borderBottom: "1px solid #1f1f1f" }}>
-            <h2 className="text-sm font-semibold text-white">Compte</h2>
-          </div>
-          <div className="px-6 py-5 space-y-4">
-            <div className="flex items-center gap-4">
-              <div
-                className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-base font-bold"
-                style={{ background: "#c9a84c", color: "#0a0a0a" }}
-              >
-                {user?.firstName?.charAt(0)?.toUpperCase() ?? "A"}
-              </div>
-              <div>
-                <p className="font-semibold text-white">
-                  {user?.firstName} {user?.lastName}
-                </p>
-                <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  {user?.primaryEmailAddress?.emailAddress}
-                </p>
-              </div>
-            </div>
-            <div
-              className="flex items-center gap-3 rounded-xl px-4 py-3"
-              style={{ background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.2)" }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="2" strokeLinecap="round">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-              <span className="text-sm font-medium" style={{ color: "#c9a84c" }}>Plan Gratuit — 10 générations offertes</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Agence */}
-        <section className="rounded-2xl overflow-hidden" style={{ background: "#111111", border: "1px solid #1f1f1f" }}>
-          <div className="px-6 py-4" style={{ borderBottom: "1px solid #1f1f1f" }}>
-            <h2 className="text-sm font-semibold text-white">Agence</h2>
-            <p className="mt-0.5 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-              Ces informations apparaissent sur vos visuels générés.
-            </p>
-          </div>
-          <div className="px-6 py-5 space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.06em" }}>
-                Nom de l'agence
-              </label>
-              <input
-                value={nomAgence}
-                onChange={(e) => setNomAgence(e.target.value)}
-                placeholder="Agence Dupont Immobilier"
-                className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none transition-all"
-                style={{
-                  background: "#161616",
-                  border: "1px solid #2a2a2a",
-                }}
-                onFocus={(e) => (e.target.style.borderColor = "rgba(201,168,76,0.5)")}
-                onBlur={(e) => (e.target.style.borderColor = "#2a2a2a")}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.06em" }}>
-                Téléphone
-              </label>
-              <input
-                value={telephone}
-                onChange={(e) => setTelephone(e.target.value)}
-                placeholder="06 12 34 56 78"
-                className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none transition-all"
-                style={{
-                  background: "#161616",
-                  border: "1px solid #2a2a2a",
-                }}
-                onFocus={(e) => (e.target.style.borderColor = "rgba(201,168,76,0.5)")}
-                onBlur={(e) => (e.target.style.borderColor = "#2a2a2a")}
-              />
-            </div>
+        {/* Tabs */}
+        <div
+          className="flex gap-1 p-1 rounded-xl mb-6"
+          style={{ background: "var(--bg-2)", border: "1px solid var(--border-s)", display: "inline-flex" }}
+        >
+          {TABS.map(({ key, label }) => (
             <button
-              onClick={sauvegarder}
-              className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-150 hover:opacity-90 active:scale-95"
-              style={{ background: saved ? "#1a3a1a" : "#c9a84c", color: saved ? "#4ade80" : "#0a0a0a", border: saved ? "1px solid #2d5a2d" : "none" }}
+              key={key}
+              onClick={() => setTab(key)}
+              className="rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-150"
+              style={{
+                background: tab === key ? "var(--bg-4)" : "transparent",
+                color: tab === key ? "var(--txt-1)" : "var(--txt-4)",
+                border: tab === key ? "1px solid var(--border)" : "1px solid transparent",
+              }}
             >
-              {saved ? "✓ Enregistré" : "Sauvegarder"}
+              {label}
             </button>
-          </div>
-        </section>
+          ))}
+        </div>
 
-        {/* Plan */}
-        <section className="rounded-2xl overflow-hidden" style={{ background: "#111111", border: "1px solid #1f1f1f" }}>
-          <div className="px-6 py-4" style={{ borderBottom: "1px solid #1f1f1f" }}>
-            <h2 className="text-sm font-semibold text-white">Plan & facturation</h2>
-          </div>
-          <div className="px-6 py-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-white">Plan Gratuit</p>
-                <p className="mt-0.5 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  10 générations par mois · Visuels PNG inclus
+        {/* ── Agence tab ─────────────────────────────────── */}
+        {tab === "agence" && (
+          <div className="space-y-5 animate-scale-in">
+            {/* Compte Clerk */}
+            <div className="card p-5">
+              <h2 className="font-semibold text-white mb-4" style={{ fontSize: "14px" }}>
+                Compte
+              </h2>
+              <div className="flex items-center gap-4 rounded-xl p-4" style={{ background: "var(--bg-2)", border: "1px solid var(--border-s)" }}>
+                <div
+                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full font-bold"
+                  style={{ background: "var(--gold)", color: "#0a0a0a", fontSize: "16px" }}
+                >
+                  {user?.firstName?.charAt(0)?.toUpperCase() ?? "A"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-white truncate" style={{ fontSize: "14px" }}>
+                    {[user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Agent"}
+                  </p>
+                  <p className="truncate" style={{ fontSize: "12px", color: "var(--txt-4)" }}>
+                    {user?.primaryEmailAddress?.emailAddress ?? ""}
+                  </p>
+                </div>
+                <Link href="/dashboard/profil" className="btn btn-secondary" style={{ padding: "7px 12px", fontSize: "12px" }}>
+                  Modifier →
+                </Link>
+              </div>
+            </div>
+
+            {/* Agence */}
+            <div className="card p-5">
+              <div className="mb-4">
+                <h2 className="font-semibold text-white" style={{ fontSize: "14px" }}>Informations agence</h2>
+                <p style={{ fontSize: "12px", color: "var(--txt-4)", marginTop: "2px" }}>
+                  Ces informations apparaissent sur tous vos visuels générés.
                 </p>
               </div>
-              <a
-                href="/tarifs"
-                className="rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-150 hover:opacity-90"
-                style={{ background: "rgba(201,168,76,0.12)", color: "#c9a84c", border: "1px solid rgba(201,168,76,0.25)" }}
-              >
-                Passer à Pro
-              </a>
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="label">Nom de l'agence</label>
+                  <input
+                    value={nomAgence}
+                    onChange={(e) => setNomAgence(e.target.value)}
+                    placeholder="Agence Dupont Immobilier"
+                    className="input"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="label">Téléphone</label>
+                  <input
+                    value={telephone}
+                    onChange={(e) => setTelephone(e.target.value)}
+                    placeholder="06 12 34 56 78"
+                    className="input"
+                  />
+                </div>
+                <button
+                  onClick={sauvegarder}
+                  className="btn"
+                  style={saved
+                    ? { background: "var(--ok-10)", color: "var(--ok)", border: "1px solid rgba(34,197,94,0.2)", padding: "10px 18px" }
+                    : { background: "var(--gold)", color: "#0a0a0a", padding: "10px 18px" }
+                  }
+                >
+                  {saved ? (
+                    <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> Enregistré</>
+                  ) : "Sauvegarder"}
+                </button>
+              </div>
+            </div>
+
+            {/* Plan */}
+            <div className="card p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="font-semibold text-white mb-0.5" style={{ fontSize: "14px" }}>Plan & facturation</h2>
+                  <p style={{ fontSize: "12px", color: "var(--txt-4)" }}>Plan Gratuit · 10 générations / mois</p>
+                </div>
+                <Link href="/tarifs" className="btn btn-secondary" style={{ padding: "8px 14px", fontSize: "12px" }}>
+                  Passer à Pro →
+                </Link>
+              </div>
             </div>
           </div>
-        </section>
+        )}
+
+        {/* ── Notifications tab ──────────────────────────── */}
+        {tab === "notifications" && (
+          <div className="space-y-4 animate-scale-in">
+            <div className="card p-5">
+              <h2 className="font-semibold text-white mb-4" style={{ fontSize: "14px" }}>Préférences de notification</h2>
+              <div className="space-y-3">
+                {[
+                  {
+                    label: "Notifications par email",
+                    desc: "Recevez un email quand une stratégie est générée.",
+                    value: notifEmail,
+                    set: setNotifEmail,
+                  },
+                  {
+                    label: "Notifications push",
+                    desc: "Alertes en temps réel dans le navigateur.",
+                    value: notifPush,
+                    set: setNotifPush,
+                  },
+                ].map(({ label, desc, value, set }) => (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between rounded-xl p-4"
+                    style={{ background: "var(--bg-2)", border: "1px solid var(--border-s)" }}
+                  >
+                    <div>
+                      <p className="font-medium text-white" style={{ fontSize: "13px" }}>{label}</p>
+                      <p style={{ fontSize: "12px", color: "var(--txt-4)" }}>{desc}</p>
+                    </div>
+                    <button
+                      onClick={() => set(!value)}
+                      className="flex h-6 w-11 items-center rounded-full transition-all duration-200 flex-shrink-0"
+                      style={{
+                        background: value ? "var(--gold)" : "var(--bg-4)",
+                        padding: "2px",
+                        justifyContent: value ? "flex-end" : "flex-start",
+                      }}
+                    >
+                      <div className="h-5 w-5 rounded-full transition-all" style={{ background: value ? "#0a0a0a" : "var(--txt-4)" }}/>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Affichage tab ──────────────────────────────── */}
+        {tab === "affichage" && (
+          <div className="space-y-4 animate-scale-in">
+            <div className="card p-5">
+              <h2 className="font-semibold text-white mb-4" style={{ fontSize: "14px" }}>Préférences d'affichage</h2>
+              <div
+                className="flex items-center justify-between rounded-xl p-4"
+                style={{ background: "var(--bg-2)", border: "1px solid var(--border-s)" }}
+              >
+                <div>
+                  <p className="font-medium text-white" style={{ fontSize: "13px" }}>Afficher le prix par défaut</p>
+                  <p style={{ fontSize: "12px", color: "var(--txt-4)" }}>Pré-cocher "Afficher le prix" lors de la création d'un bien.</p>
+                </div>
+                <button
+                  onClick={() => setDisplayPrix(!displayPrix)}
+                  className="flex h-6 w-11 items-center rounded-full transition-all duration-200 flex-shrink-0"
+                  style={{
+                    background: displayPrix ? "var(--gold)" : "var(--bg-4)",
+                    padding: "2px",
+                    justifyContent: displayPrix ? "flex-end" : "flex-start",
+                  }}
+                >
+                  <div className="h-5 w-5 rounded-full transition-all" style={{ background: displayPrix ? "#0a0a0a" : "var(--txt-4)" }}/>
+                </button>
+              </div>
+            </div>
+
+            <div className="card p-5">
+              <h2 className="font-semibold text-white mb-1" style={{ fontSize: "14px" }}>Thème</h2>
+              <p style={{ fontSize: "12px", color: "var(--txt-4)", marginBottom: "12px" }}>Sélectionnez le thème de l'interface.</p>
+              <div className="flex gap-2">
+                {["Sombre", "Système"].map((t, i) => (
+                  <button
+                    key={t}
+                    className="rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+                    style={i === 0
+                      ? { background: "var(--gold-10)", color: "var(--gold)", border: "1px solid var(--gold-20)" }
+                      : { background: "var(--bg-2)", color: "var(--txt-4)", border: "1px solid var(--border-s)" }
+                    }
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Danger zone */}
-        <section className="rounded-2xl overflow-hidden" style={{ background: "#111111", border: "1px solid #2a1a1a" }}>
-          <div className="px-6 py-4" style={{ borderBottom: "1px solid #2a1a1a" }}>
-            <h2 className="text-sm font-semibold" style={{ color: "#f87171" }}>Zone sensible</h2>
-          </div>
-          <div className="px-6 py-5">
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-              La suppression du compte est irréversible.
-            </p>
-            <button
-              className="mt-4 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-150"
-              style={{ background: "rgba(248,113,113,0.08)", color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}
-              onClick={() => alert("Fonctionnalité disponible prochainement — contactez le support.")}
-            >
-              Supprimer mon compte
-            </button>
-          </div>
-        </section>
-
+        <div className="card p-5 mt-6" style={{ borderColor: "rgba(239,68,68,0.12)" }}>
+          <h2 className="font-semibold mb-3" style={{ fontSize: "14px", color: "var(--err)" }}>Zone sensible</h2>
+          <p style={{ fontSize: "13px", color: "var(--txt-4)", marginBottom: "14px" }}>
+            La suppression de votre compte est permanente et irréversible.
+          </p>
+          <button
+            className="btn btn-danger"
+            onClick={() => alert("Contactez le support pour supprimer votre compte.")}
+          >
+            Supprimer mon compte
+          </button>
+        </div>
       </div>
     </main>
   );
