@@ -9,292 +9,297 @@ export default function NouveauBienPage() {
   const [prix, setPrix] = useState("");
   const [surface, setSurface] = useState("");
   const [description, setDescription] = useState("");
-  const [nomAgence, setNomAgence] = useState("");
-  const [telephone, setTelephone] = useState("");
+  const [nomAgence, setNomAgence] = useState(() => {
+    if (typeof window === "undefined") return "";
+    try { return JSON.parse(localStorage.getItem("studio_immo_agence") || "{}").nomAgence || ""; } catch { return ""; }
+  });
+  const [telephone, setTelephone] = useState(() => {
+    if (typeof window === "undefined") return "";
+    try { return JSON.parse(localStorage.getItem("studio_immo_agence") || "{}").telephone || ""; } catch { return ""; }
+  });
   const [afficherPrix, setAfficherPrix] = useState(true);
   const [photos, setPhotos] = useState<string[]>([]);
   const [logo, setLogo] = useState("");
-  const [photoPrincipale, setPhotoPrincipale] = useState<number>(0);
+  const [photoPrincipale, setPhotoPrincipale] = useState(0);
   const [loading, setLoading] = useState(false);
-  // FIX — message d'erreur utilisateur
   const [erreur, setErreur] = useState("");
 
   function handlePhotos(event: React.ChangeEvent<HTMLInputElement>) {
     const files = event.target.files;
     if (!files) return;
-
-    const readers = Array.from(files).map((file) => {
-      return new Promise<string>((resolve) => {
+    const readers = Array.from(files).map(
+      (file) => new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
         reader.readAsDataURL(file);
-      });
-    });
-
-    Promise.all(readers).then((images) => {
-      const nouvellesPhotos = [...photos, ...images];
-      setPhotos(nouvellesPhotos);
-      // FIX — on n'écrit plus les photos dans localStorage (quota ~5Mo dépassé rapidement)
-      // Les photos restent en mémoire React le temps de la session
-    });
+      })
+    );
+    Promise.all(readers).then((images) => setPhotos((prev) => [...prev, ...images]));
   }
 
   function handleLogo(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = () => {
-      const logoData = reader.result as string;
-      setLogo(logoData);
-      localStorage.setItem("studio_immo_logo", logoData);
+      const data = reader.result as string;
+      setLogo(data);
+      localStorage.setItem("studio_immo_logo", data);
     };
     reader.readAsDataURL(file);
   }
 
   function supprimerPhoto(index: number) {
-    const nouvellesPhotos = photos.filter((_, i) => i !== index);
-    setPhotos(nouvellesPhotos);
-
-    // FIX — correction du décalage d'index lors de la suppression
-    if (photoPrincipale === index) {
-      setPhotoPrincipale(0);
-    } else if (photoPrincipale > index) {
-      // l'index de la photo principale a décalé d'un cran vers le bas
-      setPhotoPrincipale(photoPrincipale - 1);
-    }
-  }
-
-  function definirPhotoPrincipale(index: number) {
-    setPhotoPrincipale(index);
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+    if (photoPrincipale === index) setPhotoPrincipale(0);
+    else if (photoPrincipale > index) setPhotoPrincipale((p) => p - 1);
   }
 
   async function genererContenus() {
     setErreur("");
-
-    // FIX — validation des champs obligatoires avant l'appel API
     if (!titre.trim() || !ville.trim() || !description.trim()) {
-      setErreur("Veuillez remplir au minimum le titre, la ville et la description.");
+      setErreur("Veuillez remplir le titre, la ville et la description.");
       return;
     }
-
     setLoading(true);
-
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ titre, ville, prix, surface, description }),
       });
-
-      if (!response.ok) {
-        throw new Error(`Erreur serveur : ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`Erreur serveur : ${response.status}`);
       const data = await response.json();
+      if (data.error) throw new Error(data.error);
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      // FIX — on ne stocke plus les photos en localStorage
-      // On passe les données texte uniquement
       localStorage.setItem("studio_immo_resultat", JSON.stringify(data));
-      localStorage.setItem(
-        "studio_immo_bien",
-        JSON.stringify({ titre, ville, prix, surface, description, afficherPrix })
-      );
-      localStorage.setItem(
-        "studio_immo_agence",
-        JSON.stringify({ nomAgence, telephone })
-      );
+      localStorage.setItem("studio_immo_bien", JSON.stringify({ titre, ville, prix, surface, description, afficherPrix }));
+      localStorage.setItem("studio_immo_agence", JSON.stringify({ nomAgence, telephone }));
       localStorage.setItem("studio_immo_photo_principale", String(photoPrincipale));
 
-      // FIX — on stocke les photos dans sessionStorage (vidé à la fermeture du tab)
-      // séparé du localStorage pour éviter le quota
       try {
         sessionStorage.setItem("studio_immo_photos", JSON.stringify(photos));
         sessionStorage.setItem("studio_immo_logo", logo);
       } catch {
-        // Si sessionStorage est aussi saturé, on continue sans les photos
         console.warn("sessionStorage saturé — visuels sans photos");
       }
-
       window.location.href = "/resultats";
     } catch (error) {
-      // FIX — on affiche l'erreur et on arrête le loading
-      setErreur(
-        error instanceof Error
-          ? error.message
-          : "Une erreur est survenue. Réessayez."
-      );
+      setErreur(error instanceof Error ? error.message : "Une erreur est survenue. Réessayez.");
     } finally {
-      // FIX — loading toujours remis à false, même en cas d'erreur
       setLoading(false);
     }
   }
 
+  const inputClass = "w-full rounded-xl px-4 py-3 text-sm text-white outline-none transition-all duration-150 placeholder-white/25";
+  const inputStyle = { background: "#161616", border: "1px solid #2a2a2a" };
+
+  function focusStyle(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    e.target.style.borderColor = "rgba(201,168,76,0.5)";
+  }
+  function blurStyle(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    e.target.style.borderColor = "#2a2a2a";
+  }
+
   return (
-    <main className="min-h-screen bg-blue-950 text-white">
-      <div className="mx-auto max-w-5xl px-6 py-12">
-        <Link href="/dashboard" className="mb-8 inline-flex items-center gap-2 font-medium text-amber-400">
-          ← Retour au tableau de bord
+    <div style={{ background: "#0a0a0a", minHeight: "100vh" }}>
+      {/* Header */}
+      <header
+        className="flex items-center justify-between px-6 py-4 lg:px-8"
+        style={{ borderBottom: "1px solid #1a1a1a" }}
+      >
+        <Link href="/dashboard" className="text-xl font-bold text-white">
+          Studio <span style={{ color: "#c9a84c" }}>Immo</span>
         </Link>
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 text-sm font-medium transition-all duration-150 hover:opacity-80"
+          style={{ color: "rgba(255,255,255,0.45)" }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+          </svg>
+          Tableau de bord
+        </Link>
+      </header>
 
-        <h1 className="mt-4 text-5xl font-bold">
-          Nouveau <span className="text-amber-400">Bien</span>
-        </h1>
+      <main className="mx-auto max-w-2xl px-6 py-10 lg:px-8">
 
-        <p className="mt-3 text-slate-200">
-          Ajoutez le bien, les photos et les informations de l'agence.
-        </p>
+        <div className="mb-8">
+          <p
+            className="text-xs font-bold uppercase tracking-widest"
+            style={{ color: "#c9a84c", letterSpacing: "0.1em" }}
+          >
+            Nouveau bien
+          </p>
+          <h1 className="mt-1 text-3xl font-bold text-white tracking-tight">
+            Renseignez votre mandat
+          </h1>
+          <p className="mt-2 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+            L'IA génère une stratégie complète en quelques secondes.
+          </p>
+        </div>
 
-        <div className="mt-10 rounded-3xl bg-white p-8 shadow-2xl">
-          <div className="space-y-8">
-            <div>
-              <h2 className="mb-4 text-2xl font-bold text-blue-950">
-                Informations du bien
-              </h2>
+        <div className="space-y-6">
 
-              <div className="space-y-5">
-                <input
-                  value={titre}
-                  onChange={(e) => setTitre(e.target.value)}
-                  type="text"
-                  placeholder="Titre du bien *"
-                  className="w-full rounded-xl border p-4 text-slate-900"
-                />
-                <input
-                  value={ville}
-                  onChange={(e) => setVille(e.target.value)}
-                  type="text"
-                  placeholder="Ville *"
-                  className="w-full rounded-xl border p-4 text-slate-900"
-                />
-                <div className="grid gap-5 md:grid-cols-2">
-                  <input
-                    value={prix}
-                    onChange={(e) => setPrix(e.target.value)}
-                    type="text"
-                    placeholder="Prix"
-                    className="w-full rounded-xl border p-4 text-slate-900"
-                  />
-                  <input
-                    value={surface}
-                    onChange={(e) => setSurface(e.target.value)}
-                    type="text"
-                    placeholder="Surface"
-                    className="w-full rounded-xl border p-4 text-slate-900"
-                  />
-                </div>
-
-                <label className="flex items-center gap-3 rounded-xl bg-slate-100 p-4 font-bold text-blue-950">
-                  <input
-                    type="checkbox"
-                    checked={afficherPrix}
-                    onChange={(e) => setAfficherPrix(e.target.checked)}
-                  />
-                  Afficher le prix sur les visuels
+          {/* Bien */}
+          <section
+            className="rounded-2xl overflow-hidden"
+            style={{ background: "#111111", border: "1px solid #1f1f1f" }}
+          >
+            <div className="px-6 py-4" style={{ borderBottom: "1px solid #1f1f1f" }}>
+              <h2 className="text-sm font-semibold text-white">Informations du bien</h2>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.06em" }}>
+                  Titre *
                 </label>
+                <input value={titre} onChange={(e) => setTitre(e.target.value)} placeholder="Appartement T3 avec terrasse" className={inputClass} style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
+              </div>
 
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.06em" }}>
+                  Ville *
+                </label>
+                <input value={ville} onChange={(e) => setVille(e.target.value)} placeholder="Lyon, Paris, Bordeaux…" className={inputClass} style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.06em" }}>
+                    Prix
+                  </label>
+                  <input value={prix} onChange={(e) => setPrix(e.target.value)} placeholder="320 000 €" className={inputClass} style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.06em" }}>
+                    Surface
+                  </label>
+                  <input value={surface} onChange={(e) => setSurface(e.target.value)} placeholder="68 m²" className={inputClass} style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
+                </div>
+              </div>
+
+              <label
+                className="flex items-center gap-3 rounded-xl px-4 py-3 cursor-pointer transition-all duration-150"
+                style={{ background: "#161616", border: "1px solid #2a2a2a" }}
+              >
+                <input type="checkbox" checked={afficherPrix} onChange={(e) => setAfficherPrix(e.target.checked)} className="h-4 w-4 rounded" style={{ accentColor: "#c9a84c" }} />
+                <span className="text-sm font-medium text-white">Afficher le prix sur les visuels</span>
+              </label>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.06em" }}>
+                  Description *
+                </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  rows={6}
-                  placeholder="Description du bien *"
-                  className="w-full rounded-xl border p-4 text-slate-900"
+                  rows={5}
+                  placeholder="Décrivez les points forts du bien : exposition, vue, rénovation, quartier, prestations…"
+                  className={inputClass}
+                  style={{ ...inputStyle, resize: "vertical" }}
+                  onFocus={focusStyle}
+                  onBlur={blurStyle}
                 />
               </div>
             </div>
+          </section>
 
-            <div>
-              <h2 className="mb-4 text-2xl font-bold text-blue-950">
-                Informations agence
-              </h2>
-
-              <div className="grid gap-5 md:grid-cols-2">
-                <input
-                  value={nomAgence}
-                  onChange={(e) => setNomAgence(e.target.value)}
-                  type="text"
-                  placeholder="Nom de l'agence"
-                  className="w-full rounded-xl border p-4 text-slate-900"
-                />
-                <input
-                  value={telephone}
-                  onChange={(e) => setTelephone(e.target.value)}
-                  type="text"
-                  placeholder="Téléphone"
-                  className="w-full rounded-xl border p-4 text-slate-900"
-                />
+          {/* Agence */}
+          <section
+            className="rounded-2xl overflow-hidden"
+            style={{ background: "#111111", border: "1px solid #1f1f1f" }}
+          >
+            <div className="px-6 py-4" style={{ borderBottom: "1px solid #1f1f1f" }}>
+              <h2 className="text-sm font-semibold text-white">Agence</h2>
+              <p className="mt-0.5 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                Apparaît sur vos visuels générés.
+              </p>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.06em" }}>Nom agence</label>
+                  <input value={nomAgence} onChange={(e) => setNomAgence(e.target.value)} placeholder="Agence Dupont" className={inputClass} style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.06em" }}>Téléphone</label>
+                  <input value={telephone} onChange={(e) => setTelephone(e.target.value)} placeholder="06 12 34 56 78" className={inputClass} style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
+                </div>
               </div>
 
-              <div className="mt-5 rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50 p-6 text-center">
-                <p className="font-bold text-blue-950">Logo de l'agence</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogo}
-                  className="mt-4 text-slate-900"
-                />
+              <div
+                className="rounded-xl px-4 py-4 text-center"
+                style={{ background: "#161616", border: "2px dashed #2a2a2a" }}
+              >
+                <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  Logo agence
+                </p>
+                <input type="file" accept="image/*" onChange={handleLogo} className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }} />
                 {logo && (
-                  <div className="mt-4 flex justify-center">
-                    <img
-                      src={logo}
-                      alt="Logo agence"
-                      className="h-20 max-w-40 rounded-xl object-contain bg-white p-2"
-                    />
+                  <div className="mt-3 flex justify-center">
+                    <img src={logo} alt="Logo" className="h-16 max-w-36 rounded-lg object-contain" style={{ background: "#1a1a1a", padding: "6px" }} />
                   </div>
                 )}
               </div>
             </div>
+          </section>
 
-            <div>
-              <h2 className="mb-4 text-2xl font-bold text-blue-950">
-                Photos du bien
-              </h2>
-
-              <div className="rounded-2xl border-2 border-dashed border-amber-400 bg-amber-50 p-8 text-center">
-                <p className="font-bold text-blue-950">Importez vos photos</p>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handlePhotos}
-                  className="mt-6 text-slate-900"
-                />
+          {/* Photos */}
+          <section
+            className="rounded-2xl overflow-hidden"
+            style={{ background: "#111111", border: "1px solid #1f1f1f" }}
+          >
+            <div className="px-6 py-4" style={{ borderBottom: "1px solid #1f1f1f" }}>
+              <h2 className="text-sm font-semibold text-white">Photos du bien</h2>
+              <p className="mt-0.5 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                La photo étoilée est utilisée comme photo principale sur les visuels.
+              </p>
+            </div>
+            <div className="px-6 py-5">
+              <div
+                className="rounded-xl px-4 py-6 text-center mb-4"
+                style={{ background: "#161616", border: "2px dashed rgba(201,168,76,0.25)" }}
+              >
+                <svg className="mx-auto mb-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.6" strokeLinecap="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
+                </svg>
+                <p className="text-xs font-medium mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  Importez vos photos (JPEG, PNG)
+                </p>
+                <input type="file" multiple accept="image/*" onChange={handlePhotos} className="text-xs" style={{ color: "#c9a84c" }} />
               </div>
 
               {photos.length > 0 && (
-                <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                   {photos.map((photo, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={photo}
-                        alt="Photo du bien"
-                        className="h-32 w-full rounded-xl object-cover"
-                      />
+                    <div key={index} className="relative group">
+                      <img src={photo} alt="" className="h-24 w-full rounded-lg object-cover" />
                       <button
-                        type="button"
-                        onClick={() => definirPhotoPrincipale(index)}
-                        className={`absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full font-bold ${
-                          photoPrincipale === index
-                            ? "bg-amber-400 text-blue-950"
-                            : "bg-black/60 text-white"
-                        }`}
+                        onClick={() => setPhotoPrincipale(index)}
+                        className="absolute left-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all"
+                        style={{
+                          background: photoPrincipale === index ? "#c9a84c" : "rgba(0,0,0,0.6)",
+                          color: photoPrincipale === index ? "#0a0a0a" : "#fff",
+                        }}
+                        title="Photo principale"
                       >
-                        ⭐
+                        ★
                       </button>
                       <button
-                        type="button"
                         onClick={() => supprimerPhoto(index)}
-                        className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 font-bold text-white"
+                        className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold"
+                        style={{ background: "rgba(239,68,68,0.9)", color: "#fff" }}
                       >
                         ×
                       </button>
                       {photoPrincipale === index && (
-                        <div className="absolute bottom-2 left-2 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold text-blue-950">
-                          Photo principale
+                        <div
+                          className="absolute bottom-1.5 left-1.5 rounded-full px-2 py-0.5 text-xs font-bold"
+                          style={{ background: "#c9a84c", color: "#0a0a0a" }}
+                        >
+                          Principale
                         </div>
                       )}
                     </div>
@@ -302,26 +307,40 @@ export default function NouveauBienPage() {
                 </div>
               )}
             </div>
+          </section>
 
-            {/* FIX — affichage de l'erreur utilisateur */}
-            {erreur && (
-              <div className="rounded-xl bg-red-50 p-4 font-medium text-red-700 border border-red-200">
-                ⚠️ {erreur}
-              </div>
-            )}
-
-            <button
-              onClick={genererContenus}
-              disabled={loading}
-              className="w-full rounded-xl bg-amber-400 py-4 font-bold text-blue-950 disabled:opacity-70"
+          {/* Erreur */}
+          {erreur && (
+            <div
+              className="rounded-xl px-5 py-4 text-sm font-medium"
+              style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#f87171" }}
             >
-              {loading
-                ? "Création de la stratégie..."
-                : "Générer la stratégie réseaux sociaux"}
-            </button>
-          </div>
+              {erreur}
+            </div>
+          )}
+
+          {/* CTA */}
+          <button
+            onClick={genererContenus}
+            disabled={loading}
+            className="w-full rounded-xl py-4 text-sm font-bold transition-all duration-150 hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: "#c9a84c", color: "#0a0a0a" }}
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-3">
+                <span className="h-4 w-4 animate-spin rounded-full" style={{ border: "2px solid rgba(10,10,10,0.3)", borderTopColor: "#0a0a0a" }} />
+                Génération en cours…
+              </span>
+            ) : (
+              "Générer la stratégie réseaux sociaux →"
+            )}
+          </button>
+
+          <p className="text-center text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+            Génération en ~15 secondes · Propulsé par GPT-4o mini
+          </p>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
