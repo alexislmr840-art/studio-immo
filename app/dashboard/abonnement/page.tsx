@@ -18,7 +18,7 @@ export default function AbonnementPage() {
   const pct = Math.min((creditsUsed / total) * 100, 100);
 
   const FEATURES_COMPARE = [
-    { label: "Générations / mois", gratuit: "10", solo: "50", equipe: "Illimité" },
+    { label: "Biens / mois", gratuit: "1", solo: "10", equipe: "30" },
     { label: "Campagnes par bien", gratuit: "5", solo: "5", equipe: "5" },
     { label: "Visuels PNG 1080×1350", gratuit: "✓", solo: "✓", equipe: "✓" },
     { label: "Facebook, Instagram, Stories", gratuit: "✓", solo: "✓", equipe: "✓" },

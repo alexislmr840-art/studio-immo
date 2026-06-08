@@ -32,7 +32,7 @@ const INITIAL: Notif[] = [
     id: 3,
     type: "warning",
     title: "Crédits bientôt épuisés",
-    body: "Il vous reste moins de 3 générations ce mois-ci. Passez au plan Solo ou Équipe pour des générations illimitées.",
+    body: "Il vous reste moins de 3 générations ce mois-ci. Passez au plan Solo (10 biens/mois) ou Équipe (30 biens/mois) pour continuer.",
     date: "Il y a 3j",
     read: true,
   },

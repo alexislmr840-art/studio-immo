@@ -220,7 +220,7 @@ export default function SidebarNav({ prenom, initiale, email }: Props) {
             <p style={{ fontSize: "11.5px", fontWeight: 700, color: "var(--gold)" }}>Passer à Pro</p>
           </div>
           <p style={{ fontSize: "11px", color: "var(--txt-4)", lineHeight: 1.4 }}>
-            Générations illimitées dès 29€/mois
+            Jusqu'à 10 biens/mois dès 39€/mois
           </p>
         </Link>
       </div>
