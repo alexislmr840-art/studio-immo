@@ -145,7 +145,7 @@ export default function ParametresPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="font-semibold text-white mb-0.5" style={{ fontSize: "14px" }}>Plan & facturation</h2>
-                  <p style={{ fontSize: "12px", color: "var(--txt-4)" }}>Plan Gratuit · 10 générations / mois</p>
+                  <p style={{ fontSize: "12px", color: "var(--txt-4)" }}>Plan Gratuit · 1 bien gratuit</p>
                 </div>
                 <Link href="/tarifs" className="btn btn-secondary" style={{ padding: "8px 14px", fontSize: "12px" }}>
                   Passer à Pro →

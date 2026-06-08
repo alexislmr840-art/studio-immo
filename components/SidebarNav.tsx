@@ -227,31 +227,31 @@ export default function SidebarNav({ prenom, initiale, email }: Props) {
 
       {/* User */}
       <div className="px-4 pb-4" style={{ borderTop: "1px solid var(--border-s)", paddingTop: "14px" }}>
-        <div className="flex items-center gap-2.5">
-          <Link href="/dashboard/profil" className="flex items-center gap-2.5 flex-1 min-w-0 group">
-            <div
-              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold transition-transform group-hover:scale-105"
-              style={{ background: "var(--gold)", color: "#0a0a0a" }}
-            >
-              {initiale}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-semibold text-white truncate">{prenom}</p>
-              {email && <p className="text-[11px] truncate" style={{ color: "var(--txt-4)" }}>{email}</p>}
-            </div>
-          </Link>
-          <button
-            onClick={() => signOut({ redirectUrl: "/" })}
-            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg transition-all duration-150 hover:bg-[var(--bg-3)]"
-            style={{ color: "var(--txt-4)" }}
-            title="Se déconnecter"
+        <Link href="/dashboard/profil" className="flex items-center gap-2.5 mb-3 group">
+          <div
+            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold transition-transform group-hover:scale-105"
+            style={{ background: "var(--gold)", color: "#0a0a0a" }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-              <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-          </button>
-        </div>
+            {initiale}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-semibold text-white truncate">{prenom}</p>
+            {email && <p className="text-[11px] truncate" style={{ color: "var(--txt-4)" }}>{email}</p>}
+          </div>
+        </Link>
+        <button
+          onClick={() => signOut({ redirectUrl: "/" })}
+          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150"
+          style={{ background: "var(--bg-2)", color: "var(--txt-3)", border: "1px solid var(--border-s)" }}
+          onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-3)"; e.currentTarget.style.color = "white"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "var(--bg-2)"; e.currentTarget.style.color = "var(--txt-3)"; }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+            <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Se déconnecter
+        </button>
       </div>
     </aside>
   );
