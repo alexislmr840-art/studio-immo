@@ -42,10 +42,10 @@ const TESTIMONIALS = [
 const PLANS = [
   {
     name: "Solo",
-    price: "29",
+    price: "39",
     desc: "L'essentiel pour les agents qui veulent se démarquer.",
     highlight: false,
-    features: ["50 générations / mois", "5 campagnes par bien", "Visuels PNG 1080×1350", "FB, Instagram, Stories", "Logo agence inclus", "Support email"],
+    features: ["10 biens par mois", "5 campagnes par bien", "Visuels PNG 1080×1350", "FB, Instagram, Stories", "Logo agence inclus", "1 utilisateur", "Support email"],
     cta: "Commencer avec Solo",
   },
   {
@@ -53,7 +53,7 @@ const PLANS = [
     price: "79",
     desc: "Puissance illimitée pour les agences et équipes.",
     highlight: true,
-    features: ["Générations illimitées", "5 campagnes par bien", "Visuels PNG 1080×1350", "FB, Instagram, Stories", "Logo agence inclus", "Jusqu'à 5 agents", "Historique complet", "Support prioritaire"],
+    features: ["30 biens par mois", "5 campagnes par bien", "Visuels PNG 1080×1350", "FB, Instagram, Stories", "Logo agence inclus", "Jusqu'à 10 utilisateurs", "Historique complet", "Support prioritaire"],
     cta: "Commencer avec Équipe",
   },
 ];

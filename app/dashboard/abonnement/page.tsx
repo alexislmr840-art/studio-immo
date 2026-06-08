@@ -23,7 +23,7 @@ export default function AbonnementPage() {
     { label: "Visuels PNG 1080×1350", gratuit: "✓", solo: "✓", equipe: "✓" },
     { label: "Facebook, Instagram, Stories", gratuit: "✓", solo: "✓", equipe: "✓" },
     { label: "Logo agence sur visuels", gratuit: "✓", solo: "✓", equipe: "✓" },
-    { label: "Agents simultanés", gratuit: "1", solo: "1", equipe: "5" },
+    { label: "Agents simultanés", gratuit: "1", solo: "1", equipe: "10" },
     { label: "Historique des campagnes", gratuit: "—", solo: "—", equipe: "✓" },
     { label: "Support prioritaire", gratuit: "—", solo: "Email", equipe: "Prioritaire" },
   ];
@@ -91,7 +91,7 @@ export default function AbonnementPage() {
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border-s)" }}>
                   <th className="px-5 py-3.5 text-left label" style={{ color: "var(--txt-4)", width: "40%" }}>Fonctionnalité</th>
-                  {["Gratuit", "Solo · 29€/mois", "Équipe · 79€/mois"].map((plan, i) => (
+                  {["Gratuit", "Solo · 39€/mois", "Équipe · 79€/mois"].map((plan, i) => (
                     <th key={plan} className="px-4 py-3.5 text-center"
                         style={{ fontSize: "12px", fontWeight: 700, color: i === 0 ? "var(--gold)" : "var(--txt-3)" }}>
                       {plan}
@@ -130,7 +130,7 @@ export default function AbonnementPage() {
         <div className="grid gap-4 sm:grid-cols-2 mb-6">
           {[
             {
-              name: "Solo", price: "29€", period: "/mois",
+              name: "Solo", price: "39€", period: "/mois",
               desc: "Pour les agents indépendants",
               highlight: false,
             },

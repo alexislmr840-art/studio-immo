@@ -1,19 +1,24 @@
 import Link from "next/link";
 
-const PLANS = [
+type Feature = string | { label: string; badge: string };
+
+const PLANS: {
+  name: string; price: string; desc: string; highlight: boolean;
+  badge: string | null; features: Feature[]; cta: string;
+}[] = [
   {
     name: "Solo",
-    price: "29",
+    price: "39",
     desc: "L'essentiel pour les agents indépendants qui veulent se démarquer sur les réseaux.",
     highlight: false,
     badge: null,
     features: [
-      "50 générations IA / mois",
+      "10 biens par mois",
       "5 campagnes par bien",
       "Visuels PNG 1080×1350 px",
       "Facebook, Instagram, Stories",
       "Logo agence sur visuels",
-      "1 agent",
+      "1 utilisateur",
       "Support par email",
     ],
     cta: "Commencer avec Solo",
@@ -25,13 +30,14 @@ const PLANS = [
     highlight: true,
     badge: "Le plus populaire",
     features: [
-      "Générations illimitées",
+      "30 biens par mois",
       "5 campagnes par bien",
       "Visuels PNG 1080×1350 px",
       "Facebook, Instagram, Stories",
       "Logo agence sur visuels",
-      "Jusqu'à 5 agents",
+      "Jusqu'à 10 utilisateurs",
       "Historique des campagnes",
+      { label: "Analytics réseaux sociaux (vues, j'aime, portée)", badge: "Bientôt disponible" },
       "Support prioritaire",
     ],
     cta: "Commencer avec Équipe",
@@ -132,19 +138,31 @@ export default function TarifsPage() {
               </div>
 
               <ul className="flex-1 space-y-3 mb-7">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-center gap-3" style={{ fontSize: "13px", color: "var(--txt-2)" }}>
-                    <div
-                      className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full"
-                      style={{ background: "var(--ok-10)" }}
-                    >
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" strokeWidth="3" strokeLinecap="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                    </div>
-                    {f}
-                  </li>
-                ))}
+                {plan.features.map((f, i) => {
+                  const label = typeof f === "string" ? f : f.label;
+                  const badge = typeof f === "string" ? null : f.badge;
+                  return (
+                    <li key={i} className="flex items-center gap-3" style={{ fontSize: "13px", color: "var(--txt-2)" }}>
+                      <div
+                        className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full"
+                        style={{ background: "var(--ok-10)" }}
+                      >
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" strokeWidth="3" strokeLinecap="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </div>
+                      <span>{label}</span>
+                      {badge && (
+                        <span
+                          className="rounded-full px-2 py-0.5 font-semibold"
+                          style={{ fontSize: "10px", background: "rgba(201,168,76,0.12)", color: "#c9a84c", border: "1px solid rgba(201,168,76,0.25)", whiteSpace: "nowrap" }}
+                        >
+                          {badge}
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
 
               <Link
