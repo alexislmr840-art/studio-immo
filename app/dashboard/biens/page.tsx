@@ -1,10 +1,9 @@
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase";
-import Sidebar from "@/app/dashboard/Sidebar";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
@@ -14,16 +13,9 @@ export default async function BiensPage() {
   const { userId } = await auth();
   if (!userId) redirect("/connexion");
 
-  const [clerkUser, dbResult] = await Promise.all([
-    currentUser(),
-    supabaseAdmin.from("users").select("id, plan").eq("clerk_id", userId).single(),
-  ]);
-
+  const dbResult = await supabaseAdmin.from("users").select("id, plan").eq("clerk_id", userId).single();
   const dbUser = dbResult.data;
   if (!dbUser) redirect("/dashboard");
-
-  const prenom = clerkUser?.firstName ? clerkUser.firstName.charAt(0).toUpperCase() + clerkUser.firstName.slice(1) : "Agent";
-  const nom = clerkUser?.lastName ?? "";
 
   const { data: biens, count } = await supabaseAdmin
     .from("biens")
@@ -45,16 +37,13 @@ export default async function BiensPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "#080808" }}>
-      <Sidebar plan={dbUser.plan ?? "free"} prenom={prenom} nom={nom} />
+    <main className="flex-1">
 
-      <main className="flex-1 overflow-y-auto relative z-10">
-
-        {/* Header sticky */}
-        <header
-          className="sticky top-0 z-30 flex h-16 items-center justify-between px-8"
-          style={{ background: "rgba(8,8,8,0.85)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-        >
+      {/* Header sticky */}
+      <header
+        className="sticky top-0 z-30 flex h-16 items-center justify-between px-8"
+        style={{ background: "rgba(8,8,8,0.85)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+      >
           <div className="flex items-center gap-3 text-sm">
             <Link
               href="/dashboard"
@@ -221,7 +210,6 @@ export default async function BiensPage() {
             </div>
           )}
         </div>
-      </main>
-    </div>
+    </main>
   );
 }
