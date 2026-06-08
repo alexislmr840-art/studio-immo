@@ -7,7 +7,7 @@ export const config = { api: { bodyParser: false } };
 function creditsForPlan(plan: string): number {
   if (plan === "solo") return 1000;
   if (plan === "equipe") return 999999;
-  return 200;
+  return 500;
 }
 
 export async function POST(req: Request) {

@@ -1,9 +1,9 @@
 -- Ajout de la colonne crédits
-ALTER TABLE users ADD COLUMN IF NOT EXISTS credits integer NOT NULL DEFAULT 200;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS credits integer NOT NULL DEFAULT 500;
 
 -- Fonction atomique pour décrémenter les crédits
 -- Retourne les crédits restants, ou NULL si insuffisants
-CREATE OR REPLACE FUNCTION use_credits(uid uuid, amount integer DEFAULT 100)
+CREATE OR REPLACE FUNCTION use_credits(uid uuid, amount integer DEFAULT 500)
 RETURNS integer
 LANGUAGE plpgsql
 AS $$

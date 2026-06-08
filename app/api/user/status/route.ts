@@ -11,7 +11,7 @@ export async function GET() {
     .eq("clerk_id", userId)
     .single();
 
-  if (!dbUser) return Response.json({ plan: "free", biensThisMonth: 0, credits: 200 });
+  if (!dbUser) return Response.json({ plan: "free", biensThisMonth: 0, credits: 500 });
 
   const debut = new Date();
   debut.setDate(1);
