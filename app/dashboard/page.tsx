@@ -4,6 +4,13 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import DashboardMain, { type BienDashboard } from "@/components/DashboardMain";
 import { supabaseAdmin } from "@/lib/supabase";
 
+export interface DashboardStats {
+  biens: number;
+  campagnes: number;
+  visuels: number;
+  credits: number;
+}
+
 export default async function DashboardPage() {
   const [{ userId }, user] = await Promise.all([auth(), currentUser()]);
 
@@ -17,35 +24,40 @@ export default async function DashboardPage() {
   const greeting = hour < 12 ? "Bonjour" : hour < 18 ? "Bonne après-midi" : "Bonsoir";
 
   let derniersBiens: BienDashboard[] = [];
+  let stats: DashboardStats = { biens: 0, campagnes: 0, visuels: 0, credits: 500 };
+
   if (userId) {
     const { data: dbUser } = await supabaseAdmin
       .from("users")
-      .select("id")
+      .select("id, credits")
       .eq("clerk_id", userId)
       .single();
 
     if (dbUser) {
-      const { data: biens } = await supabaseAdmin
-        .from("biens")
-        .select("id, titre, ville, prix, surface, photo_principale_url")
-        .eq("user_id", dbUser.id)
-        .order("created_at", { ascending: false })
-        .limit(3);
-
-      const bienIds = (biens ?? []).map((b) => b.id);
-      const latestGenMap = new Map<string, string>();
-      if (bienIds.length > 0) {
-        const { data: gens } = await supabaseAdmin
+      const [biensResult, gensResult] = await Promise.all([
+        supabaseAdmin
+          .from("biens")
+          .select("id, titre, ville, prix, surface, photo_principale_url", { count: "exact" })
+          .eq("user_id", dbUser.id)
+          .order("created_at", { ascending: false }),
+        supabaseAdmin
           .from("generations")
-          .select("id, bien_id")
-          .in("bien_id", bienIds)
-          .order("created_at", { ascending: false });
-        for (const g of gens ?? []) {
-          if (!latestGenMap.has(g.bien_id)) latestGenMap.set(g.bien_id, g.id);
-        }
+          .select("id, bien_id", { count: "exact" })
+          .eq("user_id", dbUser.id),
+      ]);
+
+      const allBiens = biensResult.data ?? [];
+      const totalBiens = biensResult.count ?? 0;
+      const totalCampagnes = gensResult.count ?? 0;
+
+      // Map latest generation per bien
+      const latestGenMap = new Map<string, string>();
+      for (const g of gensResult.data ?? []) {
+        if (!latestGenMap.has(g.bien_id)) latestGenMap.set(g.bien_id, g.id);
       }
 
-      derniersBiens = (biens ?? []).map((b) => ({
+      // 3 most recent for display
+      derniersBiens = allBiens.slice(0, 3).map((b) => ({
         id: b.id,
         titre: b.titre,
         ville: b.ville ?? null,
@@ -54,8 +66,23 @@ export default async function DashboardPage() {
         photo_principale_url: b.photo_principale_url ?? null,
         latestGenId: latestGenMap.get(b.id) ?? null,
       }));
+
+      stats = {
+        biens: totalBiens,
+        campagnes: totalCampagnes,
+        visuels: totalCampagnes * 2,
+        credits: dbUser.credits ?? 500,
+      };
     }
   }
 
-  return <DashboardMain prenom={prenom} greeting={greeting} createdAt={createdAt} derniersBiens={derniersBiens} />;
+  return (
+    <DashboardMain
+      prenom={prenom}
+      greeting={greeting}
+      createdAt={createdAt}
+      derniersBiens={derniersBiens}
+      stats={stats}
+    />
+  );
 }

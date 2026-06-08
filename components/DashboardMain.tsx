@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export interface BienDashboard {
@@ -13,19 +12,19 @@ export interface BienDashboard {
   latestGenId: string | null;
 }
 
+interface Stats {
+  biens: number;
+  campagnes: number;
+  visuels: number;
+  credits: number;
+}
+
 interface Props {
   prenom: string;
   greeting: string;
   createdAt: string | null;
   derniersBiens: BienDashboard[];
-}
-
-interface StoredData {
-  biens: number;
-  campagnes: number;
-  visuels: number;
-  dernierTitre: string | null;
-  derniereVille: string | null;
+  stats: Stats;
 }
 
 /* SVG Sparkline */
@@ -107,64 +106,40 @@ function CreditRing({ used, total }: { used: number; total: number }) {
   );
 }
 
-export default function DashboardMain({ prenom, greeting, createdAt, derniersBiens }: Props) {
-  const [data, setData] = useState<StoredData>({
-    biens: 0, campagnes: 0, visuels: 0, dernierTitre: null, derniereVille: null,
-  });
-
-  useEffect(() => {
-    const resultat = localStorage.getItem("studio_immo_resultat");
-    const bien = localStorage.getItem("studio_immo_bien");
-
-    if (resultat) {
-      try {
-        const parsed = JSON.parse(resultat);
-        const bienData = bien ? JSON.parse(bien) : null;
-        const nbCampagnes = parsed?.publications?.length ?? 0;
-        setData({
-          biens: 1,
-          campagnes: nbCampagnes,
-          visuels: nbCampagnes * 2,
-          dernierTitre: bienData?.titre ?? null,
-          derniereVille: bienData?.ville ?? null,
-        });
-      } catch { /* ignore */ }
-    }
-  }, []);
-
-  const weekData = [0, 0, 0, data.campagnes > 0 ? 2 : 0, data.campagnes, data.campagnes, data.campagnes];
+export default function DashboardMain({ prenom, greeting, createdAt, derniersBiens, stats }: Props) {
+  const weekData = [0, 0, 0, stats.campagnes > 0 ? 2 : 0, stats.campagnes, stats.campagnes, stats.campagnes];
 
   const STATS = [
     {
       label: "Biens traités",
-      value: data.biens,
-      sub: data.biens === 0 ? "Créez votre premier bien" : `${data.biens} mandat actif`,
+      value: stats.biens,
+      sub: stats.biens === 0 ? "Créez votre premier bien" : `${stats.biens} mandat${stats.biens > 1 ? "s" : ""} actif${stats.biens > 1 ? "s" : ""}`,
       color: "var(--gold)",
-      chart: <Sparkline data={[0,0,0,0,1,1,data.biens]} color="var(--gold)" />,
+      chart: <Sparkline data={[0,0,0,0,1,1,stats.biens]} color="var(--gold)" />,
       href: "/dashboard/biens",
     },
     {
       label: "Campagnes IA",
-      value: data.campagnes,
+      value: stats.campagnes,
       sub: "Facebook & Instagram",
       color: "#818cf8",
-      chart: <Sparkline data={[0,0,1,1,data.campagnes,data.campagnes,data.campagnes]} color="#818cf8" />,
+      chart: <Sparkline data={[0,0,1,1,stats.campagnes,stats.campagnes,stats.campagnes]} color="#818cf8" />,
       href: "/dashboard/statistiques",
     },
     {
       label: "Visuels générés",
-      value: data.visuels,
+      value: stats.visuels,
       sub: "PNG 1080×1350 px",
       color: "#34d399",
-      chart: <Sparkline data={[0,0,2,2,data.visuels,data.visuels,data.visuels]} color="#34d399" />,
+      chart: <Sparkline data={[0,0,2,2,stats.visuels,stats.visuels,stats.visuels]} color="#34d399" />,
       href: "/dashboard/statistiques",
     },
     {
       label: "Crédits restants",
-      value: Math.max(10 - data.campagnes, 0),
-      sub: "sur 10 ce mois",
+      value: stats.credits,
+      sub: "disponibles",
       color: "var(--gold)",
-      chart: <CreditRing used={data.campagnes} total={10} />,
+      chart: <CreditRing used={Math.max(500 - stats.credits, 0)} total={500} />,
       href: "/dashboard/abonnement",
     },
   ];
@@ -223,7 +198,7 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
                 <h2 className="font-semibold text-white" style={{ fontSize: "14px" }}>Activité cette semaine</h2>
                 <p style={{ fontSize: "12px", color: "var(--txt-4)", marginTop: "2px" }}>Campagnes générées par jour</p>
               </div>
-              <div className="badge badge-gold">{data.campagnes} total</div>
+              <div className="badge badge-gold">{stats.campagnes} total</div>
             </div>
             <BarChart data={weekData} color="var(--gold)" />
           </div>
