@@ -3,10 +3,21 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+export interface BienDashboard {
+  id: string;
+  titre: string;
+  ville: string | null;
+  prix: string | null;
+  surface: string | null;
+  photo_principale_url: string | null;
+  latestGenId: string | null;
+}
+
 interface Props {
   prenom: string;
   greeting: string;
   createdAt: string | null;
+  derniersBiens: BienDashboard[];
 }
 
 interface StoredData {
@@ -96,7 +107,7 @@ function CreditRing({ used, total }: { used: number; total: number }) {
   );
 }
 
-export default function DashboardMain({ prenom, greeting, createdAt }: Props) {
+export default function DashboardMain({ prenom, greeting, createdAt, derniersBiens }: Props) {
   const [data, setData] = useState<StoredData>({
     biens: 0, campagnes: 0, visuels: 0, dernierTitre: null, derniereVille: null,
   });
@@ -249,8 +260,8 @@ export default function DashboardMain({ prenom, greeting, createdAt }: Props) {
           </div>
         </div>
 
-        {/* ── Last bien + onboarding ───────────────────────────── */}
-        {data.biens === 0 ? (
+        {/* ── Derniers biens + onboarding ─────────────────────── */}
+        {derniersBiens.length === 0 ? (
           <div
             className="mt-5 rounded-2xl p-8"
             style={{
@@ -293,32 +304,69 @@ export default function DashboardMain({ prenom, greeting, createdAt }: Props) {
           </div>
         ) : (
           <div className="mt-5 card p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-white" style={{ fontSize: "14px" }}>Dernier bien traité</h2>
-              <Link href="/resultats" className="badge badge-gold text-xs" style={{ cursor: "pointer" }}>
-                Voir les résultats →
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-white" style={{ fontSize: "14px" }}>Derniers biens traités</h2>
+              <Link href="/dashboard/biens" className="badge badge-gold text-xs" style={{ cursor: "pointer" }}>
+                Voir tous →
               </Link>
             </div>
-            <div className="flex items-center gap-4 rounded-xl p-4" style={{ background: "var(--bg-2)", border: "1px solid var(--border-s)" }}>
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl"
-                   style={{ background: "var(--gold-10)", border: "1px solid var(--gold-20)" }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.6" strokeLinecap="round">
-                  <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
-                  <path d="M9 21V12h6v9"/>
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-white truncate" style={{ fontSize: "14px" }}>
-                  {data.dernierTitre || "Bien immobilier"}
-                </p>
-                {data.derniereVille && (
-                  <p style={{ fontSize: "12px", color: "var(--txt-4)" }}>{data.derniereVille}</p>
-                )}
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <div className="badge badge-ok">Publié</div>
-                <span style={{ fontSize: "12px", color: "var(--txt-4)" }}>{data.campagnes} campagnes</span>
-              </div>
+            <div className="space-y-3">
+              {derniersBiens.map((bien) => (
+                <div
+                  key={bien.id}
+                  className="flex items-center gap-3 rounded-xl p-3"
+                  style={{ background: "var(--bg-2)", border: "1px solid var(--border-s)" }}
+                >
+                  {/* Photo */}
+                  {bien.photo_principale_url ? (
+                    <img
+                      src={bien.photo_principale_url}
+                      alt={bien.titre}
+                      className="h-14 w-20 flex-shrink-0 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="flex h-14 w-20 flex-shrink-0 items-center justify-center rounded-lg"
+                      style={{ background: "var(--bg-3)", border: "1px solid var(--border-s)" }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--txt-4)" strokeWidth="1.5" strokeLinecap="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                      </svg>
+                    </div>
+                  )}
+
+                  {/* Infos */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-white truncate" style={{ fontSize: "13px" }}>{bien.titre}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      {bien.ville && (
+                        <span style={{ fontSize: "11px", color: "var(--txt-4)" }}>📍 {bien.ville}</span>
+                      )}
+                      {bien.surface && (
+                        <span className="rounded-full px-2 py-0.5 font-semibold" style={{ fontSize: "10px", background: "var(--gold-10)", color: "var(--gold)", border: "1px solid var(--gold-20)" }}>
+                          {bien.surface}
+                        </span>
+                      )}
+                      {bien.prix && (
+                        <span className="rounded-full px-2 py-0.5 font-semibold" style={{ fontSize: "10px", background: "var(--gold-10)", color: "var(--gold)", border: "1px solid var(--gold-20)" }}>
+                          {bien.prix}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Statut */}
+                  {bien.latestGenId ? (
+                    <span
+                      className="flex-shrink-0 rounded-full px-2.5 py-1 font-semibold"
+                      style={{ fontSize: "10px", background: "rgba(201,168,76,0.1)", color: "#c9a84c", border: "1px solid rgba(201,168,76,0.2)", whiteSpace: "nowrap" }}
+                    >
+                      Campagne générée
+                    </span>
+                  ) : null}
+                </div>
+              ))}
             </div>
           </div>
         )}

@@ -149,8 +149,18 @@ export default async function BiensPage() {
 
                     {/* Infos */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-base font-bold text-white truncate">{bien.titre}</p>
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <p className="text-base font-bold text-white truncate">{bien.titre}</p>
+                        {genId ? (
+                          <span
+                            className="rounded-full px-2.5 py-0.5 font-semibold flex-shrink-0"
+                            style={{ fontSize: "11px", background: "rgba(201,168,76,0.1)", color: "#c9a84c", border: "1px solid rgba(201,168,76,0.2)" }}
+                          >
+                            Campagne générée
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
                         {bien.ville && (
                           <span className="text-sm" style={{ color: "rgba(255,255,255,0.55)" }}>
                             📍 {bien.ville}
