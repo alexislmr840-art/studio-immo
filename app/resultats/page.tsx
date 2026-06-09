@@ -83,6 +83,13 @@ function CampagneCard({
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T09:00`;
   });
   const [dateSauvegardee, setDateSauvegardee] = useState(datePlanifiee ?? "");
+
+  useEffect(() => {
+    if (datePlanifiee) {
+      setDateSauvegardee(datePlanifiee);
+      setDate(toDateTimeLocal(datePlanifiee));
+    }
+  }, [datePlanifiee]);
   const [saving, setSaving] = useState(false);
   const [erreurPlanif, setErreurPlanif] = useState(false);
   const [editing, setEditing] = useState(false);
