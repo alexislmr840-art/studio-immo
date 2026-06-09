@@ -74,7 +74,14 @@ function CampagneCard({
   const [copieId, setCopieId] = useState<string | null>(null);
   const [planifie, setPlanifie] = useState(false);
   const [datePicker, setDatePicker] = useState(false);
-  const [date, setDate] = useState(() => datePlanifiee ? toDateTimeLocal(datePlanifiee) : "");
+  const [date, setDate] = useState(() => {
+    if (datePlanifiee) return toDateTimeLocal(datePlanifiee);
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(9, 0, 0, 0);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T09:00`;
+  });
   const [dateSauvegardee, setDateSauvegardee] = useState(datePlanifiee ?? "");
   const [saving, setSaving] = useState(false);
   const [erreurPlanif, setErreurPlanif] = useState(false);
@@ -107,16 +114,17 @@ function CampagneCard({
   }
 
   async function confirmerPlanif() {
+    setErreurPlanif(false);
     if (!date) return;
     setSaving(true);
-    setErreurPlanif(false);
     try {
       await onPlanifier(date);
       setDateSauvegardee(date);
       setPlanifie(true);
       setDatePicker(false);
       setTimeout(() => setPlanifie(false), 4000);
-    } catch {
+    } catch (e) {
+      console.error("[confirmerPlanif] erreur:", e);
       setErreurPlanif(true);
     } finally {
       setSaving(false);
@@ -274,7 +282,7 @@ function CampagneCard({
                 type="datetime-local"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                min={new Date().toISOString().slice(0, 16)}
+                min={(() => { const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); return n.toISOString().slice(0, 16); })()}
                 className="input text-sm"
               />
               {erreurPlanif && (
