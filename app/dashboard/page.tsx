@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import DashboardMain, { type BienDashboard } from "@/components/DashboardMain";
 import { supabaseAdmin } from "@/lib/supabase";
+import RefreshOnMount from "./RefreshOnMount";
 
 export interface DashboardStats {
   biens: number;
@@ -77,12 +78,15 @@ export default async function DashboardPage() {
   }
 
   return (
-    <DashboardMain
-      prenom={prenom}
-      greeting={greeting}
-      createdAt={createdAt}
-      derniersBiens={derniersBiens}
-      stats={stats}
-    />
+    <>
+      <RefreshOnMount />
+      <DashboardMain
+        prenom={prenom}
+        greeting={greeting}
+        createdAt={createdAt}
+        derniersBiens={derniersBiens}
+        stats={stats}
+      />
+    </>
   );
 }

@@ -27,32 +27,6 @@ interface Props {
   stats: Stats;
 }
 
-/* SVG Sparkline */
-function Sparkline({ data, color }: { data: number[]; color: string }) {
-  const max = Math.max(...data, 1);
-  const w = 120, h = 40;
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w;
-    const y = h - (v / max) * (h - 4) - 2;
-    return `${x},${y}`;
-  }).join(" ");
-  const area = `${0},${h} ${pts} ${w},${h}`;
-
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible">
-      <defs>
-        <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.2"/>
-          <stop offset="100%" stopColor={color} stopOpacity="0"/>
-        </linearGradient>
-      </defs>
-      <polygon points={area} fill={`url(#grad-${color})`}/>
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="path-draw"/>
-      <circle cx={(data.length - 1) / (data.length - 1) * w} cy={h - (data[data.length - 1] / max) * (h - 4) - 2} r="3" fill={color}/>
-    </svg>
-  );
-}
-
 /* Bar chart */
 function BarChart({ data, color }: { data: number[]; color: string }) {
   const max = Math.max(...data, 1);
@@ -115,7 +89,7 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
       value: stats.biens,
       sub: stats.biens === 0 ? "Créez votre premier bien" : `${stats.biens} mandat${stats.biens > 1 ? "s" : ""} actif${stats.biens > 1 ? "s" : ""}`,
       color: "var(--gold)",
-      chart: <Sparkline data={[0,0,0,0,1,1,stats.biens]} color="var(--gold)" />,
+      chart: null,
       href: "/dashboard/biens",
     },
     {
@@ -123,7 +97,7 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
       value: stats.campagnes,
       sub: "Facebook & Instagram",
       color: "#818cf8",
-      chart: <Sparkline data={[0,0,1,1,stats.campagnes,stats.campagnes,stats.campagnes]} color="#818cf8" />,
+      chart: null,
       href: "/dashboard/statistiques",
     },
     {
@@ -131,7 +105,7 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
       value: stats.visuels,
       sub: "PNG 1080×1350 px",
       color: "#34d399",
-      chart: <Sparkline data={[0,0,2,2,stats.visuels,stats.visuels,stats.visuels]} color="#34d399" />,
+      chart: null,
       href: "/dashboard/statistiques",
     },
     {
@@ -180,10 +154,12 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
               >
                 {value}
               </p>
-              <p style={{ fontSize: "11.5px", color: "var(--txt-4)", marginBottom: "12px" }}>{sub}</p>
-              <div className="opacity-70 group-hover:opacity-100 transition-opacity">
-                {chart}
-              </div>
+              <p style={{ fontSize: "11.5px", color: "var(--txt-4)", marginBottom: chart ? "12px" : "0" }}>{sub}</p>
+              {chart && (
+                <div className="opacity-70 group-hover:opacity-100 transition-opacity">
+                  {chart}
+                </div>
+              )}
             </Link>
           ))}
         </div>
