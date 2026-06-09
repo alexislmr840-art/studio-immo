@@ -28,14 +28,15 @@ export default async function DashboardPage() {
   let stats: DashboardStats = { biens: 0, campagnes: 0, visuels: 0, credits: 500 };
 
   if (userId) {
+    // select "id, plan" — colonnes de migration 001, toujours présentes (comme biens/page.tsx)
     const { data: dbUser } = await supabaseAdmin
       .from("users")
-      .select("id, credits")
+      .select("id, plan")
       .eq("clerk_id", userId)
       .single();
 
     if (dbUser) {
-      const [biensResult, gensResult] = await Promise.all([
+      const [biensResult, gensResult, creditsResult] = await Promise.all([
         supabaseAdmin
           .from("biens")
           .select("id, titre, ville, prix, surface, photo_principale_url", { count: "exact" })
@@ -45,6 +46,11 @@ export default async function DashboardPage() {
           .from("generations")
           .select("id, bien_id", { count: "exact" })
           .eq("user_id", dbUser.id),
+        supabaseAdmin
+          .from("users")
+          .select("credits")
+          .eq("id", dbUser.id)
+          .single(),
       ]);
 
       const allBiens = biensResult.data ?? [];
@@ -72,7 +78,7 @@ export default async function DashboardPage() {
         biens: totalBiens,
         campagnes: totalCampagnes,
         visuels: totalCampagnes * 2,
-        credits: dbUser.credits ?? 500,
+        credits: creditsResult.data?.credits ?? 500,
       };
     }
   }
