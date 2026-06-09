@@ -73,16 +73,6 @@ const NAV_GROUPS = [
           </svg>
         ),
       },
-      {
-        href: "/dashboard/profil",
-        label: "Profil",
-        exact: false,
-        icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
-          </svg>
-        ),
-      },
     ],
   },
 ];
@@ -191,7 +181,7 @@ export default function SidebarNav({ prenom, initiale, email }: Props) {
 
       {/* User */}
       <div className="px-4 pb-4" style={{ borderTop: "1px solid var(--border-s)", paddingTop: "14px" }}>
-        <Link href="/dashboard/profil" className="flex items-center gap-2.5 mb-3 group">
+        <Link href="/dashboard/parametres" className="flex items-center gap-2.5 mb-3 group">
           <div
             className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold transition-transform group-hover:scale-105"
             style={{ background: "var(--gold)", color: "#0a0a0a" }}

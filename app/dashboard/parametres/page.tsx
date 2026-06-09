@@ -31,6 +31,10 @@ export default function ParametresPage() {
     setTimeout(() => setSaved(false), 2500);
   }
 
+  const createdAt = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
+    : "—";
+
   const TABS: { key: Tab; label: string }[] = [
     { key: "agence", label: "Agence" },
     { key: "notifications", label: "Notifications" },
@@ -91,10 +95,10 @@ export default function ParametresPage() {
                   <p className="truncate" style={{ fontSize: "12px", color: "var(--txt-4)" }}>
                     {user?.primaryEmailAddress?.emailAddress ?? ""}
                   </p>
+                  <p style={{ fontSize: "11px", color: "var(--txt-4)", marginTop: "2px" }}>
+                    Membre depuis le {createdAt}
+                  </p>
                 </div>
-                <Link href="/dashboard/profil" className="btn btn-secondary" style={{ padding: "7px 12px", fontSize: "12px" }}>
-                  Modifier →
-                </Link>
               </div>
             </div>
 
