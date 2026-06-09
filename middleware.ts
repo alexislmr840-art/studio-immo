@@ -8,6 +8,10 @@ const isPublicRoute = createRouteMatcher([
   "/sso-callback(.*)",
   "/tarifs",
   "/api/stripe/webhook",
+  "/mentions-legales(.*)",
+  "/cgu(.*)",
+  "/cgv(.*)",
+  "/confidentialite(.*)",
 ]);
 
 const isAuthRoute = createRouteMatcher(["/connexion(.*)", "/inscription(.*)"]);
