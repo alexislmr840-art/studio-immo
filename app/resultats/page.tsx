@@ -413,7 +413,12 @@ export default function ResultatsPage() {
   }, [router]);
 
   async function planifier(index: number, date: string) {
-    if (!generationId) throw new Error("Génération non liée");
+    console.log("[planifier] generationId:", generationId, "index:", index, "date:", date);
+    if (!generationId) {
+      console.error("[planifier] generationId est null — la génération n'a pas été sauvegardée en base");
+      throw new Error("Génération non liée");
+    }
+    console.log("[planifier] fetch PUT", `/api/generations/${generationId}/planification`);
     const resp = await fetch(`/api/generations/${generationId}/planification`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },

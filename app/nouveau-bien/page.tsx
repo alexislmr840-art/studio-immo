@@ -102,10 +102,13 @@ export default function NouveauBienPage() {
       localStorage.setItem("studio_immo_bien", JSON.stringify({ titre, ville, prix, surface, description, afficherPrix }));
       localStorage.setItem("studio_immo_agence", JSON.stringify({ nomAgence, telephone }));
       localStorage.setItem("studio_immo_photo_principale", String(photoPrincipale));
+      console.log("[nouveau-bien] _generationId reçu de l'API:", data._generationId);
       if (data._generationId) {
         localStorage.setItem("studio_immo_generation_id", data._generationId);
+        console.log("[nouveau-bien] generation_id sauvegardé dans localStorage:", data._generationId);
       } else {
         localStorage.removeItem("studio_immo_generation_id");
+        console.error("[nouveau-bien] _generationId est null — la génération n'a PAS été sauvegardée en base Supabase");
       }
 
       try {

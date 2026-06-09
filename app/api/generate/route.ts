@@ -135,6 +135,7 @@ Règles :
       console.error("[generate] Exception dans le bloc Supabase:", err);
     }
 
+    console.log("[generate] réponse finale _generationId:", generationId);
     return Response.json({ ...parsed, _generationId: generationId });
   } catch (error) {
     const isTimeout = error instanceof Error && error.name === "AbortError";
