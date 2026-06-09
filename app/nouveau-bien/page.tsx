@@ -102,6 +102,11 @@ export default function NouveauBienPage() {
       localStorage.setItem("studio_immo_bien", JSON.stringify({ titre, ville, prix, surface, description, afficherPrix }));
       localStorage.setItem("studio_immo_agence", JSON.stringify({ nomAgence, telephone }));
       localStorage.setItem("studio_immo_photo_principale", String(photoPrincipale));
+      if (data._generationId) {
+        localStorage.setItem("studio_immo_generation_id", data._generationId);
+      } else {
+        localStorage.removeItem("studio_immo_generation_id");
+      }
 
       try {
         sessionStorage.setItem("studio_immo_photos", JSON.stringify(photos));

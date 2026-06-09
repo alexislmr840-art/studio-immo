@@ -40,6 +40,20 @@ interface Agence {
 
 type Onglet = "facebook" | "instagram" | "story";
 
+function toDateTimeLocal(iso: string): string {
+  try {
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } catch { return ""; }
+}
+
+function formatDatePlanifiee(iso: string): string {
+  try {
+    return new Date(iso).toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" });
+  } catch { return iso; }
+}
+
 const ONGLETS: { key: Onglet; label: string; color: string }[] = [
   { key: "facebook", label: "Facebook", color: "#3b82f6" },
   { key: "instagram", label: "Instagram", color: "#ec4899" },
@@ -47,18 +61,23 @@ const ONGLETS: { key: Onglet; label: string; color: string }[] = [
 ];
 
 function CampagneCard({
-  pub, index, photos, photoPrincipale, bien, agence, logo, onTelecharger, onUpdate,
+  pub, index, photos, photoPrincipale, bien, agence, logo, onTelecharger, onUpdate, datePlanifiee, onPlanifier,
 }: {
   pub: Publication; index: number; photos: string[]; photoPrincipale: number;
   bien: Bien | null; agence: Agence | null; logo: string;
   onTelecharger: (p: Publication, i: number, v: "A" | "B") => void;
   onUpdate: (field: Onglet, value: string) => void;
+  datePlanifiee?: string;
+  onPlanifier: (date: string) => Promise<void>;
 }) {
   const [onglet, setOnglet] = useState<Onglet>("facebook");
   const [copieId, setCopieId] = useState<string | null>(null);
   const [planifie, setPlanifie] = useState(false);
   const [datePicker, setDatePicker] = useState(false);
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(() => datePlanifiee ? toDateTimeLocal(datePlanifiee) : "");
+  const [dateSauvegardee, setDateSauvegardee] = useState(datePlanifiee ?? "");
+  const [saving, setSaving] = useState(false);
+  const [erreurPlanif, setErreurPlanif] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
 
@@ -87,11 +106,21 @@ function CampagneCard({
     setEditing(false);
   }
 
-  function confirmerPlanif() {
+  async function confirmerPlanif() {
     if (!date) return;
-    setPlanifie(true);
-    setDatePicker(false);
-    setTimeout(() => setPlanifie(false), 4000);
+    setSaving(true);
+    setErreurPlanif(false);
+    try {
+      await onPlanifier(date);
+      setDateSauvegardee(date);
+      setPlanifie(true);
+      setDatePicker(false);
+      setTimeout(() => setPlanifie(false), 4000);
+    } catch {
+      setErreurPlanif(true);
+    } finally {
+      setSaving(false);
+    }
   }
 
   const activeOnglet = ONGLETS.find((o) => o.key === onglet)!;
@@ -191,14 +220,18 @@ function CampagneCard({
             </button>
 
             <button
-              onClick={() => setDatePicker(!datePicker)}
+              onClick={() => { setDatePicker(!datePicker); setErreurPlanif(false); }}
               className="btn btn-secondary"
-              style={{ padding: "9px 14px", color: planifie ? "var(--ok)" : undefined }}
+              style={{
+                padding: "9px 14px",
+                color: planifie || dateSauvegardee ? "var(--ok)" : undefined,
+                border: dateSauvegardee && !planifie ? "1px solid rgba(34,197,94,0.3)" : undefined,
+              }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
-              {planifie ? "✓ Planifié" : "Planifier"}
+              {planifie ? "✓ Planifié" : dateSauvegardee ? "Replanifier" : "Planifier"}
             </button>
 
             <button
@@ -222,26 +255,40 @@ function CampagneCard({
             </button>
           </div>
 
+          {dateSauvegardee && !datePicker && !planifie && (
+            <p className="mt-2 flex items-center gap-1.5" style={{ fontSize: "11px", color: "var(--ok)" }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Planifié le {formatDatePlanifiee(dateSauvegardee)}
+            </p>
+          )}
+
           {datePicker && (
             <div
               className="mt-3 rounded-xl p-4 space-y-3 animate-scale-in"
               style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}
             >
-              <p className="label">Date de publication</p>
+              <p className="label">Date et heure de publication</p>
               <input
-                type="date"
+                type="datetime-local"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
+                min={new Date().toISOString().slice(0, 16)}
                 className="input text-sm"
               />
+              {erreurPlanif && (
+                <p style={{ fontSize: "12px", color: "var(--err)" }}>
+                  La sauvegarde a échoué. Réessayez.
+                </p>
+              )}
               <button
                 onClick={confirmerPlanif}
-                disabled={!date}
+                disabled={!date || saving}
                 className="btn btn-primary"
                 style={{ padding: "9px 16px" }}
               >
-                Confirmer
+                {saving ? "Enregistrement…" : "Confirmer"}
               </button>
             </div>
           )}
@@ -331,6 +378,8 @@ export default function ResultatsPage() {
   const [logo, setLogo] = useState("");
   const [photoPrincipale, setPhotoPrincipale] = useState(0);
   const [photosToast, setPhotosToast] = useState(false);
+  const [generationId, setGenerationId] = useState<string | null>(null);
+  const [planifications, setPlanifications] = useState<Record<number, string>>({});
 
   useEffect(() => {
     const saved = localStorage.getItem("studio_immo_resultat");
@@ -345,11 +394,34 @@ export default function ResultatsPage() {
     const a = localStorage.getItem("studio_immo_agence");
     const l = sessionStorage.getItem("studio_immo_logo");
     const idx = localStorage.getItem("studio_immo_photo_principale");
+    const genId = localStorage.getItem("studio_immo_generation_id");
     if (b) setBien(JSON.parse(b));
     if (a) setAgence(JSON.parse(a));
     if (l) setLogo(l);
     if (idx) setPhotoPrincipale(Number(idx));
+    if (genId) {
+      setGenerationId(genId);
+      fetch(`/api/generations/${genId}/planification`)
+        .then((r) => r.ok ? r.json() : [])
+        .then((rows: { publication_index: number; date_planifiee: string }[]) => {
+          const map: Record<number, string> = {};
+          rows.forEach((r) => { map[r.publication_index] = r.date_planifiee; });
+          setPlanifications(map);
+        })
+        .catch(() => {});
+    }
   }, [router]);
+
+  async function planifier(index: number, date: string) {
+    if (!generationId) throw new Error("Génération non liée");
+    const resp = await fetch(`/api/generations/${generationId}/planification`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ publication_index: index, date_planifiee: date }),
+    });
+    if (!resp.ok) throw new Error("Échec de la sauvegarde");
+    setPlanifications((prev) => ({ ...prev, [index]: date }));
+  }
 
   function updatePublication(index: number, field: Onglet, value: string) {
     setData((prev) => {
@@ -540,6 +612,8 @@ export default function ResultatsPage() {
               logo={logo}
               onTelecharger={telechargerVisuel}
               onUpdate={(field, value) => updatePublication(idx, field, value)}
+              datePlanifiee={planifications[idx]}
+              onPlanifier={(date) => planifier(idx, date)}
             />
           ))}
         </div>

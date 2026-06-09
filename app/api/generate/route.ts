@@ -72,6 +72,7 @@ Règles :
     const parsed = JSON.parse(content || "{}");
 
     // Sauvegarde en Supabase
+    let generationId: string | null = null;
     try {
       const { userId } = await auth();
       console.log("[generate] clerk userId:", userId);
@@ -113,14 +114,17 @@ Règles :
           if (!bien) {
             console.error("[generate] INSERT biens échoué — INSERT generations annulé");
           } else {
-            const { error: genError } = await supabaseAdmin
+            const { data: generation, error: genError } = await supabaseAdmin
               .from("generations")
               .insert({
                 bien_id: bien.id,
                 user_id: dbUser.id,
                 resultat_json: parsed,
-              });
-            console.log("[generate] INSERT generations:", { genError });
+              })
+              .select("id")
+              .single();
+            console.log("[generate] INSERT generations:", { generation, genError });
+            generationId = generation?.id ?? null;
 
             revalidatePath("/dashboard");
             console.log("[generate] revalidatePath /dashboard appelé");
@@ -131,7 +135,7 @@ Règles :
       console.error("[generate] Exception dans le bloc Supabase:", err);
     }
 
-    return Response.json(parsed);
+    return Response.json({ ...parsed, _generationId: generationId });
   } catch (error) {
     const isTimeout = error instanceof Error && error.name === "AbortError";
     return Response.json(
