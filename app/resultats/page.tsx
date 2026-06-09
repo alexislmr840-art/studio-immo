@@ -47,17 +47,20 @@ const ONGLETS: { key: Onglet; label: string; color: string }[] = [
 ];
 
 function CampagneCard({
-  pub, index, photos, photoPrincipale, bien, agence, logo, onTelecharger,
+  pub, index, photos, photoPrincipale, bien, agence, logo, onTelecharger, onUpdate,
 }: {
   pub: Publication; index: number; photos: string[]; photoPrincipale: number;
   bien: Bien | null; agence: Agence | null; logo: string;
   onTelecharger: (p: Publication, i: number, v: "A" | "B") => void;
+  onUpdate: (field: Onglet, value: string) => void;
 }) {
   const [onglet, setOnglet] = useState<Onglet>("facebook");
   const [copieId, setCopieId] = useState<string | null>(null);
   const [planifie, setPlanifie] = useState(false);
   const [datePicker, setDatePicker] = useState(false);
   const [date, setDate] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState("");
 
   const cover = photos[photoPrincipale] || photos[0];
   const autres = photos.filter((_, i) => i !== photoPrincipale);
@@ -67,6 +70,21 @@ function CampagneCard({
     navigator.clipboard.writeText(texte).catch(() => {});
     setCopieId(id);
     setTimeout(() => setCopieId(null), 2000);
+  }
+
+  function changerOnglet(o: Onglet) {
+    setEditing(false);
+    setOnglet(o);
+  }
+
+  function demarrerEdition() {
+    setEditValue(pub[onglet]);
+    setEditing(true);
+  }
+
+  function validerEdition() {
+    onUpdate(onglet, editValue);
+    setEditing(false);
   }
 
   function confirmerPlanif() {
@@ -87,7 +105,6 @@ function CampagneCard({
           <h2 className="font-bold text-white" style={{ fontSize: "16px", letterSpacing: "-0.015em" }}>{pub.titre}</h2>
           <p style={{ fontSize: "12.5px", color: "var(--txt-4)", marginTop: "2px" }}>{pub.objectif}</p>
         </div>
-        <span className="badge badge-muted" style={{ fontSize: "11px" }}>{pub.reseau}</span>
       </div>
 
       <div className="grid lg:grid-cols-5">
@@ -98,7 +115,7 @@ function CampagneCard({
             {ONGLETS.map(({ key, label, color }) => (
               <button
                 key={key}
-                onClick={() => setOnglet(key)}
+                onClick={() => changerOnglet(key)}
                 className="flex-1 rounded-lg py-2 text-xs font-semibold transition-all duration-150"
                 style={{
                   background: onglet === key ? "var(--bg-4)" : "transparent",
@@ -114,15 +131,48 @@ function CampagneCard({
           {/* Text content */}
           <div
             className="rounded-xl p-4 mb-4 min-h-36"
-            style={{ background: "var(--bg-2)", border: "1px solid var(--border-s)" }}
+            style={{ background: "var(--bg-2)", border: editing ? "1px solid var(--gold)" : "1px solid var(--border-s)" }}
           >
-            <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "var(--txt-2)" }}>
-              {pub[onglet]}
-            </p>
+            {editing ? (
+              <textarea
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                className="w-full resize-none bg-transparent text-sm leading-relaxed outline-none"
+                style={{ color: "var(--txt-2)", minHeight: "120px" }}
+                autoFocus
+              />
+            ) : (
+              <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "var(--txt-2)" }}>
+                {pub[onglet]}
+              </p>
+            )}
           </div>
 
           {/* Actions */}
           <div className="flex flex-wrap gap-2">
+            {editing ? (
+              <button
+                onClick={validerEdition}
+                className="btn"
+                style={{ background: "var(--ok-10)", color: "var(--ok)", border: "1px solid rgba(34,197,94,0.2)", padding: "9px 16px" }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Valider
+              </button>
+            ) : (
+              <button
+                onClick={demarrerEdition}
+                className="btn btn-secondary"
+                style={{ padding: "9px 14px" }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Modifier
+              </button>
+            )}
+
             <button
               onClick={() => copier(pub[onglet], `${index}-${onglet}`)}
               className="btn"
@@ -300,6 +350,16 @@ export default function ResultatsPage() {
     if (l) setLogo(l);
     if (idx) setPhotoPrincipale(Number(idx));
   }, [router]);
+
+  function updatePublication(index: number, field: Onglet, value: string) {
+    setData((prev) => {
+      if (!prev) return prev;
+      const publications = prev.publications.map((p, i) =>
+        i === index ? { ...p, [field]: value } : p
+      );
+      return { ...prev, publications };
+    });
+  }
 
   function loadImage(src: string): Promise<HTMLImageElement> {
     return new Promise((res, rej) => {
@@ -479,6 +539,7 @@ export default function ResultatsPage() {
               agence={agence}
               logo={logo}
               onTelecharger={telechargerVisuel}
+              onUpdate={(field, value) => updatePublication(idx, field, value)}
             />
           ))}
         </div>
