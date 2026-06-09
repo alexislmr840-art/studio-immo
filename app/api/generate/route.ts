@@ -71,28 +71,36 @@ Règles :
     const content = completion.choices[0].message.content;
     const parsed = JSON.parse(content || "{}");
 
-    // Sauvegarde en Supabase (best-effort : ne bloque pas la réponse en cas d'échec)
+    // Sauvegarde en Supabase
     try {
       const { userId } = await auth();
-      if (userId) {
-        // Crée la ligne users si elle n'existe pas encore (utilisateurs sans abonnement Stripe)
-        await supabaseAdmin
+      console.log("[generate] clerk userId:", userId);
+
+      if (!userId) {
+        console.error("[generate] auth() a retourné null — utilisateur non authentifié dans le contexte API");
+      } else {
+        // Crée la ligne users si elle n'existe pas encore
+        const upsertResult = await supabaseAdmin
           .from("users")
           .upsert({ clerk_id: userId }, { onConflict: "clerk_id", ignoreDuplicates: true });
+        console.log("[generate] upsert users:", { data: upsertResult.data, error: upsertResult.error });
 
-        const { data: dbUser } = await supabaseAdmin
+        const { data: dbUser, error: selectError } = await supabaseAdmin
           .from("users")
           .select("id")
           .eq("clerk_id", userId)
           .single();
+        console.log("[generate] SELECT users:", { dbUser, selectError });
 
-        if (dbUser) {
-          const { data: bien } = await supabaseAdmin
+        if (!dbUser) {
+          console.error("[generate] dbUser null après upsert — INSERT biens annulé");
+        } else {
+          const { data: bien, error: bienError } = await supabaseAdmin
             .from("biens")
             .insert({
               user_id: dbUser.id,
               titre,
-              ville: ville || null,
+              ville: ville || "",
               prix: prix || null,
               surface: surface || null,
               description: description || null,
@@ -100,29 +108,35 @@ Règles :
             })
             .select("id")
             .single();
+          console.log("[generate] INSERT biens:", { bien, bienError });
 
-          if (bien) {
-            await supabaseAdmin
+          if (!bien) {
+            console.error("[generate] INSERT biens échoué — INSERT generations annulé");
+          } else {
+            const { error: genError } = await supabaseAdmin
               .from("generations")
               .insert({
                 bien_id: bien.id,
                 user_id: dbUser.id,
                 resultat_json: parsed,
               });
+            console.log("[generate] INSERT generations:", { genError });
 
             revalidatePath("/dashboard");
+            console.log("[generate] revalidatePath /dashboard appelé");
           }
         }
       }
-    } catch {
-      // Sauvegarde Supabase échouée — le résultat IA est quand même retourné
+    } catch (err) {
+      console.error("[generate] Exception dans le bloc Supabase:", err);
     }
 
     return Response.json(parsed);
   } catch (error) {
+    const isTimeout = error instanceof Error && error.name === "AbortError";
     return Response.json(
-      { error: "Erreur pendant la génération." },
-      { status: 500 }
+      { error: isTimeout ? "La génération a dépassé le délai autorisé. Merci de réessayer." : "La génération a échoué, merci de réessayer." },
+      { status: isTimeout ? 504 : 500 }
     );
   }
 }

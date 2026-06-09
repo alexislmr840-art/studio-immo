@@ -23,10 +23,27 @@ export default function NouveauBienPage() {
   const [photoPrincipale, setPhotoPrincipale] = useState(0);
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur] = useState("");
+  const [erreurGeneration, setErreurGeneration] = useState(false);
+
+  const PHOTO_MAX_SIZE = 5 * 1024 * 1024; // 5 Mo
+  const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
   function handlePhotos(e: React.ChangeEvent<HTMLInputElement>) {
     if (!e.target.files) return;
-    const readers = Array.from(e.target.files).map(
+    setErreur("");
+    setErreurGeneration(false);
+    const files = Array.from(e.target.files);
+    const invalides = files.filter((f) => !PHOTO_TYPES.includes(f.type) || f.size > PHOTO_MAX_SIZE);
+    if (invalides.length > 0) {
+      setErreur(
+        invalides.length === 1
+          ? `1 photo ignorée : format non supporté ou taille supérieure à 5 Mo (${invalides[0].name}).`
+          : `${invalides.length} photos ignorées : format non supporté ou taille supérieure à 5 Mo.`
+      );
+    }
+    const valides = files.filter((f) => PHOTO_TYPES.includes(f.type) && f.size <= PHOTO_MAX_SIZE);
+    if (valides.length === 0) return;
+    const readers = valides.map(
       (f) => new Promise<string>((res) => {
         const r = new FileReader();
         r.onload = () => res(r.result as string);
@@ -39,6 +56,11 @@ export default function NouveauBienPage() {
   function handleLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
+    if (!PHOTO_TYPES.includes(f.type) || f.size > PHOTO_MAX_SIZE) {
+      setErreur("Le logo doit être une image JPEG, PNG, WebP ou GIF de moins de 5 Mo.");
+      setErreurGeneration(false);
+      return;
+    }
     const r = new FileReader();
     r.onload = () => {
       const d = r.result as string;
@@ -56,20 +78,25 @@ export default function NouveauBienPage() {
 
   async function genererContenus() {
     setErreur("");
+    setErreurGeneration(false);
     if (!titre.trim() || !ville.trim() || !description.trim()) {
       setErreur("Veuillez remplir le titre, la ville et la description.");
       return;
     }
     setLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90_000);
     try {
       const resp = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ titre, ville, prix, surface, description }),
+        signal: controller.signal,
       });
-      if (!resp.ok) throw new Error(`Erreur serveur : ${resp.status}`);
+      clearTimeout(timeoutId);
+      if (!resp.ok) throw new Error("server");
       const data = await resp.json();
-      if (data.error) throw new Error(data.error);
+      if (data.error) throw new Error("server");
 
       localStorage.setItem("studio_immo_resultat", JSON.stringify(data));
       localStorage.setItem("studio_immo_bien", JSON.stringify({ titre, ville, prix, surface, description, afficherPrix }));
@@ -83,7 +110,13 @@ export default function NouveauBienPage() {
 
       window.location.href = "/resultats";
     } catch (err) {
-      setErreur(err instanceof Error ? err.message : "Erreur inattendue.");
+      clearTimeout(timeoutId);
+      setErreurGeneration(true);
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setErreur("La génération a dépassé 90 secondes. Merci de réessayer.");
+      } else {
+        setErreur("La génération a échoué, merci de réessayer.");
+      }
     } finally {
       setLoading(false);
     }
@@ -340,12 +373,26 @@ export default function NouveauBienPage() {
 
           {/* Error */}
           {erreur && (
-            <div className="rounded-xl px-5 py-4 flex items-center gap-3"
+            <div className="rounded-xl px-5 py-4"
                  style={{ background: "var(--err-10)", border: "1px solid rgba(239,68,68,0.25)" }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--err)" strokeWidth="2" strokeLinecap="round" className="flex-shrink-0">
-                <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
-              </svg>
-              <p style={{ fontSize: "13px", color: "var(--err)" }}>{erreur}</p>
+              <div className="flex items-start gap-3">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--err)" strokeWidth="2" strokeLinecap="round" className="flex-shrink-0 mt-0.5">
+                  <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                <p style={{ fontSize: "13px", color: "var(--err)" }}>{erreur}</p>
+              </div>
+              {erreurGeneration && (
+                <button
+                  onClick={genererContenus}
+                  className="mt-3 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-opacity hover:opacity-80"
+                  style={{ background: "rgba(239,68,68,0.15)", color: "var(--err)", border: "1px solid rgba(239,68,68,0.3)" }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/>
+                  </svg>
+                  Relancer la génération
+                </button>
+              )}
             </div>
           )}
 
