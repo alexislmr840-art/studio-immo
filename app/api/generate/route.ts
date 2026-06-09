@@ -75,6 +75,11 @@ Règles :
     try {
       const { userId } = await auth();
       if (userId) {
+        // Crée la ligne users si elle n'existe pas encore (utilisateurs sans abonnement Stripe)
+        await supabaseAdmin
+          .from("users")
+          .upsert({ clerk_id: userId }, { onConflict: "clerk_id", ignoreDuplicates: true });
+
         const { data: dbUser } = await supabaseAdmin
           .from("users")
           .select("id")
