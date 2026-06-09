@@ -401,13 +401,19 @@ export default function ResultatsPage() {
     if (!saved) { router.replace("/nouveau-bien"); return; }
 
     const savedPhotos = sessionStorage.getItem("studio_immo_photos");
-    if (!savedPhotos) setPhotosToast(true);
-    else setPhotos(JSON.parse(savedPhotos));
+    if (savedPhotos) {
+      setPhotos(JSON.parse(savedPhotos));
+    } else {
+      const photosUrls = localStorage.getItem("studio_immo_photos_urls");
+      const urls: string[] = photosUrls ? JSON.parse(photosUrls) : [];
+      if (urls.length > 0) setPhotos(urls);
+      else setPhotosToast(true);
+    }
 
     setData(JSON.parse(saved));
     const b = localStorage.getItem("studio_immo_bien");
     const a = localStorage.getItem("studio_immo_agence");
-    const l = sessionStorage.getItem("studio_immo_logo");
+    const l = sessionStorage.getItem("studio_immo_logo") || localStorage.getItem("studio_immo_logo");
     const idx = localStorage.getItem("studio_immo_photo_principale");
     const genId = localStorage.getItem("studio_immo_generation_id");
     if (b) setBien(JSON.parse(b));
@@ -455,7 +461,11 @@ export default function ResultatsPage() {
 
   function loadImage(src: string): Promise<HTMLImageElement> {
     return new Promise((res, rej) => {
-      const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = src;
+      const img = new Image();
+      if (!src.startsWith("data:")) img.crossOrigin = "anonymous";
+      img.onload = () => res(img);
+      img.onerror = rej;
+      img.src = src;
     });
   }
 

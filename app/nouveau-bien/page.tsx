@@ -76,6 +76,15 @@ export default function NouveauBienPage() {
     else if (photoPrincipale > idx) setPhotoPrincipale((p) => p - 1);
   }
 
+  function dataUrlToBlob(dataUrl: string): Blob {
+    const [header, b64] = dataUrl.split(",");
+    const mime = header.match(/data:([^;]+)/)?.[1] ?? "image/jpeg";
+    const bytes = atob(b64);
+    const arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
+
   async function genererContenus() {
     setErreur("");
     setErreurGeneration(false);
@@ -84,13 +93,40 @@ export default function NouveauBienPage() {
       return;
     }
     setLoading(true);
+
+    // Upload des photos vers Supabase Storage
+    let photosUrls: string[] = [];
+    let photoPrincipaleUrl = "";
+    let finalPrincipalIdx = photoPrincipale;
+    if (photos.length > 0) {
+      const results = await Promise.allSettled(
+        photos.map(async (dataUrl) => {
+          const blob = dataUrlToBlob(dataUrl);
+          const fd = new FormData();
+          fd.append("file", blob, `photo.${blob.type.split("/")[1] || "jpg"}`);
+          const r = await fetch("/api/photos", { method: "POST", body: fd });
+          const json = await r.json();
+          if (!r.ok) throw new Error(json.error ?? "upload failed");
+          return json.url as string;
+        })
+      );
+      const ordered = results.map((r) => (r.status === "fulfilled" ? r.value : null));
+      photosUrls = ordered.filter((u): u is string => u !== null);
+      photoPrincipaleUrl = ordered[photoPrincipale] ?? photosUrls[0] ?? "";
+      finalPrincipalIdx = photoPrincipaleUrl ? Math.max(0, photosUrls.indexOf(photoPrincipaleUrl)) : 0;
+      const failed = results.filter((r) => r.status === "rejected").length;
+      if (failed > 0) {
+        setErreur(`${failed} photo${failed > 1 ? "s" : ""} n'ont pas pu être uploadées — la génération continue sans elles.`);
+      }
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 90_000);
     try {
       const resp = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ titre, ville, prix, surface, description }),
+        body: JSON.stringify({ titre, ville, prix, surface, description, photosUrls, photoPrincipaleUrl }),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -101,7 +137,9 @@ export default function NouveauBienPage() {
       localStorage.setItem("studio_immo_resultat", JSON.stringify(data));
       localStorage.setItem("studio_immo_bien", JSON.stringify({ titre, ville, prix, surface, description, afficherPrix }));
       localStorage.setItem("studio_immo_agence", JSON.stringify({ nomAgence, telephone }));
-      localStorage.setItem("studio_immo_photo_principale", String(photoPrincipale));
+      localStorage.setItem("studio_immo_photo_principale", String(finalPrincipalIdx));
+      localStorage.setItem("studio_immo_photos_urls", JSON.stringify(photosUrls));
+      localStorage.setItem("studio_immo_photo_principale_url", photoPrincipaleUrl);
       console.log("[nouveau-bien] _generationId reçu de l'API:", data._generationId);
       if (data._generationId) {
         localStorage.setItem("studio_immo_generation_id", data._generationId);

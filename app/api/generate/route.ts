@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { titre, ville, prix, surface, description } = body;
+    const { titre, ville, prix, surface, description, photosUrls, photoPrincipaleUrl } = body;
 
     const prompt = `
 Tu es un expert en marketing immobilier, réseaux sociaux et copywriting.
@@ -106,6 +106,8 @@ Règles :
               surface: surface || null,
               description: description || null,
               afficher_prix: true,
+              photos_urls: Array.isArray(photosUrls) ? photosUrls : [],
+              photo_principale_url: photoPrincipaleUrl || null,
             })
             .select("id")
             .single();
