@@ -39,7 +39,7 @@ export default async function DashboardPage() {
       const [biensResult, gensResult, creditsResult] = await Promise.all([
         supabaseAdmin
           .from("biens")
-          .select("id, titre, ville, prix, surface, photo_principale_url", { count: "exact" })
+          .select("id, titre, ville, prix, surface, photo_principale_url, created_at", { count: "exact" })
           .eq("user_id", dbUser.id)
           .order("created_at", { ascending: false }),
         supabaseAdmin
@@ -72,6 +72,7 @@ export default async function DashboardPage() {
         surface: b.surface ?? null,
         photo_principale_url: b.photo_principale_url ?? null,
         latestGenId: latestGenMap.get(b.id) ?? null,
+        createdAt: b.created_at ?? null,
       }));
 
       stats = {
