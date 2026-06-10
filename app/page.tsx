@@ -724,19 +724,29 @@ function SectionPricing() {
                   href="/inscription"
                   style={{
                     display: "block", textAlign: "center",
-                    borderRadius: "10px", padding: "12px",
-                    fontSize: "14px", fontWeight: 700, textDecoration: "none",
                     background: "#7C3AED", color: "white", border: "none",
-                  }}
+                    borderRadius: "8px", padding: "12px 24px",
+                    fontSize: "14px", fontWeight: 700, textDecoration: "none",
+                    width: "100%", boxSizing: "border-box",
+                  } as React.CSSProperties}
                 >
                   Créer mon compte →
                 </Link>
-              ) : (
+              ) : plan.id === "solo" ? (
                 <CheckoutButton
-                  plan={plan.id}
+                  plan="solo"
                   isLoggedIn={isLoggedIn}
                   isCurrentPlan={false}
-                  accent={plan.highlight}
+                  accent={false}
+                  buttonStyle={{ background: "transparent", color: "#7C3AED", border: "2px solid #7C3AED", borderRadius: "8px", padding: "12px 24px", width: "100%", fontSize: "14px", fontWeight: 700, cursor: "pointer" }}
+                />
+              ) : (
+                <CheckoutButton
+                  plan="equipe"
+                  isLoggedIn={isLoggedIn}
+                  isCurrentPlan={false}
+                  accent={true}
+                  buttonStyle={{ background: "white", color: "#7C3AED", border: "none", borderRadius: "8px", padding: "12px 24px", width: "100%", fontSize: "14px", fontWeight: 700, cursor: "pointer" }}
                 />
               )}
             </div>

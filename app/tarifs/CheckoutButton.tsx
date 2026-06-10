@@ -8,9 +8,11 @@ interface Props {
   isCurrentPlan: boolean;
   isLoggedIn: boolean;
   accent: boolean;
+  buttonStyle?: React.CSSProperties;
+  label?: string;
 }
 
-export function CheckoutButton({ plan, isCurrentPlan, isLoggedIn, accent }: Props) {
+export function CheckoutButton({ plan, isCurrentPlan, isLoggedIn, accent, buttonStyle, label }: Props) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -42,17 +44,17 @@ export function CheckoutButton({ plan, isCurrentPlan, isLoggedIn, accent }: Prop
     );
   }
 
-  const btnClass = accent
-    ? "bg-blue-950 text-white hover:bg-blue-900"
-    : "bg-amber-400 text-blue-950 hover:opacity-90";
+  const defaultStyle: React.CSSProperties = buttonStyle ?? (accent
+    ? { background: "white", color: "#7C3AED", border: "none", borderRadius: "8px", padding: "12px 24px", width: "100%", fontSize: "14px", fontWeight: 700, cursor: "pointer" }
+    : { background: "transparent", color: "#7C3AED", border: "2px solid #7C3AED", borderRadius: "8px", padding: "12px 24px", width: "100%", fontSize: "14px", fontWeight: 700, cursor: "pointer" });
 
   return (
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`w-full rounded-xl py-4 font-bold transition-all disabled:opacity-60 ${btnClass}`}
+      style={{ ...defaultStyle, opacity: loading ? 0.6 : 1, transition: "opacity 0.15s" }}
     >
-      {loading ? "Redirection..." : isLoggedIn ? "S'abonner" : "Créer un compte"}
+      {loading ? "Redirection…" : (label ?? (isLoggedIn ? "S'abonner →" : "Commencer →"))}
     </button>
   );
 }
