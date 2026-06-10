@@ -12,6 +12,8 @@ export async function POST(req: Request) {
   if (!userId) return Response.json({ error: "Non authentifié." }, { status: 401 });
 
   const { plan } = await req.json();
+  console.log("PRICES:", PRICES);
+  console.log("plan:", plan);
   if (!["solo", "equipe"].includes(plan)) {
     return Response.json({ error: "Plan invalide." }, { status: 400 });
   }
