@@ -91,8 +91,8 @@ function Navbar() {
 /* ── Section 1 : Hero ────────────────────────────────────────── */
 function SectionHero() {
   return (
-    <section style={{ background: "#0a0a0f", padding: "80px 24px 100px" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto", display: "grid", gridTemplateColumns: "1.1fr 1fr 1fr", gap: "32px", alignItems: "start" }}>
+    <section style={{ background: "linear-gradient(135deg, #1a0533 0%, #4c1d95 35%, #6d28d9 60%, #c2410c 85%, #ea580c 100%)", padding: "80px 40px 100px", width: "100%" }}>
+      <div style={{ maxWidth: "100%", display: "grid", gridTemplateColumns: "1.1fr 1fr 1fr", gap: "32px", alignItems: "start" }}>
 
         {/* Colonne gauche : titre + CTA */}
         <div style={{ paddingTop: "16px" }}>
@@ -148,7 +148,8 @@ function SectionHero() {
 
         {/* Colonne centre : input card */}
         <div style={{
-          background: "#111118", border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.08)", backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255,255,255,0.15)",
           borderRadius: "20px", padding: "22px",
         }}>
           <p style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: "14px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
@@ -197,10 +198,11 @@ function SectionHero() {
 
         {/* Colonne droite : output card */}
         <div style={{
-          background: "#111118", border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.08)", backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255,255,255,0.15)",
           borderRadius: "20px", padding: "22px",
         }}>
-          <p style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: "14px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+          <p style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.7)", marginBottom: "14px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
             2. Contenus prêts à publier
           </p>
 
