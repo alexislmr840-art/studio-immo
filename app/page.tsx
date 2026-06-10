@@ -67,7 +67,7 @@ const FB_POSTS = [
     agency: "Agence Beaumont",
     initial: "B",
     color: "#7C3AED",
-    photo: "linear-gradient(160deg, #1e1b4b 0%, #3730a3 55%, #6d28d9 100%)",
+    photoUrl: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&q=80",
     city: "Lyon 6e",
     surface: "72 m²",
     price: "320 000 €",
@@ -80,7 +80,7 @@ const FB_POSTS = [
     agency: "Renard Immobilier",
     initial: "R",
     color: "#0369A1",
-    photo: "linear-gradient(160deg, #0c4a6e 0%, #075985 55%, #0891b2 100%)",
+    photoUrl: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=80",
     city: "Bordeaux Caudéran",
     surface: "148 m²",
     price: "580 000 €",
@@ -93,7 +93,7 @@ const FB_POSTS = [
     agency: "Côte d'Azur Properties",
     initial: "C",
     color: "#0D9488",
-    photo: "linear-gradient(160deg, #042f2e 0%, #0f766e 55%, #14b8a6 100%)",
+    photoUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=80",
     city: "Nice Promenade",
     surface: "35 m²",
     price: "295 000 €",
@@ -106,7 +106,7 @@ const FB_POSTS = [
     agency: "Fontaine & Associés",
     initial: "F",
     color: "#B91C1C",
-    photo: "linear-gradient(160deg, #450a0a 0%, #991b1b 55%, #dc2626 100%)",
+    photoUrl: "https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=400&q=80",
     city: "Aix-en-Provence",
     surface: "220 m²",
     price: "1 250 000 €",
@@ -119,7 +119,7 @@ const FB_POSTS = [
     agency: "Marchand Paris",
     initial: "M",
     color: "#D97706",
-    photo: "linear-gradient(160deg, #451a03 0%, #92400e 55%, #d97706 100%)",
+    photoUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=80",
     city: "Paris 11e",
     surface: "85 m²",
     price: "750 000 €",
@@ -132,7 +132,7 @@ const FB_POSTS = [
     agency: "Premium Realty",
     initial: "P",
     color: "#7C3AED",
-    photo: "linear-gradient(160deg, #1c1917 0%, #44403c 55%, #78716c 100%)",
+    photoUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&q=80",
     city: "Nantes Île de Nantes",
     surface: "110 m²",
     price: "420 000 €",
@@ -166,19 +166,8 @@ function FbCard({ p }: { p: typeof FB_POSTS[0] }) {
       <p style={{ padding: "0 12px 8px", fontSize: "12px", color: "#050505", lineHeight: 1.5 }}>{p.text}</p>
 
       {/* Photo */}
-      <div style={{ height: "155px", background: p.photo, position: "relative", overflow: "hidden" }}>
-        <svg viewBox="0 0 320 155" width="100%" height="100%" style={{ position: "absolute", inset: 0 }} preserveAspectRatio="xMidYMid slice">
-          <path d="M100 120 L100 68 L160 32 L220 68 L220 120 Z" fill="rgba(255,255,255,0.07)"/>
-          <path d="M83 72 L160 28 L237 72" stroke="rgba(255,255,255,0.13)" strokeWidth="1.5" fill="none"/>
-          <rect x="130" y="88" width="20" height="32" fill="rgba(255,255,255,0.09)" rx="2"/>
-          <rect x="108" y="88" width="16" height="15" fill="rgba(255,255,255,0.09)" rx="2"/>
-          <rect x="196" y="88" width="16" height="15" fill="rgba(255,255,255,0.09)" rx="2"/>
-          <circle cx="55" cy="24" r="1.5" fill="rgba(255,255,255,0.35)"/>
-          <circle cx="255" cy="38" r="1.5" fill="rgba(255,255,255,0.35)"/>
-          <circle cx="285" cy="14" r="1" fill="rgba(255,255,255,0.25)"/>
-          <circle cx="28" cy="48" r="1" fill="rgba(255,255,255,0.25)"/>
-          <circle cx="290" cy="60" r="1" fill="rgba(255,255,255,0.2)"/>
-        </svg>
+      <div style={{ height: "155px", position: "relative", overflow: "hidden" }}>
+        <img src={p.photoUrl} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "24px 10px 8px", background: "linear-gradient(transparent, rgba(0,0,0,0.72))", display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div>
             <p style={{ fontSize: "11px", fontWeight: 700, color: "#fff", lineHeight: 1.3 }}>{p.title}</p>
