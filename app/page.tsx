@@ -1,712 +1,782 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 
-/* ── Static data ────────────────────────────────────────────── */
-const FEATURES = [
-  { icon: "✦", title: "5 campagnes IA par bien", desc: "Objectifs, accroches, textes FB/IG/Story — tout est rédigé en 15 secondes." },
-  { icon: "◈", title: "Visuels 1080×1350 px", desc: "PNG prêts à publier avec votre logo, vos photos et les infos du bien." },
-  { icon: "◉", title: "Profil acheteur ciblé", desc: "L'IA identifie le bon acquéreur et adapte chaque publication." },
-  { icon: "⬡", title: "Variantes A/B", desc: "Deux versions de chaque visuel pour maximiser l'impact sur vos réseaux." },
-  { icon: "◎", title: "Facebook & Instagram", desc: "Posts longs, courtes captions et stories — formats natifs de chaque réseau." },
-  { icon: "✧", title: "Téléchargement immédiat", desc: "Un clic pour télécharger, un clic pour publier. Aucune installation." },
-];
+const HOUSE_1 = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=80";
+const HOUSE_2 = "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400&q=80";
+const HOUSE_3 = "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&q=80";
+const HOUSE_4 = "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=80";
 
-const STEPS = [
-  { n: "01", title: "Saisissez le bien", desc: "Titre, ville, surface, prix, description et photos en quelques secondes." },
-  { n: "02", title: "L'IA génère la stratégie", desc: "GPT-4o analyse le bien et produit 5 campagnes complètes adaptées au marché." },
-  { n: "03", title: "Publiez & téléchargez", desc: "Copiez les textes, téléchargez les visuels PNG et publiez sur vos réseaux." },
-];
-
-const TESTIMONIALS = [
-  {
-    quote: "J'ai divisé par 4 le temps passé sur mes posts Instagram. En 20 secondes j'ai une stratégie complète que je n'aurais pas rédigée aussi bien moi-même.",
-    name: "Sophie Marchand",
-    role: "Agente indépendante — Lyon",
-    initiale: "S",
-    color: "#7C3AED",
-  },
-  {
-    quote: "L'outil qui manquait au secteur. Mes annonces ont 3× plus d'engagement depuis que j'utilise Studio Immo. Et les visuels sont vraiment professionnels.",
-    name: "Thomas Renard",
-    role: "Directeur — Renard Immobilier, Bordeaux",
-    initiale: "T",
-    color: "#0891B2",
-  },
-  {
-    quote: "Notre équipe de 4 agents l'utilise tous les jours. On a multiplié nos mandats sur les réseaux sans embaucher de community manager.",
-    name: "Isabelle Fontaine",
-    role: "Responsable marketing — Fontaine & Associés",
-    initiale: "I",
-    color: "#D97706",
-  },
-];
-
-const PLANS = [
-  {
-    name: "Solo",
-    price: "39",
-    desc: "L'essentiel pour les agents qui veulent se démarquer.",
-    highlight: false,
-    features: ["10 biens par mois", "5 campagnes par bien", "Visuels PNG 1080×1350", "FB, Instagram, Stories", "Logo agence inclus", "1 utilisateur", "Support email"],
-    cta: "Commencer avec Solo",
-  },
-  {
-    name: "Équipe",
-    price: "79",
-    desc: "Puissance illimitée pour les agences et équipes.",
-    highlight: true,
-    badge: "Le plus populaire",
-    features: ["30 biens par mois", "5 campagnes par bien", "Visuels PNG 1080×1350", "FB, Instagram, Stories", "Logo agence inclus", "Jusqu'à 10 utilisateurs", "Historique complet", "Support prioritaire"],
-    cta: "Commencer avec Équipe",
-  },
-];
-
-const FB_POSTS = [
-  {
-    agency: "Agence Beaumont",
-    initial: "B",
-    color: "#7C3AED",
-    photoUrl: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&q=80",
-    city: "Lyon 6e",
-    surface: "72 m²",
-    price: "320 000 €",
-    title: "Appartement T3 lumineux",
-    text: "✨ Coup de cœur ! T3 traversant double exposition, parquet chêne, cuisine ouverte équipée. Idéal famille. Visite sur RDV.",
-    likes: 47,
-    comments: 12,
-  },
-  {
-    agency: "Renard Immobilier",
-    initial: "R",
-    color: "#0369A1",
-    photoUrl: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=80",
-    city: "Bordeaux Caudéran",
-    surface: "148 m²",
-    price: "580 000 €",
-    title: "Maison avec grand jardin",
-    text: "🌿 Maison familiale 5 chambres sur 600m² de terrain. Double garage, terrasse couverte. À 10 min du centre. Rare sur ce secteur !",
-    likes: 89,
-    comments: 23,
-  },
-  {
-    agency: "Côte d'Azur Properties",
-    initial: "C",
-    color: "#0D9488",
-    photoUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=80",
-    city: "Nice Promenade",
-    surface: "35 m²",
-    price: "295 000 €",
-    title: "Studio vue mer",
-    text: "🌊 Vue imprenable sur la Méditerranée. Terrasse 8m², prestations haut de gamme. Investissement locatif idéal. Rendement 5,2%.",
-    likes: 134,
-    comments: 41,
-  },
-  {
-    agency: "Fontaine & Associés",
-    initial: "F",
-    color: "#B91C1C",
-    photoUrl: "https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=400&q=80",
-    city: "Aix-en-Provence",
-    surface: "220 m²",
-    price: "1 250 000 €",
-    title: "Villa contemporaine",
-    text: "🏛️ Exception. Villa architecturale 6 pièces, piscine à débordement, vue panoramique Sainte-Victoire. Construction 2022.",
-    likes: 201,
-    comments: 67,
-  },
-  {
-    agency: "Marchand Paris",
-    initial: "M",
-    color: "#D97706",
-    photoUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=80",
-    city: "Paris 11e",
-    surface: "85 m²",
-    price: "750 000 €",
-    title: "Loft industriel atypique",
-    text: "⚡ Loft d'exception en plein cœur de Paris. Hauteur sous plafond 4m, verrière d'artiste. Coup de cœur garanti.",
-    likes: 156,
-    comments: 34,
-  },
-  {
-    agency: "Premium Realty",
-    initial: "P",
-    color: "#7C3AED",
-    photoUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&q=80",
-    city: "Nantes Île de Nantes",
-    surface: "110 m²",
-    price: "420 000 €",
-    title: "Duplex standing neuf",
-    text: "🏙️ Duplex neuf RT2020 avec terrasse plein sud 25m². Cuisine Bulthaup, dressing sur mesure. Livraison T4 2025.",
-    likes: 73,
-    comments: 19,
-  },
-];
-
-/* ── Facebook post card ─────────────────────────────────────── */
-function FbCard({ p }: { p: typeof FB_POSTS[0] }) {
+/* ── Icons ───────────────────────────────────────────────────── */
+function IcoHouse({ size = 16, color = "currentColor" }: { size?: number; color?: string }) {
   return (
-    <div style={{ background: "#fff", borderRadius: "10px", overflow: "hidden", boxShadow: "0 12px 40px rgba(0,0,0,0.6)" }}>
-      {/* Header */}
-      <div style={{ padding: "10px 12px", display: "flex", alignItems: "center", gap: "8px" }}>
-        <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: p.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: 700, color: "#fff", flexShrink: 0 }}>
-          {p.initial}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: "12px", fontWeight: 700, color: "#050505", lineHeight: 1.2 }}>{p.agency}</p>
-          <p style={{ fontSize: "10px", color: "#65676B", display: "flex", alignItems: "center", gap: "3px" }}>
-            Sponsorisé ·{" "}
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#65676B" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>
-          </p>
-        </div>
-        <span style={{ fontSize: "17px", color: "#65676B", letterSpacing: "1px", lineHeight: 1 }}>···</span>
-      </div>
-
-      {/* Post text */}
-      <p style={{ padding: "0 12px 8px", fontSize: "12px", color: "#050505", lineHeight: 1.5 }}>{p.text}</p>
-
-      {/* Photo */}
-      <div style={{ height: "155px", position: "relative", overflow: "hidden" }}>
-        <img src={p.photoUrl} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "24px 10px 8px", background: "linear-gradient(transparent, rgba(0,0,0,0.72))", display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-          <div>
-            <p style={{ fontSize: "11px", fontWeight: 700, color: "#fff", lineHeight: 1.3 }}>{p.title}</p>
-            <p style={{ fontSize: "9.5px", color: "rgba(255,255,255,0.72)" }}>📍 {p.city} · {p.surface}</p>
-          </div>
-          <p style={{ fontSize: "13px", fontWeight: 800, color: "#fff", whiteSpace: "nowrap" }}>{p.price}</p>
-        </div>
-      </div>
-
-      {/* CTA row */}
-      <div style={{ padding: "5px 12px 5px", background: "#F0F2F5", borderTop: "1px solid #E4E6EB", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <p style={{ fontSize: "10px", color: "#65676B" }}>studioimmo.fr</p>
-        <div style={{ padding: "3px 10px", background: "#E7E9EB", borderRadius: "4px", fontSize: "11px", fontWeight: 600, color: "#050505" }}>En savoir plus</div>
-      </div>
-
-      {/* Reactions */}
-      <div style={{ padding: "3px 12px 0" }}>
-        <p style={{ fontSize: "10px", color: "#65676B" }}>👍 {p.likes} · 💬 {p.comments} commentaires</p>
-      </div>
-
-      {/* Action bar */}
-      <div style={{ padding: "2px 8px 6px", display: "flex", borderTop: "1px solid #E4E6EB", marginTop: "4px" }}>
-        {["👍 J'aime", "💬 Commenter", "↗ Partager"].map((a) => (
-          <div key={a} style={{ flex: 1, padding: "4px 2px", textAlign: "center", fontSize: "10px", fontWeight: 600, color: "#65676B" }}>{a}</div>
-        ))}
-      </div>
-    </div>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
+      <path d="M9 21V12h6v9"/>
+    </svg>
+  );
+}
+function IcoCheck() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  );
+}
+function IcoFB() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877f2">
+      <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.271h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
+    </svg>
+  );
+}
+function IcoIG() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#ig)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <defs>
+        <linearGradient id="ig" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#f09433"/>
+          <stop offset="50%" stopColor="#e6683c"/>
+          <stop offset="100%" stopColor="#bc1888"/>
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+      <circle cx="12" cy="12" r="5"/>
+      <circle cx="17.5" cy="6.5" r="1" fill="#e6683c" stroke="none"/>
+    </svg>
   );
 }
 
-/* ── Page ───────────────────────────────────────────────────── */
-export default function Home() {
+/* ── Navbar ──────────────────────────────────────────────────── */
+function Navbar() {
   return (
-    <div style={{ background: "#080808", minHeight: "100vh", overflowX: "hidden", fontFamily: "inherit" }}>
-
-      {/* ── NAVBAR ─────────────────────────────────────────────── */}
-      <header style={{
-        position: "sticky", top: 0, zIndex: 50,
-        background: "rgba(8,8,8,0.82)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-      }}>
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5" style={{ textDecoration: "none" }}>
-            <div style={{ width: 28, height: 28, borderRadius: "8px", background: "linear-gradient(135deg, #7C3AED, #9333EA)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
-              </svg>
-            </div>
-            <span style={{ fontSize: "15px", fontWeight: 700, color: "#fff", letterSpacing: "-0.01em" }}>
-              Studio <span style={{ color: "#A78BFA" }}>Immo</span>
-            </span>
-          </Link>
-
-          {/* Nav links */}
-          <nav className="hidden md:flex items-center gap-7">
-            {[
-              { href: "#fonctionnalites", label: "Fonctionnalités" },
-              { href: "#comment", label: "Comment ça marche" },
-              { href: "#tarifs", label: "Tarifs" },
-            ].map(({ href, label }) => (
-              <a key={href} href={href} style={{ fontSize: "14px", fontWeight: 500, color: "rgba(255,255,255,0.55)", textDecoration: "none", transition: "color 0.15s" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>
-                {label}
-              </a>
-            ))}
-          </nav>
-
-          {/* CTAs */}
-          <div className="flex items-center gap-3">
-            <Link href="/connexion" style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.6)", textDecoration: "none", padding: "8px 16px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.1)", transition: "all 0.15s" }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}>
-              Connexion
-            </Link>
-            <Link href="/inscription" style={{ fontSize: "13px", fontWeight: 700, color: "#fff", textDecoration: "none", padding: "8px 20px", borderRadius: "999px", background: "linear-gradient(135deg, #7C3AED, #9333EA)", boxShadow: "0 4px 14px rgba(124,58,237,0.4)", transition: "opacity 0.15s" }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
-              Essai gratuit →
-            </Link>
+    <header style={{
+      position: "sticky", top: 0, zIndex: 50,
+      background: "rgba(10,10,15,0.92)",
+      backdropFilter: "blur(12px)",
+      borderBottom: "1px solid rgba(255,255,255,0.06)",
+    }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px", height: "60px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        {/* Logo */}
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+          <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <IcoHouse size={16} color="white" />
           </div>
-        </div>
-      </header>
+          <span style={{ fontSize: "16px", fontWeight: 700, color: "white" }}>Studio <span style={{ color: "#a78bfa" }}>Immo</span></span>
+        </Link>
 
-      {/* ── HERO ───────────────────────────────────────────────── */}
-      <section style={{
-        position: "relative",
-        overflow: "hidden",
-        minHeight: "calc(100vh - 64px)",
-        display: "flex",
-        alignItems: "center",
-        background: "linear-gradient(135deg, #1a0533 0%, #6b21a8 40%, #c2410c 80%, #ea580c 100%)",
-      }}>
-        {/* Noise overlay */}
-        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.28)", pointerEvents: "none" }} />
+        {/* Nav links */}
+        <nav style={{ display: "flex", alignItems: "center", gap: "28px" }}>
+          <a href="#features" style={{ fontSize: "14px", color: "rgba(255,255,255,0.6)", textDecoration: "none" }}>Fonctionnalités</a>
+          <Link href="/tarifs" style={{ fontSize: "14px", color: "rgba(255,255,255,0.6)", textDecoration: "none" }}>Tarifs</Link>
+          <a href="#" style={{ fontSize: "14px", color: "rgba(255,255,255,0.6)", textDecoration: "none" }}>Ressources</a>
+        </nav>
 
-        {/* Blobs */}
-        <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "60vw", height: "60vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.35) 0%, transparent 70%)", filter: "blur(80px)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "50vw", height: "50vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(234,88,12,0.3) 0%, transparent 70%)", filter: "blur(80px)", pointerEvents: "none" }} />
-
-        {/* Grid lines */}
-        <div style={{
-          position: "absolute", inset: 0, pointerEvents: "none",
-          backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-          backgroundSize: "80px 80px",
-          maskImage: "radial-gradient(ellipse 100% 80% at 50% 0%, black 30%, transparent 100%)",
-        }} />
-
-        <div className="relative mx-auto max-w-5xl px-6 py-24 text-center" style={{ zIndex: 1, width: "100%" }}>
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 mb-8" style={{
-            background: "rgba(255,255,255,0.1)",
-            backdropFilter: "blur(8px)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            borderRadius: "999px",
-            padding: "6px 16px",
+        {/* CTA */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <Link href="/connexion" style={{ fontSize: "14px", color: "rgba(255,255,255,0.6)", textDecoration: "none" }}>Connexion</Link>
+          <Link href="/inscription" style={{
+            background: "#7C3AED", color: "white", borderRadius: "100px",
+            padding: "8px 18px", fontSize: "13px", fontWeight: 600, textDecoration: "none",
           }}>
-            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#4ADE80" }} className="animate-pulse" />
-            <span style={{ fontSize: "12px", fontWeight: 700, color: "rgba(255,255,255,0.9)", letterSpacing: "0.04em" }}>
-              Marketing immobilier automatisé par IA
-            </span>
+            Essayer gratuitement
+          </Link>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+/* ── Section 1 : Hero ────────────────────────────────────────── */
+function SectionHero() {
+  return (
+    <section style={{ background: "#0a0a0f", padding: "80px 24px 100px" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", display: "grid", gridTemplateColumns: "1.1fr 1fr 1fr", gap: "32px", alignItems: "start" }}>
+
+        {/* Colonne gauche : titre + CTA */}
+        <div style={{ paddingTop: "16px" }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: "6px",
+            background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.25)",
+            borderRadius: "20px", padding: "5px 14px", marginBottom: "24px",
+            fontSize: "12px", color: "#a78bfa", fontWeight: 600,
+          }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="#a78bfa"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Propulsé par GPT-4o
           </div>
 
-          {/* Title */}
-          <h1 style={{ fontSize: "clamp(46px, 8vw, 92px)", fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1.0, marginBottom: "24px" }}>
-            <span style={{ display: "block", color: "#ffffff" }}>Vos mandats.</span>
-            <span style={{ display: "block", background: "linear-gradient(90deg, #FCD34D, #FBBF24, #F9A8D4, #E879F9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-              Publiés en 15s.
-            </span>
+          <h1 style={{ fontSize: "clamp(36px, 4vw, 52px)", fontWeight: 800, color: "white", lineHeight: 1.1, letterSpacing: "-0.035em", marginBottom: "20px" }}>
+            Une annonce.{" "}
+            <span style={{ display: "block" }}>Des <span style={{ color: "#7C3AED" }}>semaines</span></span>
+            de contenu.
           </h1>
 
-          {/* Sub */}
-          <p style={{ fontSize: "clamp(15px, 2vw, 19px)", color: "rgba(255,255,255,0.68)", lineHeight: 1.65, marginBottom: "40px", maxWidth: "580px", margin: "0 auto 40px" }}>
-            Studio Immo génère des publications Facebook, Instagram et des visuels professionnels
-            pour valoriser vos biens — sans agence, sans effort.
+          <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.55)", lineHeight: 1.7, marginBottom: "32px" }}>
+            Studio Immo transforme chaque mandat en stratégie sociale complète — posts Facebook, Instagram, Stories et visuels PNG — en 15 secondes.
           </p>
 
-          {/* CTAs */}
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
+          <div style={{ display: "flex", gap: "12px", marginBottom: "28px" }}>
             <Link href="/inscription" style={{
-              fontSize: "15px", fontWeight: 700, color: "#fff", textDecoration: "none",
-              padding: "14px 32px", borderRadius: "999px",
-              background: "linear-gradient(135deg, #7C3AED, #9333EA)",
-              boxShadow: "0 8px 32px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.15)",
-              transition: "transform 0.15s, box-shadow 0.15s",
-            }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(124,58,237,0.6), inset 0 1px 0 rgba(255,255,255,0.15)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.15)"; }}>
-              Commencer gratuitement →
+              background: "#7C3AED", color: "white", borderRadius: "10px",
+              padding: "13px 24px", fontSize: "14px", fontWeight: 600, textDecoration: "none",
+              boxShadow: "0 0 24px rgba(124,58,237,0.35)",
+            }}>
+              Essayer gratuitement →
             </Link>
-            <a href="#tarifs" style={{
-              fontSize: "15px", fontWeight: 600, color: "rgba(255,255,255,0.85)", textDecoration: "none",
-              padding: "14px 32px", borderRadius: "999px",
-              border: "1px solid rgba(255,255,255,0.25)",
-              background: "rgba(255,255,255,0.06)",
-              backdropFilter: "blur(8px)",
-              transition: "background 0.15s, border-color 0.15s",
-            }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.12)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)"; }}>
-              Voir les tarifs
+            <a href="#demo" style={{
+              background: "transparent", color: "white",
+              border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px",
+              padding: "13px 24px", fontSize: "14px", fontWeight: 600, textDecoration: "none",
+            }}>
+              Voir un exemple
             </a>
           </div>
 
-          {/* Badge no CB */}
-          <div className="flex items-center justify-center gap-5">
-            <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: "6px" }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              Sans carte bancaire
-            </span>
-            <span style={{ width: 1, height: 14, background: "rgba(255,255,255,0.15)" }} />
-            <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: "6px" }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
-              10 générations gratuites
-            </span>
-            <span style={{ width: 1, height: 14, background: "rgba(255,255,255,0.15)" }} />
-            <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: "6px" }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              15 secondes par bien
-            </span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+            {["Sans carte bancaire", "Prêt en quelques secondes", "Annulation à tout moment"].map(b => (
+              <span key={b} style={{
+                display: "flex", alignItems: "center", gap: "5px",
+                fontSize: "11.5px", color: "rgba(255,255,255,0.45)",
+              }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                {b}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Colonne centre : input card */}
+        <div style={{
+          background: "#111118", border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: "20px", padding: "22px",
+        }}>
+          <p style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: "14px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+            1. Vos photos & description
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "16px" }}>
+            {[HOUSE_1, HOUSE_2, HOUSE_3, HOUSE_4].map((src, i) => (
+              <img key={i} src={src} alt="bien" style={{ width: "100%", height: "80px", objectFit: "cover", borderRadius: "10px" }} />
+            ))}
+          </div>
+          <div style={{
+            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "10px", padding: "10px 12px", marginBottom: "16px",
+          }}>
+            <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)" }}>Belle villa avec vue mer, 4 pièces, 120m², terrasse…</p>
           </div>
 
-          {/* Social proof */}
-          <div className="flex items-center justify-center gap-3 mt-8">
-            <div className="flex -space-x-2">
-              {[["S","#7C3AED"],["T","#0891B2"],["I","#D97706"],["M","#059669"],["A","#DC2626"]].map(([l, c], i) => (
-                <div key={i} style={{ width: 30, height: 30, borderRadius: "50%", background: c, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, color: "#fff", border: "2px solid #1a0533", zIndex: 5 - i }}>
-                  {l}
+          {/* Flèche */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
+            <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(124,58,237,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 19 19 12"/></svg>
+            </div>
+          </div>
+
+          {/* Badge Studio Immo */}
+          <div style={{
+            background: "linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(59,130,246,0.08) 100%)",
+            border: "1px solid rgba(124,58,237,0.25)", borderRadius: "12px", padding: "14px 16px",
+            display: "flex", alignItems: "center", gap: "10px",
+          }}>
+            <div style={{ width: "36px", height: "36px", borderRadius: "9px", background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <IcoHouse size={18} color="white" />
+            </div>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: "12px", fontWeight: 600, color: "white" }}>Studio Immo prépare vos contenus</p>
+              <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>IA en cours de traitement…</p>
+            </div>
+            <span style={{
+              background: "rgba(124,58,237,0.2)", color: "#a78bfa", border: "1px solid rgba(124,58,237,0.3)",
+              borderRadius: "20px", padding: "3px 10px", fontSize: "11px", fontWeight: 700,
+            }}>
+              15s
+            </span>
+          </div>
+        </div>
+
+        {/* Colonne droite : output card */}
+        <div style={{
+          background: "#111118", border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: "20px", padding: "22px",
+        }}>
+          <p style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: "14px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+            2. Contenus prêts à publier
+          </p>
+
+          {/* Réseaux sociaux */}
+          <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+            {[
+              { icon: <IcoFB />, label: "Facebook" },
+              { icon: <IcoIG />, label: "Instagram" },
+              { icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#e60023"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+              ), label: "Pinterest" },
+            ].map(({ icon, label }) => (
+              <div key={label} style={{
+                display: "flex", alignItems: "center", gap: "6px",
+                background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: "8px", padding: "6px 10px",
+              }}>
+                {icon}
+                <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)", fontWeight: 500 }}>{label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Mini-cards résultats */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+            {[
+              { label: "Post Facebook", color: "#1877f2" },
+              { label: "Post Instagram", color: "#bc1888" },
+              { label: "Story", color: "#f59e0b" },
+              { label: "Visuel PNG", color: "#10b981" },
+            ].map(({ label, color }) => (
+              <div key={label} style={{
+                background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: "10px", padding: "10px", minHeight: "64px",
+                display: "flex", flexDirection: "column", justifyContent: "space-between",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: color }} />
+                  <span style={{ fontSize: "10.5px", color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>{label}</span>
                 </div>
+                <div style={{ display: "flex", gap: "3px", marginTop: "6px" }}>
+                  {[60, 80, 45, 70].map((w, i) => (
+                    <div key={i} style={{ height: "4px", width: `${w}%`, background: "rgba(255,255,255,0.1)", borderRadius: "2px" }} />
+                  ))}
+                </div>
+                <div style={{
+                  marginTop: "8px", display: "inline-flex", alignItems: "center", gap: "3px",
+                  background: `${color}22`, borderRadius: "4px", padding: "2px 6px",
+                }}>
+                  <IcoCheck />
+                  <span style={{ fontSize: "9px", color, fontWeight: 700 }}>Prêt</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Section 2 : Tabs demo ───────────────────────────────────── */
+const TABS = ["Facebook", "Instagram", "Stories", "Visuels"] as const;
+
+function SectionTabs() {
+  const [active, setActive] = useState<typeof TABS[number]>("Facebook");
+  return (
+    <section id="demo" style={{ background: "#0a0a0f", padding: "80px 24px" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 600, color: "#7C3AED", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px" }}>
+          À partir d'un seul bien
+        </p>
+        <h2 style={{ textAlign: "center", fontSize: "clamp(28px, 3.5vw, 40px)", fontWeight: 800, color: "white", letterSpacing: "-0.03em", marginBottom: "36px" }}>
+          Tous vos formats en une fois
+        </h2>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", justifyContent: "center", gap: "4px", marginBottom: "36px", borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: "0" }}>
+          {TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActive(tab)}
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                padding: "10px 22px", fontSize: "14px", fontWeight: 600,
+                color: active === tab ? "#7C3AED" : "rgba(255,255,255,0.45)",
+                borderBottom: `2px solid ${active === tab ? "#7C3AED" : "transparent"}`,
+                marginBottom: "-1px", transition: "all 0.15s",
+              }}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* Cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
+          {/* Card Facebook */}
+          <div style={{ background: "#111118", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", overflow: "hidden" }}>
+            <div style={{ padding: "14px 14px 0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "10px" }}>
+                <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: 700, color: "white", flexShrink: 0 }}>A</div>
+                <div>
+                  <p style={{ fontSize: "12px", fontWeight: 700, color: "white", margin: 0 }}>Agence Immo</p>
+                  <p style={{ fontSize: "10px", color: "#6b7280", margin: 0 }}>Il y a 2 heures · 🌐</p>
+                </div>
+              </div>
+              <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.75)", lineHeight: 1.6, marginBottom: "12px" }}>
+                ✨ Nouveau mandat exclusif ! Belle villa lumineuse de 120m², 4 chambres, vue dégagée. Idéale famille. Prix : 385 000€. Visitez vite !
+              </p>
+            </div>
+            <img src={HOUSE_1} alt="maison" style={{ width: "100%", height: "140px", objectFit: "cover" }} />
+            <div style={{ padding: "10px 14px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", gap: "14px" }}>
+              {[["👍", "124"], ["💬", "18"], ["↗️", "34"]].map(([ico, n]) => (
+                <span key={n} style={{ fontSize: "11px", color: "#6b7280" }}>{ico} {n}</span>
               ))}
             </div>
-            <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)" }}>
-              <span style={{ fontWeight: 700, color: "#fff" }}>+200 agents</span> font confiance à Studio Immo
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── DEMO FACEBOOK ──────────────────────────────────────── */}
-      <section style={{ background: "#0a0a0a", padding: "96px 0" }}>
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="text-center mb-14">
-            <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#A78BFA", background: "rgba(124,58,237,0.12)", padding: "4px 14px", borderRadius: "999px", border: "1px solid rgba(124,58,237,0.2)" }}>
-              Aperçu en direct
-            </span>
-            <h2 style={{ fontSize: "clamp(26px, 3.5vw, 42px)", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", marginTop: "16px", marginBottom: "10px" }}>
-              Ce que l'IA génère en 15 secondes
-            </h2>
-            <p style={{ fontSize: "15px", color: "rgba(255,255,255,0.45)", lineHeight: 1.6, maxWidth: "480px", margin: "0 auto" }}>
-              6 publications Facebook prêtes à publier, personnalisées pour chaque bien.
-            </p>
           </div>
 
-          {/* Cards grid */}
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {FB_POSTS.map((p) => <FbCard key={p.title} p={p} />)}
-          </div>
-
-          <div className="text-center mt-12">
-            <Link href="/inscription" style={{
-              display: "inline-flex", alignItems: "center", gap: "8px",
-              fontSize: "14px", fontWeight: 700, color: "#fff", textDecoration: "none",
-              padding: "12px 28px", borderRadius: "999px",
-              background: "linear-gradient(135deg, #7C3AED, #9333EA)",
-              boxShadow: "0 6px 24px rgba(124,58,237,0.4)",
-              transition: "opacity 0.15s",
-            }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
-              Générer mes premières publications →
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── STATS ──────────────────────────────────────────────── */}
-      <section style={{ background: "#080808", borderTop: "1px solid rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "64px 0" }}>
-        <div className="mx-auto max-w-4xl px-6">
-          <div className="grid grid-cols-3 gap-8 text-center">
-            {[
-              { val: "5", unit: "", label: "campagnes générées", sub: "par bien immobilier", color: "#A78BFA" },
-              { val: "10", unit: "", label: "publications rédigées", sub: "FB + IG + Stories", color: "#34D399" },
-              { val: "15", unit: "s", label: "temps de génération", sub: "en moyenne", color: "#FBBF24" },
-            ].map(({ val, unit, label, sub, color }) => (
-              <div key={label}>
-                <div className="flex items-end justify-center gap-0.5 mb-2">
-                  <span style={{ fontSize: "clamp(44px, 6vw, 72px)", fontWeight: 900, letterSpacing: "-0.05em", lineHeight: 1, color }}>{val}</span>
-                  <span style={{ fontSize: "24px", fontWeight: 900, color, paddingBottom: "8px" }}>{unit}</span>
-                </div>
-                <p style={{ fontSize: "14px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>{label}</p>
-                <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.35)" }}>{sub}</p>
+          {/* Card Instagram */}
+          <div style={{ background: "#111118", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", overflow: "hidden" }}>
+            <img src={HOUSE_2} alt="maison" style={{ width: "100%", height: "160px", objectFit: "cover" }} />
+            <div style={{ padding: "12px 14px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "8px" }}>
+                <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "linear-gradient(135deg,#f09433,#bc1888)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, color: "white" }}>A</div>
+                <p style={{ fontSize: "12px", fontWeight: 700, color: "white", margin: 0 }}>agence_immo_officiel</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── FEATURES ───────────────────────────────────────────── */}
-      <section id="fonctionnalites" style={{ background: "#0d0d0d", padding: "96px 0", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="text-center mb-14">
-            <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#A78BFA", background: "rgba(124,58,237,0.12)", padding: "4px 14px", borderRadius: "999px", border: "1px solid rgba(124,58,237,0.2)" }}>
-              Fonctionnalités
-            </span>
-            <h2 style={{ fontSize: "clamp(26px, 3.5vw, 42px)", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", marginTop: "16px", marginBottom: "10px" }}>
-              Tout ce dont vous avez besoin.{" "}
-              <span style={{ color: "rgba(255,255,255,0.3)" }}>Rien de superflu.</span>
-            </h2>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map(({ icon, title, desc }) => (
-              <div key={title}
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "14px", padding: "24px", transition: "border-color 0.15s, background 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(124,58,237,0.4)"; e.currentTarget.style.background = "rgba(124,58,237,0.05)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-                <div style={{ width: 38, height: 38, borderRadius: "10px", background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.25)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "16px", fontSize: "16px", color: "#A78BFA" }}>
-                  {icon}
-                </div>
-                <p style={{ fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "8px" }}>{title}</p>
-                <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", lineHeight: 1.65 }}>{desc}</p>
+              <p style={{ fontSize: "11.5px", color: "rgba(255,255,255,0.75)", lineHeight: 1.55, marginBottom: "8px" }}>
+                🏡 Villa de rêve disponible dès maintenant ! 120m², 4 chambres, terrasse. Lien en bio pour visiter. #immobilier #realestate #villa
+              </p>
+              <div style={{ display: "flex", gap: "10px" }}>
+                {[["❤️", "892"], ["💬", "47"]].map(([ico, n]) => (
+                  <span key={n} style={{ fontSize: "11px", color: "#6b7280" }}>{ico} {n}</span>
+                ))}
               </div>
-            ))}
+            </div>
+          </div>
+
+          {/* Card Story */}
+          <div style={{
+            background: "linear-gradient(160deg, #1a1a2e 0%, #0f0f1a 100%)",
+            border: "1px solid rgba(124,58,237,0.2)", borderRadius: "16px",
+            minHeight: "260px", padding: "20px 16px",
+            display: "flex", flexDirection: "column", justifyContent: "space-between",
+            overflow: "hidden", position: "relative",
+          }}>
+            <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${HOUSE_3})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.18 }} />
+            <div style={{ position: "relative" }}>
+              <div style={{ display: "flex", gap: "4px", marginBottom: "16px" }}>
+                {[70, 100, 40].map((w, i) => (
+                  <div key={i} style={{ height: "2px", flex: w, background: i === 0 ? "#7C3AED" : "rgba(255,255,255,0.25)", borderRadius: "2px" }} />
+                ))}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+                <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, color: "white" }}>A</div>
+                <p style={{ fontSize: "11px", fontWeight: 600, color: "white", margin: 0 }}>agence_immo</p>
+              </div>
+            </div>
+            <div style={{ position: "relative", textAlign: "center" }}>
+              <p style={{ fontSize: "10px", fontWeight: 600, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "6px" }}>Nouveau bien</p>
+              <p style={{ fontSize: "22px", fontWeight: 800, color: "white", lineHeight: 1.1, letterSpacing: "-0.025em", marginBottom: "8px" }}>Villa<br/>120m²</p>
+              <p style={{ fontSize: "13px", fontWeight: 700, color: "#a78bfa", marginBottom: "12px" }}>385 000 €</p>
+              <div style={{ background: "#7C3AED", borderRadius: "20px", padding: "7px 18px", display: "inline-block", fontSize: "11px", fontWeight: 700, color: "white" }}>
+                Voir l'annonce ↗
+              </div>
+            </div>
+          </div>
+
+          {/* Card Visuel PNG */}
+          <div style={{
+            background: "white", border: "1px solid rgba(0,0,0,0.1)",
+            borderRadius: "16px", overflow: "hidden",
+          }}>
+            <div style={{ background: "#1e1b4b", padding: "10px 14px", display: "flex", alignItems: "center", gap: "7px" }}>
+              <div style={{ width: "22px", height: "22px", borderRadius: "5px", background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <IcoHouse size={12} color="white" />
+              </div>
+              <p style={{ fontSize: "11px", fontWeight: 700, color: "white", margin: 0 }}>Agence Immo</p>
+              <span style={{ marginLeft: "auto", background: "#7C3AED", color: "white", borderRadius: "10px", fontSize: "9px", fontWeight: 700, padding: "2px 8px" }}>Coup de cœur</span>
+            </div>
+            <img src={HOUSE_4} alt="maison" style={{ width: "100%", height: "120px", objectFit: "cover" }} />
+            <div style={{ padding: "10px 14px" }}>
+              <p style={{ fontSize: "11px", fontWeight: 700, color: "#111", marginBottom: "4px" }}>Villa lumineuse — Vue mer</p>
+              <p style={{ fontSize: "10px", color: "#6b7280", marginBottom: "8px" }}>Cannes · 120 m² · 4 pièces</p>
+              <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "8px", display: "flex", justifyContent: "space-between" }}>
+                <span style={{ fontSize: "10px", color: "#6b7280" }}>📍 Cannes</span>
+                <span style={{ fontSize: "11px", fontWeight: 800, color: "#1e1b4b" }}>385 000 €</span>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* ── HOW IT WORKS ───────────────────────────────────────── */}
-      <section id="comment" style={{ background: "#080808", padding: "96px 0", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-        <div className="mx-auto max-w-5xl px-6">
-          <div className="text-center mb-16">
-            <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#A78BFA", background: "rgba(124,58,237,0.12)", padding: "4px 14px", borderRadius: "999px", border: "1px solid rgba(124,58,237,0.2)" }}>
-              Comment ça marche
-            </span>
-            <h2 style={{ fontSize: "clamp(26px, 3.5vw, 42px)", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", marginTop: "16px" }}>
-              3 étapes, une stratégie complète.
-            </h2>
+/* ── Section 3 : Comparaison ─────────────────────────────────── */
+function SectionComparison() {
+  const OLD = [
+    ["Sélection des photos", "10 min"],
+    ["Création du visuel", "15 min"],
+    ["Rédaction des textes", "10 min"],
+    ["Adaptation des formats", "5 min"],
+    ["Publications", "5 min"],
+    ["Total", "45 min"],
+  ];
+  const NEW = [
+    ["Importez vos photos", "5 sec"],
+    ["Ajoutez une description", "10 sec"],
+    ["Studio Immo prépare", "—"],
+    ["Publiez partout", "—"],
+    ["", ""],
+    ["Total", "15 sec"],
+  ];
+  return (
+    <section style={{ background: "#111118", padding: "80px 24px" }}>
+      <div style={{ maxWidth: "1100px", margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: "40px", alignItems: "center" }}>
+
+        {/* Titre gauche */}
+        <div>
+          <p style={{ fontSize: "13px", fontWeight: 600, color: "#7C3AED", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>
+            Gain de temps
+          </p>
+          <h2 style={{ fontSize: "clamp(26px, 3vw, 38px)", fontWeight: 800, color: "white", lineHeight: 1.15, letterSpacing: "-0.03em" }}>
+            Gagnez un temps précieux.{" "}
+            <span style={{ color: "#7C3AED" }}>Concentrez-vous sur vos clients.</span>
+          </h2>
+          <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.5)", lineHeight: 1.7, marginTop: "16px" }}>
+            Chaque bien publié sans Studio Immo vous coûte 45 minutes. Avec nous, c'est 15 secondes.
+          </p>
+        </div>
+
+        {/* Tableau ancienne méthode */}
+        <div style={{ background: "#0a0a0f", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", overflow: "hidden" }}>
+          <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "16px" }}>⏱️</span>
+            <p style={{ fontSize: "13px", fontWeight: 700, color: "white", margin: 0 }}>L'ancienne méthode</p>
           </div>
+          {OLD.map(([label, time], i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "11px 18px",
+                borderTop: i === 5 ? "1px solid rgba(255,255,255,0.1)" : "none",
+                background: i === 5 ? "rgba(255,255,255,0.03)" : "transparent",
+              }}
+            >
+              <span style={{ fontSize: "12.5px", color: i === 5 ? "white" : "rgba(255,255,255,0.55)", fontWeight: i === 5 ? 700 : 400 }}>{label}</span>
+              <span style={{ fontSize: "12.5px", color: i === 5 ? "#ef4444" : "rgba(255,255,255,0.4)", fontWeight: i === 5 ? 700 : 400 }}>{time}</span>
+            </div>
+          ))}
+        </div>
 
-          <div className="relative grid gap-10 lg:grid-cols-3">
-            {/* Connector */}
-            <div className="absolute top-8 left-1/3 right-1/3 h-px hidden lg:block" style={{ background: "linear-gradient(90deg, transparent, rgba(124,58,237,0.4), rgba(124,58,237,0.4), transparent)" }} />
+        {/* Tableau Studio Immo */}
+        <div style={{ background: "linear-gradient(160deg, #4c1d95 0%, #3b0764 100%)", border: "1px solid rgba(124,58,237,0.4)", borderRadius: "16px", overflow: "hidden", position: "relative" }}>
+          <div style={{
+            position: "absolute", top: "50%", left: "-28px", transform: "translateY(-50%)",
+            width: "50px", height: "50px", borderRadius: "50%",
+            background: "#0a0a0f", border: "2px solid rgba(124,58,237,0.4)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "12px", fontWeight: 800, color: "#a78bfa", zIndex: 1,
+          }}>
+            VS
+          </div>
+          <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ width: "22px", height: "22px", borderRadius: "6px", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <IcoHouse size={13} color="white" />
+            </div>
+            <p style={{ fontSize: "13px", fontWeight: 700, color: "white", margin: 0 }}>Avec Studio Immo</p>
+          </div>
+          {NEW.map(([label, time], i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "11px 18px",
+                borderTop: i === 5 ? "1px solid rgba(255,255,255,0.15)" : "none",
+                background: i === 5 ? "rgba(0,0,0,0.2)" : "transparent",
+                visibility: label === "" ? "hidden" : "visible",
+              }}
+            >
+              <span style={{ fontSize: "12.5px", color: i === 5 ? "white" : "rgba(255,255,255,0.75)", fontWeight: i === 5 ? 700 : 400 }}>{label}</span>
+              <span style={{ fontSize: "12.5px", color: i === 5 ? "#a78bfa" : "rgba(255,255,255,0.6)", fontWeight: i === 5 ? 700 : 400 }}>{time}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
-            {STEPS.map(({ n, title, desc }, i) => (
-              <div key={n} className="flex flex-col items-center text-center">
+/* ── Section 4 : Découvrez ───────────────────────────────────── */
+function SectionSteps() {
+  const STEPS = [
+    {
+      n: "1", title: "Nouveau bien",
+      sub: "Renseignez titre, ville, surface, prix, description et photos en quelques secondes.",
+      screen: (
+        <svg viewBox="0 0 280 160" style={{ width: "100%", borderRadius: "10px" }}>
+          <rect width="280" height="160" fill="#111118"/>
+          <rect x="12" y="12" width="100" height="8" rx="3" fill="rgba(124,58,237,0.4)"/>
+          <rect x="12" y="28" width="256" height="36" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+          <rect x="20" y="36" width="80" height="6" rx="2" fill="rgba(255,255,255,0.15)"/>
+          <rect x="12" y="72" width="256" height="36" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+          <rect x="20" y="80" width="120" height="6" rx="2" fill="rgba(255,255,255,0.15)"/>
+          <rect x="12" y="116" width="80" height="28" rx="8" fill="#7C3AED"/>
+          <rect x="22" y="125" width="60" height="6" rx="2" fill="rgba(255,255,255,0.8)"/>
+        </svg>
+      ),
+    },
+    {
+      n: "2", title: "Résultats générés",
+      sub: "L'IA produit 5 campagnes complètes avec accroches, textes FB/IG/Story et idées visuelles.",
+      screen: (
+        <svg viewBox="0 0 280 160" style={{ width: "100%", borderRadius: "10px" }}>
+          <rect width="280" height="160" fill="#111118"/>
+          {[0,1,2,3,4].map(i => (
+            <g key={i}>
+              <rect x="12" y={12 + i * 28} width="256" height="22" rx="6" fill="rgba(124,58,237,0.08)" stroke="rgba(124,58,237,0.2)" strokeWidth="1"/>
+              <rect x="20" y={19 + i * 28} width="10" height="10" rx="5" fill="#7C3AED"/>
+              <rect x="36" y={21 + i * 28} width="80" height="5" rx="2" fill="rgba(255,255,255,0.3)"/>
+              <rect x="36" y={28 + i * 28} width="130" height="4" rx="2" fill="rgba(255,255,255,0.1)"/>
+            </g>
+          ))}
+        </svg>
+      ),
+    },
+    {
+      n: "3", title: "Dashboard",
+      sub: "Retrouvez tous vos biens, téléchargez vos visuels et suivez vos performances.",
+      screen: (
+        <svg viewBox="0 0 280 160" style={{ width: "100%", borderRadius: "10px" }}>
+          <rect width="280" height="160" fill="#0a0a0f"/>
+          <rect x="0" y="0" width="60" height="160" fill="#111118"/>
+          {[0,1,2,3].map(i => (
+            <rect key={i} x="8" y={16 + i * 32} width="44" height="22" rx="6" fill={i === 0 ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.04)"}/>
+          ))}
+          {[0,1,2,3].map(i => (
+            <rect key={i} x="72" y={16 + i * 36} width={[120,90,110,80][i]} height="20" rx="5" fill="rgba(124,58,237,0.12)" stroke="rgba(124,58,237,0.2)" strokeWidth="1"/>
+          ))}
+          <rect x="72" y="160" width="0" height="0"/>
+        </svg>
+      ),
+    },
+  ];
+  return (
+    <section id="features" style={{ background: "#0a0a0f", padding: "80px 24px" }}>
+      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+        <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 600, color: "#7C3AED", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px" }}>
+          Comment ça marche
+        </p>
+        <h2 style={{ textAlign: "center", fontSize: "clamp(28px, 3.5vw, 40px)", fontWeight: 800, color: "white", letterSpacing: "-0.03em", marginBottom: "56px" }}>
+          Découvrez Studio Immo
+        </h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px" }}>
+          {STEPS.map(({ n, title, sub, screen }) => (
+            <div key={n} style={{ background: "#111118", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "20px", padding: "24px", overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
                 <div style={{
-                  width: 56, height: 56,
-                  borderRadius: "16px",
-                  background: "rgba(124,58,237,0.12)",
-                  border: "1px solid rgba(124,58,237,0.35)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "18px", fontWeight: 800, color: "#A78BFA",
-                  letterSpacing: "-0.02em",
-                  boxShadow: "0 0 32px rgba(124,58,237,0.15)",
-                  marginBottom: "20px",
-                  position: "relative", zIndex: 1,
+                  width: "32px", height: "32px", borderRadius: "50%",
+                  background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "14px", fontWeight: 800, color: "white", flexShrink: 0,
                 }}>
                   {n}
                 </div>
-                <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#fff", marginBottom: "10px" }}>{title}</h3>
-                <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", lineHeight: 1.65 }}>{desc}</p>
+                <h3 style={{ fontSize: "15px", fontWeight: 700, color: "white", margin: 0 }}>{title}</h3>
               </div>
-            ))}
-          </div>
+              <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", lineHeight: 1.65, marginBottom: "16px" }}>{sub}</p>
+              {screen}
+            </div>
+          ))}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* ── TESTIMONIALS ───────────────────────────────────────── */}
-      <section style={{ background: "#0d0d0d", padding: "96px 0", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="text-center mb-14">
-            <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#A78BFA", background: "rgba(124,58,237,0.12)", padding: "4px 14px", borderRadius: "999px", border: "1px solid rgba(124,58,237,0.2)" }}>
-              Témoignages
-            </span>
-            <h2 style={{ fontSize: "clamp(26px, 3.5vw, 42px)", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", marginTop: "16px" }}>
-              Ce que disent nos clients
-            </h2>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-3">
-            {TESTIMONIALS.map(({ quote, name, role, initiale, color }) => (
-              <div key={name} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "28px", display: "flex", flexDirection: "column" }}>
-                {/* Stars */}
-                <div className="flex gap-1 mb-5">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill="#FBBF24" stroke="none">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                    </svg>
-                  ))}
-                </div>
-
-                <p style={{ flex: 1, fontSize: "14px", color: "rgba(255,255,255,0.65)", lineHeight: 1.7, marginBottom: "24px" }}>
-                  &ldquo;{quote}&rdquo;
-                </p>
-
-                <div className="flex items-center gap-3">
-                  <div style={{ width: 38, height: 38, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: "#fff", flexShrink: 0 }}>
-                    {initiale}
-                  </div>
-                  <div>
-                    <p style={{ fontSize: "13px", fontWeight: 700, color: "#fff" }}>{name}</p>
-                    <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)", marginTop: "1px" }}>{role}</p>
-                  </div>
-                </div>
+/* ── Section 5 : 4 features ──────────────────────────────────── */
+function SectionFeatures() {
+  const FEATURES = [
+    {
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+      ),
+      title: "Gagnez du temps",
+      desc: "45 minutes de travail ramenées à 15 secondes. Chaque bien traité instantanément par l'IA.",
+    },
+    {
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      ),
+      title: "Soyez plus visible",
+      desc: "Des contenus optimisés pour chaque réseau social augmentent l'engagement de vos annonces.",
+    },
+    {
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      ),
+      title: "Valorisez chaque bien",
+      desc: "Visuels 1080×1350 px avec votre logo, vos photos et les infos du bien. Qualité professionnelle.",
+    },
+    {
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
+          <path d="M9 21V12h6v9"/>
+        </svg>
+      ),
+      title: "100% immobilier",
+      desc: "Formules spécialisées, vocabulaire métier, formats adaptés aux annonces immobilières.",
+    },
+  ];
+  return (
+    <section style={{ background: "#111118", padding: "80px 24px" }}>
+      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+        <h2 style={{ textAlign: "center", fontSize: "clamp(26px, 3vw, 36px)", fontWeight: 800, color: "white", letterSpacing: "-0.03em", marginBottom: "48px" }}>
+          Tout ce dont vous avez besoin
+        </h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px" }}>
+          {FEATURES.map(({ icon, title, desc }) => (
+            <div key={title} style={{ background: "#0a0a0f", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", padding: "24px" }}>
+              <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#a78bfa", marginBottom: "16px" }}>
+                {icon}
               </div>
-            ))}
-          </div>
+              <h3 style={{ fontSize: "15px", fontWeight: 700, color: "white", marginBottom: "8px" }}>{title}</h3>
+              <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", lineHeight: 1.65 }}>{desc}</p>
+            </div>
+          ))}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* ── PRICING ────────────────────────────────────────────── */}
-      <section id="tarifs" style={{ background: "#080808", padding: "96px 0", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-        <div className="mx-auto max-w-4xl px-6">
-          <div className="text-center mb-14">
-            <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#A78BFA", background: "rgba(124,58,237,0.12)", padding: "4px 14px", borderRadius: "999px", border: "1px solid rgba(124,58,237,0.2)" }}>
-              Tarifs
-            </span>
-            <h2 style={{ fontSize: "clamp(26px, 3.5vw, 42px)", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", marginTop: "16px", marginBottom: "8px" }}>
-              Simple. Transparent. Sans surprise.
-            </h2>
-            <p style={{ fontSize: "15px", color: "rgba(255,255,255,0.4)" }}>
-              Sans engagement · Résiliez à tout moment · 14 jours satisfait ou remboursé
-            </p>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-2">
-            {PLANS.map((plan) => (
-              <div key={plan.name} style={{
+/* ── Section 6 : Tarifs ──────────────────────────────────────── */
+function SectionPricing() {
+  const PLANS = [
+    {
+      name: "Solo", price: "39", period: "/mois",
+      desc: "L'essentiel pour les agents indépendants.",
+      features: ["10 biens par mois", "5 campagnes par bien", "Tous les formats", "Support email"],
+      cta: "Commencer →", ctaStyle: { background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "white" },
+      highlight: false,
+    },
+    {
+      name: "Agence", price: "79", period: "/mois",
+      badge: "Le plus populaire",
+      desc: "Puissance illimitée pour les agences et équipes.",
+      features: ["30 biens par mois", "5 campagnes par bien", "Calendrier de publication", "Support prioritaire"],
+      cta: "Commencer →", ctaStyle: { background: "white", border: "none", color: "#7C3AED" },
+      highlight: true,
+    },
+    {
+      name: "Essai gratuit", price: "0", period: " — 7 jours",
+      desc: "Testez Studio Immo sans engagement ni carte bancaire.",
+      features: ["3 biens inclus", "Toutes les fonctionnalités", "Aucune carte requise", "Accès immédiat"],
+      cta: "Créer mon compte →", ctaStyle: { background: "#7C3AED", border: "none", color: "white" },
+      highlight: false,
+    },
+  ] as const;
+  return (
+    <section id="tarifs" style={{ background: "#0a0a0f", padding: "80px 24px" }}>
+      <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
+        <h2 style={{ textAlign: "center", fontSize: "clamp(26px, 3vw, 38px)", fontWeight: 800, color: "white", letterSpacing: "-0.03em", marginBottom: "10px" }}>
+          Des formules simples et transparentes.
+        </h2>
+        <p style={{ textAlign: "center", fontSize: "15px", color: "#7C3AED", fontWeight: 600, marginBottom: "48px" }}>
+          Sans engagement · Résiliation en un clic
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+          {PLANS.map((plan) => (
+            <div
+              key={plan.name}
+              style={{
                 position: "relative",
-                background: plan.highlight ? "rgba(124,58,237,0.08)" : "rgba(255,255,255,0.03)",
-                border: plan.highlight ? "1px solid rgba(124,58,237,0.5)" : "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "20px",
-                padding: "32px",
-                display: "flex",
-                flexDirection: "column",
-                boxShadow: plan.highlight ? "0 0 60px rgba(124,58,237,0.15), inset 0 1px 0 rgba(255,255,255,0.06)" : "none",
-              }}>
-                {"badge" in plan && plan.badge && (
-                  <div style={{ position: "absolute", top: "-14px", left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, #7C3AED, #9333EA)", color: "#fff", fontSize: "11px", fontWeight: 700, padding: "4px 16px", borderRadius: "999px", whiteSpace: "nowrap" }}>
-                    {plan.badge}
-                  </div>
-                )}
-
-                <div style={{ marginBottom: "24px" }}>
-                  <p style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: plan.highlight ? "#A78BFA" : "rgba(255,255,255,0.35)", marginBottom: "8px" }}>{plan.name}</p>
-                  <div className="flex items-baseline gap-1.5 mb-3">
-                    <span style={{ fontSize: "52px", fontWeight: 900, color: "#fff", letterSpacing: "-0.05em", lineHeight: 1 }}>{plan.price}€</span>
-                    <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.35)" }}>/ mois</span>
-                  </div>
-                  <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)" }}>{plan.desc}</p>
+                background: plan.highlight ? "linear-gradient(160deg, #4c1d95 0%, #3b0764 100%)" : "#111118",
+                border: plan.highlight ? "1px solid rgba(124,58,237,0.5)" : "1px solid rgba(255,255,255,0.07)",
+                borderRadius: "20px", padding: "28px",
+                boxShadow: plan.highlight ? "0 0 40px rgba(124,58,237,0.25)" : "none",
+              }}
+            >
+              {"badge" in plan && plan.badge && (
+                <div style={{
+                  position: "absolute", top: "-14px", left: "50%", transform: "translateX(-50%)",
+                  background: "#7C3AED", color: "white", borderRadius: "20px",
+                  padding: "4px 14px", fontSize: "11px", fontWeight: 700, whiteSpace: "nowrap",
+                }}>
+                  {plan.badge}
                 </div>
-
-                <ul style={{ flex: 1, marginBottom: "28px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-3" style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)" }}>
-                      <div style={{ width: 18, height: 18, borderRadius: "50%", background: plan.highlight ? "rgba(124,58,237,0.25)" : "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={plan.highlight ? "#A78BFA" : "rgba(255,255,255,0.5)"} strokeWidth="3" strokeLinecap="round">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                      </div>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href="/tarifs" style={{
+              )}
+              <p style={{ fontSize: "13px", fontWeight: 600, color: plan.highlight ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.5)", marginBottom: "8px" }}>{plan.name}</p>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "6px" }}>
+                <span style={{ fontSize: "48px", fontWeight: 800, color: "white", letterSpacing: "-0.05em", lineHeight: 1 }}>{plan.price}€</span>
+                <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.5)" }}>{plan.period}</span>
+              </div>
+              <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", lineHeight: 1.6, marginBottom: "22px" }}>{plan.desc}</p>
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                {plan.features.map(f => (
+                  <li key={f} style={{ display: "flex", alignItems: "center", gap: "9px", fontSize: "13px", color: "rgba(255,255,255,0.8)" }}>
+                    <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: plan.highlight ? "rgba(255,255,255,0.15)" : "rgba(124,58,237,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: plan.highlight ? "white" : "#a78bfa" }}>
+                      <IcoCheck />
+                    </div>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/inscription"
+                style={{
                   display: "block", textAlign: "center",
-                  fontSize: "14px", fontWeight: 700, color: plan.highlight ? "#fff" : "rgba(255,255,255,0.8)",
-                  textDecoration: "none",
-                  padding: "14px",
-                  borderRadius: "12px",
-                  background: plan.highlight ? "linear-gradient(135deg, #7C3AED, #9333EA)" : "rgba(255,255,255,0.06)",
-                  border: plan.highlight ? "none" : "1px solid rgba(255,255,255,0.12)",
-                  boxShadow: plan.highlight ? "0 6px 24px rgba(124,58,237,0.4)" : "none",
-                  transition: "opacity 0.15s",
-                }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
-                  {plan.cta} →
-                </Link>
-              </div>
-            ))}
-          </div>
-
-          <p style={{ textAlign: "center", marginTop: "24px", fontSize: "12px", color: "rgba(255,255,255,0.25)" }}>
-            ✦ Paiement sécurisé Stripe · Aucun engagement · Accès immédiat
-          </p>
-        </div>
-      </section>
-
-      {/* ── CTA FINAL ──────────────────────────────────────────── */}
-      <section style={{
-        padding: "96px 0",
-        background: "linear-gradient(135deg, #1a0533 0%, #6b21a8 60%, #c2410c 100%)",
-        position: "relative",
-        overflow: "hidden",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-      }}>
-        <div style={{ position: "absolute", top: "-30%", left: "50%", transform: "translateX(-50%)", width: "80vw", height: "80vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 60%)", filter: "blur(60px)", pointerEvents: "none" }} />
-        <div className="relative mx-auto max-w-2xl px-6 text-center" style={{ zIndex: 1 }}>
-          <h2 style={{ fontSize: "clamp(30px, 4vw, 50px)", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", marginBottom: "16px", lineHeight: 1.1 }}>
-            Prêt à publier en 15 secondes ?
-          </h2>
-          <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.6)", lineHeight: 1.7, marginBottom: "36px" }}>
-            Rejoignez plus de 200 agents immobiliers qui font confiance à Studio Immo.
-            <br />Sans carte bancaire. 10 générations gratuites pour commencer.
-          </p>
-          <Link href="/inscription" style={{
-            display: "inline-flex", alignItems: "center", gap: "8px",
-            fontSize: "15px", fontWeight: 700, color: "#7C3AED", textDecoration: "none",
-            padding: "14px 36px", borderRadius: "999px",
-            background: "#fff",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
-            transition: "transform 0.15s, box-shadow 0.15s",
-          }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 14px 40px rgba(0,0,0,0.3)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.25)"; }}>
-            Créer mon compte gratuitement →
-          </Link>
-        </div>
-      </section>
-
-      {/* ── FOOTER ─────────────────────────────────────────────── */}
-      <footer style={{ background: "#080808", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "40px 24px" }}>
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
-            {/* Logo */}
-            <div className="flex items-center gap-2.5">
-              <div style={{ width: 26, height: 26, borderRadius: "7px", background: "linear-gradient(135deg, #7C3AED, #9333EA)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
-                </svg>
-              </div>
-              <span style={{ fontSize: "15px", fontWeight: 700, color: "#fff" }}>Studio Immo</span>
+                  borderRadius: "10px", padding: "12px",
+                  fontSize: "14px", fontWeight: 700, textDecoration: "none",
+                  ...plan.ctaStyle,
+                } as React.CSSProperties}
+              >
+                {plan.cta}
+              </Link>
             </div>
-
-            {/* Nav links */}
-            <div className="flex flex-wrap justify-center gap-6">
-              {[
-                { href: "#fonctionnalites", label: "Fonctionnalités" },
-                { href: "#tarifs", label: "Tarifs" },
-                { href: "/tarifs", label: "Plans" },
-                { href: "/connexion", label: "Connexion" },
-                { href: "/inscription", label: "Inscription" },
-              ].map(({ href, label }) => (
-                <a key={label} href={href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.35)", textDecoration: "none", transition: "color 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
-                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}>
-                  {label}
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Legal */}
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "24px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
-            <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)" }}>
-              © 2026 Studio Immo · Marketing immobilier automatisé
-            </p>
-            <div className="flex flex-wrap gap-5">
-              {[
-                { href: "/mentions-legales", label: "Mentions légales" },
-                { href: "/cgu", label: "CGU" },
-                { href: "/cgv", label: "CGV" },
-                { href: "/confidentialite", label: "Confidentialité" },
-              ].map(({ href, label }) => (
-                <Link key={href} href={href} style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)", textDecoration: "none", transition: "color 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
-                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.2)")}>
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </div>
+          ))}
         </div>
-      </footer>
+      </div>
+    </section>
+  );
+}
+
+/* ── Footer ──────────────────────────────────────────────────── */
+function Footer() {
+  return (
+    <footer style={{ background: "#0a0a0f", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "32px 24px" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "20px" }}>
+        {/* Logo */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ width: "28px", height: "28px", borderRadius: "7px", background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <IcoHouse size={14} color="white" />
+          </div>
+          <span style={{ fontSize: "14px", fontWeight: 700, color: "white" }}>Studio Immo</span>
+          <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.3)", marginLeft: "12px" }}>© 2026 Studio Immo · Tous droits réservés</span>
+        </div>
+
+        {/* Nav links */}
+        <div style={{ display: "flex", gap: "24px" }}>
+          {[["Fonctionnalités", "#features"], ["Tarifs", "/tarifs"], ["À propos", "#"]].map(([l, h]) => (
+            <a key={l} href={h} style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", textDecoration: "none" }}>{l}</a>
+          ))}
+        </div>
+
+        {/* Legal */}
+        <div style={{ display: "flex", gap: "20px" }}>
+          {[["Mentions légales", "/mentions-legales"], ["CGU", "/cgu"], ["CGV", "/cgv"], ["Confidentialité", "/confidentialite"]].map(([l, h]) => (
+            <Link key={l} href={h} style={{ fontSize: "12px", color: "rgba(255,255,255,0.3)", textDecoration: "none" }}>{l}</Link>
+          ))}
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ── Page ────────────────────────────────────────────────────── */
+export default function HomePage() {
+  return (
+    <div style={{ background: "#0a0a0f", minHeight: "100vh", fontFamily: "inherit" }}>
+      <Navbar />
+      <SectionHero />
+      <SectionTabs />
+      <SectionComparison />
+      <SectionSteps />
+      <SectionFeatures />
+      <SectionPricing />
+      <Footer />
     </div>
   );
 }
