@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { CheckoutButton } from "@/app/tarifs/CheckoutButton";
 
 const HOUSE_1 = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=80";
 const HOUSE_2 = "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400&q=80";
@@ -644,30 +646,33 @@ function SectionFeatures() {
 
 /* ── Section 6 : Tarifs ──────────────────────────────────────── */
 function SectionPricing() {
+  const { isSignedIn } = useAuth();
+  const isLoggedIn = isSignedIn ?? false;
+
   const PLANS = [
     {
+      id: "solo" as const,
       name: "Solo", price: "39", period: "/mois",
       desc: "L'essentiel pour les agents indépendants.",
       features: ["10 biens par mois", "5 campagnes par bien", "Tous les formats", "Support email"],
-      cta: "Commencer →", ctaStyle: { background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "white" },
       highlight: false,
     },
     {
+      id: "equipe" as const,
       name: "Agence", price: "79", period: "/mois",
       badge: "Le plus populaire",
       desc: "Puissance illimitée pour les agences et équipes.",
       features: ["30 biens par mois", "5 campagnes par bien", "Calendrier de publication", "Support prioritaire"],
-      cta: "Commencer →", ctaStyle: { background: "white", border: "none", color: "#7C3AED" },
       highlight: true,
     },
     {
+      id: "free" as const,
       name: "Essai gratuit", price: "0", period: " — 7 jours",
       desc: "Testez Studio Immo sans engagement ni carte bancaire.",
       features: ["3 biens inclus", "Toutes les fonctionnalités", "Aucune carte requise", "Accès immédiat"],
-      cta: "Créer mon compte →", ctaStyle: { background: "#7C3AED", border: "none", color: "white" },
       highlight: false,
     },
-  ] as const;
+  ];
   return (
     <section id="tarifs" style={{ background: "#f9fafb", padding: "80px 24px" }}>
       <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
@@ -714,17 +719,26 @@ function SectionPricing() {
                   </li>
                 ))}
               </ul>
-              <Link
-                href="/inscription"
-                style={{
-                  display: "block", textAlign: "center",
-                  borderRadius: "10px", padding: "12px",
-                  fontSize: "14px", fontWeight: 700, textDecoration: "none",
-                  ...plan.ctaStyle,
-                } as React.CSSProperties}
-              >
-                {plan.cta}
-              </Link>
+              {plan.id === "free" ? (
+                <Link
+                  href="/inscription"
+                  style={{
+                    display: "block", textAlign: "center",
+                    borderRadius: "10px", padding: "12px",
+                    fontSize: "14px", fontWeight: 700, textDecoration: "none",
+                    background: "#7C3AED", color: "white", border: "none",
+                  }}
+                >
+                  Créer mon compte →
+                </Link>
+              ) : (
+                <CheckoutButton
+                  plan={plan.id}
+                  isLoggedIn={isLoggedIn}
+                  isCurrentPlan={false}
+                  accent={plan.highlight}
+                />
+              )}
             </div>
           ))}
         </div>
