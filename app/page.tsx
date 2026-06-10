@@ -91,7 +91,7 @@ function Navbar() {
 /* ── Section 1 : Hero ────────────────────────────────────────── */
 function SectionHero() {
   return (
-    <section style={{ background: "linear-gradient(135deg, #1a0533 0%, #4c1d95 35%, #6d28d9 60%, #c2410c 85%, #ea580c 100%)", padding: "80px 40px 100px", width: "100%" }}>
+    <section style={{ background: "#0a0a0f", padding: "80px 40px 100px", width: "100%" }}>
       <div style={{ maxWidth: "100%", display: "grid", gridTemplateColumns: "1.1fr 1fr 1fr", gap: "32px", alignItems: "start" }}>
 
         {/* Colonne gauche : titre + CTA */}
@@ -148,8 +148,7 @@ function SectionHero() {
 
         {/* Colonne centre : input card */}
         <div style={{
-          background: "rgba(255,255,255,0.08)", backdropFilter: "blur(10px)",
-          border: "1px solid rgba(255,255,255,0.15)",
+          background: "#111118", border: "1px solid rgba(255,255,255,0.08)",
           borderRadius: "20px", padding: "22px",
         }}>
           <p style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: "14px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
@@ -198,11 +197,10 @@ function SectionHero() {
 
         {/* Colonne droite : output card */}
         <div style={{
-          background: "rgba(255,255,255,0.08)", backdropFilter: "blur(10px)",
-          border: "1px solid rgba(255,255,255,0.15)",
+          background: "#111118", border: "1px solid rgba(255,255,255,0.08)",
           borderRadius: "20px", padding: "22px",
         }}>
-          <p style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.7)", marginBottom: "14px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+          <p style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: "14px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
             2. Contenus prêts à publier
           </p>
 
@@ -270,17 +268,17 @@ const TABS = ["Facebook", "Instagram", "Stories", "Visuels"] as const;
 function SectionTabs() {
   const [active, setActive] = useState<typeof TABS[number]>("Facebook");
   return (
-    <section id="demo" style={{ background: "#0a0a0f", padding: "80px 24px" }}>
+    <section id="demo" style={{ background: "#ffffff", padding: "80px 24px" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 600, color: "#7C3AED", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px" }}>
           À partir d'un seul bien
         </p>
-        <h2 style={{ textAlign: "center", fontSize: "clamp(28px, 3.5vw, 40px)", fontWeight: 800, color: "white", letterSpacing: "-0.03em", marginBottom: "36px" }}>
+        <h2 style={{ textAlign: "center", fontSize: "clamp(28px, 3.5vw, 40px)", fontWeight: 800, color: "#111827", letterSpacing: "-0.03em", marginBottom: "36px" }}>
           Tous vos formats en une fois
         </h2>
 
         {/* Tabs */}
-        <div style={{ display: "flex", justifyContent: "center", gap: "4px", marginBottom: "36px", borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: "0" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: "4px", marginBottom: "36px", borderBottom: "1px solid #e5e7eb", paddingBottom: "0" }}>
           {TABS.map(tab => (
             <button
               key={tab}
@@ -288,7 +286,7 @@ function SectionTabs() {
               style={{
                 background: "none", border: "none", cursor: "pointer",
                 padding: "10px 22px", fontSize: "14px", fontWeight: 600,
-                color: active === tab ? "#7C3AED" : "rgba(255,255,255,0.45)",
+                color: active === tab ? "#7C3AED" : "#6b7280",
                 borderBottom: `2px solid ${active === tab ? "#7C3AED" : "transparent"}`,
                 marginBottom: "-1px", transition: "all 0.15s",
               }}
@@ -301,21 +299,21 @@ function SectionTabs() {
         {/* Cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
           {/* Card Facebook */}
-          <div style={{ background: "#111118", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", overflow: "hidden" }}>
+          <div style={{ background: "white", border: "1px solid #e5e7eb", borderRadius: "16px", overflow: "hidden", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
             <div style={{ padding: "14px 14px 0" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "10px" }}>
                 <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: 700, color: "white", flexShrink: 0 }}>A</div>
                 <div>
-                  <p style={{ fontSize: "12px", fontWeight: 700, color: "white", margin: 0 }}>Agence Immo</p>
+                  <p style={{ fontSize: "12px", fontWeight: 700, color: "#111827", margin: 0 }}>Agence Immo</p>
                   <p style={{ fontSize: "10px", color: "#6b7280", margin: 0 }}>Il y a 2 heures · 🌐</p>
                 </div>
               </div>
-              <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.75)", lineHeight: 1.6, marginBottom: "12px" }}>
+              <p style={{ fontSize: "12px", color: "#374151", lineHeight: 1.6, marginBottom: "12px" }}>
                 ✨ Nouveau mandat exclusif ! Belle villa lumineuse de 120m², 4 chambres, vue dégagée. Idéale famille. Prix : 385 000€. Visitez vite !
               </p>
             </div>
             <img src={HOUSE_1} alt="maison" style={{ width: "100%", height: "140px", objectFit: "cover" }} />
-            <div style={{ padding: "10px 14px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", gap: "14px" }}>
+            <div style={{ padding: "10px 14px", borderTop: "1px solid #f3f4f6", display: "flex", gap: "14px" }}>
               {[["👍", "124"], ["💬", "18"], ["↗️", "34"]].map(([ico, n]) => (
                 <span key={n} style={{ fontSize: "11px", color: "#6b7280" }}>{ico} {n}</span>
               ))}
@@ -323,14 +321,14 @@ function SectionTabs() {
           </div>
 
           {/* Card Instagram */}
-          <div style={{ background: "#111118", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", overflow: "hidden" }}>
+          <div style={{ background: "white", border: "1px solid #e5e7eb", borderRadius: "16px", overflow: "hidden", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
             <img src={HOUSE_2} alt="maison" style={{ width: "100%", height: "160px", objectFit: "cover" }} />
             <div style={{ padding: "12px 14px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "8px" }}>
                 <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "linear-gradient(135deg,#f09433,#bc1888)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, color: "white" }}>A</div>
-                <p style={{ fontSize: "12px", fontWeight: 700, color: "white", margin: 0 }}>agence_immo_officiel</p>
+                <p style={{ fontSize: "12px", fontWeight: 700, color: "#111827", margin: 0 }}>agence_immo_officiel</p>
               </div>
-              <p style={{ fontSize: "11.5px", color: "rgba(255,255,255,0.75)", lineHeight: 1.55, marginBottom: "8px" }}>
+              <p style={{ fontSize: "11.5px", color: "#374151", lineHeight: 1.55, marginBottom: "8px" }}>
                 🏡 Villa de rêve disponible dès maintenant ! 120m², 4 chambres, terrasse. Lien en bio pour visiter. #immobilier #realestate #villa
               </p>
               <div style={{ display: "flex", gap: "10px" }}>
@@ -418,7 +416,7 @@ function SectionComparison() {
     ["Total", "15 sec"],
   ];
   return (
-    <section style={{ background: "#111118", padding: "80px 24px" }}>
+    <section style={{ background: "#0a0a0f", padding: "80px 24px" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: "40px", alignItems: "center" }}>
 
         {/* Titre gauche */}
@@ -550,17 +548,17 @@ function SectionSteps() {
     },
   ];
   return (
-    <section id="features" style={{ background: "#0a0a0f", padding: "80px 24px" }}>
+    <section id="features" style={{ background: "#f9fafb", padding: "80px 24px" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 600, color: "#7C3AED", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px" }}>
           Comment ça marche
         </p>
-        <h2 style={{ textAlign: "center", fontSize: "clamp(28px, 3.5vw, 40px)", fontWeight: 800, color: "white", letterSpacing: "-0.03em", marginBottom: "56px" }}>
+        <h2 style={{ textAlign: "center", fontSize: "clamp(28px, 3.5vw, 40px)", fontWeight: 800, color: "#111827", letterSpacing: "-0.03em", marginBottom: "56px" }}>
           Découvrez Studio Immo
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px" }}>
           {STEPS.map(({ n, title, sub, screen }) => (
-            <div key={n} style={{ background: "#111118", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "20px", padding: "24px", overflow: "hidden" }}>
+            <div key={n} style={{ background: "white", border: "1px solid #e5e7eb", borderRadius: "20px", padding: "24px", overflow: "hidden", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
                 <div style={{
                   width: "32px", height: "32px", borderRadius: "50%",
@@ -569,9 +567,9 @@ function SectionSteps() {
                 }}>
                   {n}
                 </div>
-                <h3 style={{ fontSize: "15px", fontWeight: 700, color: "white", margin: 0 }}>{title}</h3>
+                <h3 style={{ fontSize: "15px", fontWeight: 700, color: "#111827", margin: 0 }}>{title}</h3>
               </div>
-              <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", lineHeight: 1.65, marginBottom: "16px" }}>{sub}</p>
+              <p style={{ fontSize: "13px", color: "#6b7280", lineHeight: 1.65, marginBottom: "16px" }}>{sub}</p>
               {screen}
             </div>
           ))}
@@ -623,14 +621,14 @@ function SectionFeatures() {
     },
   ];
   return (
-    <section style={{ background: "#111118", padding: "80px 24px" }}>
+    <section style={{ background: "#0a0a0f", padding: "80px 24px" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <h2 style={{ textAlign: "center", fontSize: "clamp(26px, 3vw, 36px)", fontWeight: 800, color: "white", letterSpacing: "-0.03em", marginBottom: "48px" }}>
           Tout ce dont vous avez besoin
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px" }}>
           {FEATURES.map(({ icon, title, desc }) => (
-            <div key={title} style={{ background: "#0a0a0f", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", padding: "24px" }}>
+            <div key={title} style={{ background: "#111118", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "24px" }}>
               <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#a78bfa", marginBottom: "16px" }}>
                 {icon}
               </div>
@@ -671,9 +669,9 @@ function SectionPricing() {
     },
   ] as const;
   return (
-    <section id="tarifs" style={{ background: "#0a0a0f", padding: "80px 24px" }}>
+    <section id="tarifs" style={{ background: "#f9fafb", padding: "80px 24px" }}>
       <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-        <h2 style={{ textAlign: "center", fontSize: "clamp(26px, 3vw, 38px)", fontWeight: 800, color: "white", letterSpacing: "-0.03em", marginBottom: "10px" }}>
+        <h2 style={{ textAlign: "center", fontSize: "clamp(26px, 3vw, 38px)", fontWeight: 800, color: "#111827", letterSpacing: "-0.03em", marginBottom: "10px" }}>
           Des formules simples et transparentes.
         </h2>
         <p style={{ textAlign: "center", fontSize: "15px", color: "#7C3AED", fontWeight: 600, marginBottom: "48px" }}>
@@ -685,10 +683,10 @@ function SectionPricing() {
               key={plan.name}
               style={{
                 position: "relative",
-                background: plan.highlight ? "linear-gradient(160deg, #4c1d95 0%, #3b0764 100%)" : "#111118",
-                border: plan.highlight ? "1px solid rgba(124,58,237,0.5)" : "1px solid rgba(255,255,255,0.07)",
+                background: plan.highlight ? "linear-gradient(160deg, #4c1d95 0%, #3b0764 100%)" : "white",
+                border: plan.highlight ? "1px solid rgba(124,58,237,0.5)" : "1px solid #e5e7eb",
                 borderRadius: "20px", padding: "28px",
-                boxShadow: plan.highlight ? "0 0 40px rgba(124,58,237,0.25)" : "none",
+                boxShadow: plan.highlight ? "0 0 40px rgba(124,58,237,0.25)" : "0 1px 8px rgba(0,0,0,0.06)",
               }}
             >
               {"badge" in plan && plan.badge && (
@@ -700,15 +698,15 @@ function SectionPricing() {
                   {plan.badge}
                 </div>
               )}
-              <p style={{ fontSize: "13px", fontWeight: 600, color: plan.highlight ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.5)", marginBottom: "8px" }}>{plan.name}</p>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: plan.highlight ? "rgba(255,255,255,0.7)" : "#6b7280", marginBottom: "8px" }}>{plan.name}</p>
               <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "6px" }}>
-                <span style={{ fontSize: "48px", fontWeight: 800, color: "white", letterSpacing: "-0.05em", lineHeight: 1 }}>{plan.price}€</span>
-                <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.5)" }}>{plan.period}</span>
+                <span style={{ fontSize: "48px", fontWeight: 800, color: plan.highlight ? "white" : "#111827", letterSpacing: "-0.05em", lineHeight: 1 }}>{plan.price}€</span>
+                <span style={{ fontSize: "14px", color: plan.highlight ? "rgba(255,255,255,0.5)" : "#6b7280" }}>{plan.period}</span>
               </div>
-              <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", lineHeight: 1.6, marginBottom: "22px" }}>{plan.desc}</p>
+              <p style={{ fontSize: "13px", color: plan.highlight ? "rgba(255,255,255,0.5)" : "#6b7280", lineHeight: 1.6, marginBottom: "22px" }}>{plan.desc}</p>
               <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", display: "flex", flexDirection: "column", gap: "10px" }}>
                 {plan.features.map(f => (
-                  <li key={f} style={{ display: "flex", alignItems: "center", gap: "9px", fontSize: "13px", color: "rgba(255,255,255,0.8)" }}>
+                  <li key={f} style={{ display: "flex", alignItems: "center", gap: "9px", fontSize: "13px", color: plan.highlight ? "rgba(255,255,255,0.8)" : "#374151" }}>
                     <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: plan.highlight ? "rgba(255,255,255,0.15)" : "rgba(124,58,237,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: plan.highlight ? "white" : "#a78bfa" }}>
                       <IcoCheck />
                     </div>
