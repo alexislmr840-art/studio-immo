@@ -1,12 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
+import { CheckoutButton } from "./CheckoutButton";
 
 type Feature = string | { label: string; badge: string };
 
 const PLANS: {
-  name: string; price: string; desc: string; highlight: boolean;
+  id: "solo" | "equipe"; name: string; price: string; desc: string; highlight: boolean;
   badge: string | null; features: Feature[]; cta: string;
 }[] = [
   {
+    id: "solo",
     name: "Solo",
     price: "39",
     desc: "L'essentiel pour les agents indépendants qui veulent se démarquer sur les réseaux.",
@@ -24,6 +29,7 @@ const PLANS: {
     cta: "Commencer avec Solo",
   },
   {
+    id: "equipe",
     name: "Équipe",
     price: "79",
     desc: "Puissance illimitée pour les agences et équipes qui gèrent plusieurs mandats.",
@@ -64,6 +70,7 @@ const FAQ = [
 ];
 
 export default function TarifsPage() {
+  const { isSignedIn } = useUser();
   return (
     <div style={{ background: "var(--bg-base)", minHeight: "100vh" }}>
 
@@ -165,16 +172,12 @@ export default function TarifsPage() {
                 })}
               </ul>
 
-              <Link
-                href="/connexion"
-                className="btn w-full"
-                style={plan.highlight
-                  ? { background: "var(--gold)", color: "#0a0a0a", padding: "14px", fontSize: "14px", fontWeight: 700 }
-                  : { background: "var(--bg-3)", color: "var(--txt-1)", border: "1px solid var(--border)", padding: "14px", fontSize: "14px" }
-                }
-              >
-                {plan.cta} →
-              </Link>
+              <CheckoutButton
+                plan={plan.id}
+                isLoggedIn={isSignedIn ?? false}
+                isCurrentPlan={false}
+                accent={plan.highlight}
+              />
             </div>
           ))}
         </div>
