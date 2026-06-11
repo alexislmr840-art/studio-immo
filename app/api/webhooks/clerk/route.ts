@@ -1,6 +1,6 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { sendWelcomeEmail } from "@/lib/email";
 
 type ClerkEmailAddress = { email_address: string; id: string };

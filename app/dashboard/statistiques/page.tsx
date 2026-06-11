@@ -3,19 +3,24 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-interface StatData {
-  biens: number;
-  campagnes: number;
-  publications: number;
-  visuels: number;
-  dernierTitre: string | null;
-  derniereVille: string | null;
+interface StatsData {
+  totalBiens: number;
+  totalCampagnes: number;
+  totalPublications: number;
+  totalVisuels: number;
+  credits: number;
+  maxCredits: number;
+  plan: string;
+  dernierBien: { id: string; titre: string; ville: string | null; created_at: string } | null;
+  parMois: number[];
+  parJour: number[];
 }
 
 function DonutChart({ value, total, color }: { value: number; total: number; color: string }) {
   const r = 38, cx = 48, cy = 48, circumference = 2 * Math.PI * r;
   const pct = Math.min(value / Math.max(total, 1), 1);
   const offset = circumference * (1 - pct);
+  const pctLabel = total >= 9999 ? "∞" : `${Math.round(pct * 100)}%`;
 
   return (
     <svg width="96" height="96" viewBox="0 0 96 96">
@@ -27,17 +32,17 @@ function DonutChart({ value, total, color }: { value: number; total: number; col
         strokeWidth="8"
         strokeLinecap="round"
         strokeDasharray={circumference}
-        strokeDashoffset={offset}
+        strokeDashoffset={total >= 9999 ? 0 : offset}
         transform={`rotate(-90 ${cx} ${cy})`}
         style={{ transition: "stroke-dashoffset 1s var(--ease-out)" }}
       />
       <text x={cx} y={cy - 4} textAnchor="middle" fontSize="16" fontWeight="800" fill="white">{value}</text>
-      <text x={cx} y={cy + 12} textAnchor="middle" fontSize="9" fill="var(--txt-4)" fontWeight="600">/ {total}</text>
+      <text x={cx} y={cy + 12} textAnchor="middle" fontSize="9" fill="var(--txt-4)" fontWeight="600">{pctLabel}</text>
     </svg>
   );
 }
 
-function BarChartFull({ data, labels, color }: { data: number[]; labels: string[]; color: string }) {
+function BarChart({ data, labels, color }: { data: number[]; labels: string[]; color: string }) {
   const max = Math.max(...data, 1);
   return (
     <div className="flex items-end gap-2 h-32">
@@ -48,14 +53,13 @@ function BarChartFull({ data, labels, color }: { data: number[]; labels: string[
           </span>
           <div className="w-full flex items-end" style={{ height: "90px" }}>
             <div
-              className="w-full rounded-t-md bar-animated"
+              className="w-full rounded-t-md"
               style={{
                 height: `${Math.max((v / max) * 90, v > 0 ? 4 : 1)}px`,
                 background: i === data.length - 1
                   ? color
                   : `linear-gradient(to top, ${color}80, ${color}30)`,
-                animationDelay: `${i * 0.06}s`,
-                transformOrigin: "bottom",
+                transition: `height 0.6s var(--ease-out) ${i * 0.05}s`,
               }}
             />
           </div>
@@ -66,37 +70,39 @@ function BarChartFull({ data, labels, color }: { data: number[]; labels: string[
   );
 }
 
+function Skeleton() {
+  return (
+    <div className="animate-pulse space-y-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[1,2,3,4].map(i => (
+          <div key={i} className="card p-5 h-24" style={{ background: "var(--bg-2)" }} />
+        ))}
+      </div>
+      <div className="grid gap-5 lg:grid-cols-3">
+        <div className="card p-5 lg:col-span-2 h-48" style={{ background: "var(--bg-2)" }} />
+        <div className="card p-5 h-48" style={{ background: "var(--bg-2)" }} />
+      </div>
+    </div>
+  );
+}
+
 export default function StatistiquesPage() {
-  const [stats, setStats] = useState<StatData>({
-    biens: 0, campagnes: 0, publications: 0, visuels: 0,
-    dernierTitre: null, derniereVille: null,
-  });
+  const [stats, setStats] = useState<StatsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const r = localStorage.getItem("studio_immo_resultat");
-    const b = localStorage.getItem("studio_immo_bien");
-    if (r) {
-      try {
-        const data = JSON.parse(r);
-        const bienData = b ? JSON.parse(b) : null;
-        const nb = data?.publications?.length ?? 0;
-        setStats({
-          biens: 1,
-          campagnes: nb,
-          publications: nb * 2,
-          visuels: nb * 2,
-          dernierTitre: bienData?.titre ?? null,
-          derniereVille: bienData?.ville ?? null,
-        });
-      } catch { /* ignore */ }
-    }
+    fetch("/api/stats")
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) setError(data.error);
+        else setStats(data);
+      })
+      .catch(() => setError("Impossible de charger les statistiques"))
+      .finally(() => setLoading(false));
   }, []);
 
-  const hasData = stats.biens > 0;
-  const weekData = [0, 0, 0, 0, stats.campagnes, stats.campagnes, stats.campagnes];
   const weekLabels = ["L", "M", "M", "J", "V", "S", "D"];
-
-  const monthData = [0, 0, 0, stats.campagnes, stats.campagnes, 0, 0, 0, 0, 0, 0, 0];
   const monthLabels = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 
   return (
@@ -110,10 +116,23 @@ export default function StatistiquesPage() {
               Statistiques
             </h1>
           </div>
-          {hasData && <Link href="/resultats" className="btn btn-secondary" style={{ fontSize: "12px", padding: "8px 14px" }}>Voir résultats →</Link>}
+          {stats && stats.totalCampagnes > 0 && (
+            <Link href="/dashboard/biens" className="btn btn-secondary" style={{ fontSize: "12px", padding: "8px 14px" }}>
+              Voir les biens →
+            </Link>
+          )}
         </div>
 
-        {!hasData ? (
+        {loading && <Skeleton />}
+
+        {error && (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <p className="text-sm font-semibold text-white/60 mb-2">Erreur de chargement</p>
+            <p className="text-xs" style={{ color: "var(--txt-4)" }}>{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && stats && stats.totalBiens === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl"
                  style={{ background: "var(--gold-10)", border: "1px solid var(--gold-20)" }}>
@@ -124,19 +143,21 @@ export default function StatistiquesPage() {
             </div>
             <h3 className="font-semibold text-white mb-2" style={{ fontSize: "16px" }}>Aucune donnée disponible</h3>
             <p style={{ fontSize: "13px", color: "var(--txt-4)", maxWidth: "320px", lineHeight: 1.7, marginBottom: "20px" }}>
-              Créez votre première stratégie pour que les statistiques s'affichent ici.
+              Créez votre premier bien pour que les statistiques s'affichent ici.
             </p>
             <Link href="/nouveau-bien" className="btn btn-primary">Créer un bien →</Link>
           </div>
-        ) : (
+        )}
+
+        {!loading && !error && stats && stats.totalBiens > 0 && (
           <>
             {/* KPI cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
               {[
-                { label: "Biens traités", value: stats.biens, color: "var(--gold)", icon: "🏠" },
-                { label: "Campagnes IA", value: stats.campagnes, color: "#818cf8", icon: "🎯" },
-                { label: "Publications", value: stats.publications, color: "#34d399", icon: "📝" },
-                { label: "Visuels PNG", value: stats.visuels, color: "#fb923c", icon: "🖼️" },
+                { label: "Biens traités", value: stats.totalBiens, color: "var(--gold)", icon: "🏠" },
+                { label: "Campagnes IA", value: stats.totalCampagnes, color: "#818cf8", icon: "🎯" },
+                { label: "Publications", value: stats.totalPublications, color: "#34d399", icon: "📝" },
+                { label: "Visuels PNG", value: stats.totalVisuels, color: "#fb923c", icon: "🖼️" },
               ].map(({ label, value, color, icon }) => (
                 <div key={label} className="card p-5">
                   <div className="flex items-center justify-between mb-3">
@@ -156,22 +177,25 @@ export default function StatistiquesPage() {
               <div className="card p-5 lg:col-span-2">
                 <div className="flex items-center justify-between mb-5">
                   <div>
-                    <h2 className="font-semibold text-white" style={{ fontSize: "14px" }}>Activité hebdomadaire</h2>
-                    <p style={{ fontSize: "12px", color: "var(--txt-4)" }}>Campagnes générées cette semaine</p>
+                    <h2 className="font-semibold text-white" style={{ fontSize: "14px" }}>Activité des 7 derniers jours</h2>
+                    <p style={{ fontSize: "12px", color: "var(--txt-4)" }}>Campagnes générées</p>
                   </div>
-                  <div className="badge badge-gold">{stats.campagnes} total</div>
+                  <div className="badge badge-gold">{stats.totalCampagnes} total</div>
                 </div>
-                <BarChartFull data={weekData} labels={weekLabels} color="var(--gold)" />
+                <BarChart data={stats.parJour} labels={weekLabels} color="var(--gold)" />
               </div>
 
-              {/* Donut */}
+              {/* Donut crédits */}
               <div className="card p-5 flex flex-col items-center justify-center text-center">
-                <h2 className="font-semibold text-white mb-4" style={{ fontSize: "14px" }}>Crédits ce mois</h2>
-                <DonutChart value={stats.campagnes} total={10} color="var(--gold)" />
-                <p className="mt-3 font-semibold text-white" style={{ fontSize: "20px" }}>
-                  {Math.max(10 - stats.campagnes, 0)}
+                <h2 className="font-semibold text-white mb-1" style={{ fontSize: "14px" }}>Crédits restants</h2>
+                <p className="mb-4" style={{ fontSize: "11px", color: "var(--txt-4)", textTransform: "capitalize" }}>
+                  Plan {stats.plan === "equipe" ? "Équipe" : stats.plan === "solo" ? "Solo" : "Gratuit"}
                 </p>
-                <p style={{ fontSize: "12px", color: "var(--txt-4)", marginTop: "2px" }}>générations restantes</p>
+                <DonutChart value={stats.credits} total={stats.maxCredits} color="var(--gold)" />
+                <p className="mt-3 font-semibold text-white" style={{ fontSize: "20px" }}>
+                  {stats.maxCredits >= 9999 ? "Illimité" : `${stats.credits} / ${stats.maxCredits}`}
+                </p>
+                <p style={{ fontSize: "12px", color: "var(--txt-4)", marginTop: "2px" }}>crédits disponibles</p>
                 <Link href="/dashboard/abonnement" className="btn btn-secondary mt-4 w-full" style={{ padding: "9px", fontSize: "12px" }}>
                   Gérer le plan
                 </Link>
@@ -183,14 +207,16 @@ export default function StatistiquesPage() {
               <div className="flex items-center justify-between mb-5">
                 <div>
                   <h2 className="font-semibold text-white" style={{ fontSize: "14px" }}>Activité annuelle</h2>
-                  <p style={{ fontSize: "12px", color: "var(--txt-4)" }}>Campagnes par mois sur 2026</p>
+                  <p style={{ fontSize: "12px", color: "var(--txt-4)" }}>
+                    Campagnes par mois en {new Date().getFullYear()}
+                  </p>
                 </div>
               </div>
-              <BarChartFull data={monthData} labels={monthLabels} color="#818cf8" />
+              <BarChart data={stats.parMois} labels={monthLabels} color="#818cf8" />
             </div>
 
-            {/* Last bien */}
-            {stats.dernierTitre && (
+            {/* Dernier bien */}
+            {stats.dernierBien && (
               <div className="card p-5">
                 <h2 className="font-semibold text-white mb-4" style={{ fontSize: "14px" }}>Dernier bien traité</h2>
                 <div className="flex items-center justify-between rounded-xl p-4"
@@ -204,13 +230,15 @@ export default function StatistiquesPage() {
                       </svg>
                     </div>
                     <div>
-                      <p className="font-semibold text-white" style={{ fontSize: "14px" }}>{stats.dernierTitre}</p>
-                      {stats.derniereVille && <p style={{ fontSize: "12px", color: "var(--txt-4)" }}>{stats.derniereVille}</p>}
+                      <p className="font-semibold text-white" style={{ fontSize: "14px" }}>{stats.dernierBien.titre}</p>
+                      {stats.dernierBien.ville && (
+                        <p style={{ fontSize: "12px", color: "var(--txt-4)" }}>{stats.dernierBien.ville}</p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="badge badge-ok">{stats.campagnes} campagnes</div>
-                    <Link href="/resultats" className="btn btn-secondary" style={{ padding: "7px 12px", fontSize: "12px" }}>
+                    <div className="badge badge-ok">{stats.totalCampagnes} campagne{stats.totalCampagnes > 1 ? "s" : ""}</div>
+                    <Link href={`/biens/${stats.dernierBien.id}`} className="btn btn-secondary" style={{ padding: "7px 12px", fontSize: "12px" }}>
                       Voir →
                     </Link>
                   </div>

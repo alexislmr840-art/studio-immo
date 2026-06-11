@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import DashboardMain, { type BienDashboard } from "@/components/DashboardMain";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import RefreshOnMount from "./RefreshOnMount";
 
 export interface DashboardStats {
