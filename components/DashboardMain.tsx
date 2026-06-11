@@ -141,8 +141,8 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
   const todayIdx = 6;
 
   return (
-    <main style={{ background: "#FFFFFF", flex: 1, minHeight: "100vh", padding: "28px 28px 40px" }}>
-      <div style={{ maxWidth: "960px" }}>
+    <main style={{ background: "#F4F4F8", flex: 1, minHeight: "100vh", padding: "28px 28px 40px" }}>
+      <div style={{ maxWidth: "100%" }}>
 
         {/* ── Header ─────────────────────────────────────────── */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
@@ -176,10 +176,11 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
             <div
               key={label}
               style={{
-                background: "#F9FAFB",
-                border: "1px solid #E5E7EB",
+                background: "#FFFFFF",
+                border: "1px solid #D1D5DB",
                 borderRadius: "10px",
                 padding: "14px 16px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
               {/* Label row */}
@@ -243,11 +244,11 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
                 </Link>
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "10px" }}>
                 {biens.map((bien) => (
-                  <div key={bien.id} style={{ border: "1px solid #E5E7EB", borderRadius: "10px", overflow: "hidden" }}>
+                  <div key={bien.id} style={{ width: "100%", background: "#FFFFFF", border: "1px solid #D1D5DB", borderRadius: "10px", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
                     {/* Image zone */}
-                    <div style={{ height: "80px", background: "#EDE9FE", position: "relative", overflow: "hidden" }}>
+                    <div style={{ height: "120px", background: "#EDE9FE", position: "relative", overflow: "hidden" }}>
                       {bien.photo_principale_url ? (
                         <img
                           src={bien.photo_principale_url}
@@ -296,7 +297,7 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
 
             {/* Activity chart */}
-            <div style={{ background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: "10px", padding: "14px 16px" }}>
+            <div style={{ background: "#FFFFFF", border: "1px solid #D1D5DB", borderRadius: "10px", padding: "14px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
               <p style={{ fontSize: "12px", fontWeight: 600, color: "#111827", margin: "0 0 14px" }}>Activité cette semaine</p>
               <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", height: "60px", gap: "4px" }}>
                 {DAYS.map((day, i) => (
@@ -318,7 +319,7 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
             </div>
 
             {/* Quick actions */}
-            <div style={{ background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: "10px", padding: "14px 16px" }}>
+            <div style={{ background: "#FFFFFF", border: "1px solid #D1D5DB", borderRadius: "10px", padding: "14px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
               <p style={{ fontSize: "12px", fontWeight: 600, color: "#111827", margin: "0 0 10px" }}>Actions rapides</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 {[

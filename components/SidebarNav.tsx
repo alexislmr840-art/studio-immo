@@ -71,7 +71,7 @@ function IcoPlus() {
 }
 function IcoStar() {
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2.2" strokeLinecap="round">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2.2" strokeLinecap="round">
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
     </svg>
   );
@@ -112,12 +112,12 @@ export default function SidebarNav({ prenom, initiale, email }: Props) {
       className="hidden lg:flex flex-col h-screen sticky top-0 select-none flex-shrink-0"
       style={{
         width: "200px",
-        background: "#F9FAFB",
-        borderRight: "1px solid #E5E7EB",
+        background: "#1E1B2E",
+        borderRight: "1px solid rgba(255,255,255,0.08)",
       }}
     >
       {/* Logo */}
-      <div style={{ padding: "18px 16px 14px", borderBottom: "1px solid #E5E7EB" }}>
+      <div style={{ padding: "18px 16px 14px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
           <div style={{
             width: "26px", height: "26px", borderRadius: "6px",
@@ -127,8 +127,8 @@ export default function SidebarNav({ prenom, initiale, email }: Props) {
               <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
             </svg>
           </div>
-          <span style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
-            Studio <span style={{ color: "#7C3AED" }}>Immo</span>
+          <span style={{ fontSize: "14px", fontWeight: 700, color: "white" }}>
+            Studio Immo
           </span>
         </Link>
       </div>
@@ -162,18 +162,18 @@ export default function SidebarNav({ prenom, initiale, email }: Props) {
                   display: "flex", alignItems: "center", gap: "7px",
                   padding: "7px 10px", borderRadius: "6px",
                   fontSize: "13px", fontWeight: isAct ? 500 : 400,
-                  color: isAct ? "#7C3AED" : "#6B7280",
-                  background: isAct ? "#EDE9FE" : "transparent",
+                  color: isAct ? "#A78BFA" : "#9CA3AF",
+                  background: isAct ? "rgba(124,58,237,0.25)" : "transparent",
                   textDecoration: "none", transition: "background 0.1s, color 0.1s",
                 }}
-                onMouseEnter={e => { if (!isAct) { (e.currentTarget as HTMLElement).style.background = "#F3F4F6"; (e.currentTarget as HTMLElement).style.color = "#374151"; } }}
-                onMouseLeave={e => { if (!isAct) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "#6B7280"; } }}
+                onMouseEnter={e => { if (!isAct) { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; (e.currentTarget as HTMLElement).style.color = "#D1D5DB"; } }}
+                onMouseLeave={e => { if (!isAct) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "#9CA3AF"; } }}
               >
-                <span style={{ color: isAct ? "#7C3AED" : "#9CA3AF", flexShrink: 0 }}>{icon}</span>
+                <span style={{ color: isAct ? "#A78BFA" : "#9CA3AF", flexShrink: 0 }}>{icon}</span>
                 <span style={{ flex: 1 }}>{label}</span>
                 {badge && (
                   <span style={{
-                    background: "#EDE9FE", color: "#7C3AED",
+                    background: "rgba(124,58,237,0.25)", color: "#A78BFA",
                     fontSize: "9px", fontWeight: 600,
                     borderRadius: "4px", padding: "1px 5px",
                   }}>
@@ -187,7 +187,7 @@ export default function SidebarNav({ prenom, initiale, email }: Props) {
 
         {/* Section COMPTE */}
         <p style={{
-          fontSize: "10px", color: "#9CA3AF", fontWeight: 600,
+          fontSize: "10px", color: "rgba(255,255,255,0.3)", fontWeight: 600,
           textTransform: "uppercase", letterSpacing: "0.08em",
           padding: "14px 10px 6px",
         }}>
@@ -204,14 +204,14 @@ export default function SidebarNav({ prenom, initiale, email }: Props) {
                   display: "flex", alignItems: "center", gap: "7px",
                   padding: "7px 10px", borderRadius: "6px",
                   fontSize: "13px", fontWeight: isAct ? 500 : 400,
-                  color: isAct ? "#7C3AED" : "#6B7280",
-                  background: isAct ? "#EDE9FE" : "transparent",
+                  color: isAct ? "#A78BFA" : "#9CA3AF",
+                  background: isAct ? "rgba(124,58,237,0.25)" : "transparent",
                   textDecoration: "none", transition: "background 0.1s, color 0.1s",
                 }}
-                onMouseEnter={e => { if (!isAct) { (e.currentTarget as HTMLElement).style.background = "#F3F4F6"; (e.currentTarget as HTMLElement).style.color = "#374151"; } }}
-                onMouseLeave={e => { if (!isAct) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "#6B7280"; } }}
+                onMouseEnter={e => { if (!isAct) { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; (e.currentTarget as HTMLElement).style.color = "#D1D5DB"; } }}
+                onMouseLeave={e => { if (!isAct) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "#9CA3AF"; } }}
               >
-                <span style={{ color: isAct ? "#7C3AED" : "#9CA3AF", flexShrink: 0 }}>{icon}</span>
+                <span style={{ color: isAct ? "#A78BFA" : "#9CA3AF", flexShrink: 0 }}>{icon}</span>
                 {label}
               </Link>
             );
@@ -225,21 +225,23 @@ export default function SidebarNav({ prenom, initiale, email }: Props) {
           href="/tarifs"
           style={{
             display: "block", textDecoration: "none",
-            background: "#EDE9FE", borderRadius: "8px", padding: "10px 12px",
+            background: "rgba(124,58,237,0.2)",
+            border: "1px solid rgba(124,58,237,0.3)",
+            borderRadius: "8px", padding: "10px 12px",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "3px" }}>
             <IcoStar />
-            <p style={{ fontSize: "12px", fontWeight: 600, color: "#7C3AED", margin: 0 }}>Passer à Pro</p>
+            <p style={{ fontSize: "12px", fontWeight: 600, color: "#A78BFA", margin: 0 }}>Passer à Pro</p>
           </div>
-          <p style={{ fontSize: "11px", color: "#6B7280", lineHeight: 1.4, margin: 0 }}>
+          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)", lineHeight: 1.4, margin: 0 }}>
             Jusqu'à 30 biens/mois dès 79€/mois
           </p>
         </Link>
       </div>
 
       {/* User + logout */}
-      <div style={{ padding: "10px 12px 16px", borderTop: "1px solid #E5E7EB" }}>
+      <div style={{ padding: "10px 12px 16px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
         <Link href="/dashboard/parametres" style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", textDecoration: "none" }}>
           <div style={{
             width: "30px", height: "30px", borderRadius: "50%",
@@ -249,11 +251,11 @@ export default function SidebarNav({ prenom, initiale, email }: Props) {
             {initiale}
           </div>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <p style={{ fontSize: "12px", fontWeight: 600, color: "#111827", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <p style={{ fontSize: "12px", fontWeight: 600, color: "white", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {prenom}
             </p>
             {email && (
-              <p style={{ fontSize: "10px", color: "#9CA3AF", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {email}
               </p>
             )}
@@ -263,12 +265,12 @@ export default function SidebarNav({ prenom, initiale, email }: Props) {
           onClick={() => signOut({ redirectUrl: "/" })}
           style={{
             display: "flex", alignItems: "center", gap: "6px", width: "100%",
-            background: "white", border: "1px solid #E5E7EB", borderRadius: "6px",
-            padding: "6px 10px", fontSize: "12px", color: "#6B7280",
+            background: "transparent", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px",
+            padding: "6px 10px", fontSize: "12px", color: "rgba(255,255,255,0.6)",
             cursor: "pointer", transition: "background 0.1s",
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "#F3F4F6"; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "white"; }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.06)"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
         >
           <IcoLogout /> Se déconnecter
         </button>
