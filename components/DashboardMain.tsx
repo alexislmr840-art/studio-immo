@@ -141,7 +141,7 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
   const todayIdx = 6;
 
   return (
-    <main style={{ background: "#F4F4F8", flex: 1, minHeight: "100vh", padding: "28px 28px 40px" }}>
+    <main style={{ background: "#F4F4F8", flex: 1, minHeight: "100vh", padding: "24px" }}>
       <div style={{ maxWidth: "100%" }}>
 
         {/* ── Header ─────────────────────────────────────────── */}
@@ -244,16 +244,16 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
                 </Link>
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "10px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
                 {biens.map((bien) => (
-                  <div key={bien.id} style={{ width: "100%", background: "#FFFFFF", border: "1px solid #D1D5DB", borderRadius: "10px", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
+                  <div key={bien.id} style={{ background: "#FFFFFF", border: "1px solid #D1D5DB", borderRadius: "10px", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
                     {/* Image zone */}
-                    <div style={{ height: "120px", background: "#EDE9FE", position: "relative", overflow: "hidden" }}>
+                    <div style={{ height: "140px", background: "#EDE9FE", overflow: "hidden" }}>
                       {bien.photo_principale_url ? (
                         <img
                           src={bien.photo_principale_url}
                           alt={bien.titre}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          style={{ width: "100%", height: "140px", objectFit: "cover" }}
                         />
                       ) : (
                         <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#7C3AED" }}>
