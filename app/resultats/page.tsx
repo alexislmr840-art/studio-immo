@@ -125,7 +125,7 @@ function CampagneCard({
 }: {
   pub: Publication; index: number; photos: string[]; photoPrincipale: number;
   agence: Agence | null; logo: string;
-  onUpdate: (field: Onglet, value: string) => void;
+  onUpdate: (field: Onglet, value: string) => Promise<void>;
   datePlanifiee?: string;
   onPlanifier: (date: string) => Promise<void>;
 }) {
@@ -144,6 +144,8 @@ function CampagneCard({
   const [erreurPlanif, setErreurPlanif]   = useState(false);
   const [editing, setEditing]             = useState(false);
   const [editValue, setEditValue]         = useState("");
+  const [editSaving, setEditSaving]       = useState(false);
+  const [editSaved,   setEditSaved]       = useState(false);
 
   useEffect(() => {
     if (datePlanifiee) { setDateSauvegardee(datePlanifiee); setDate(toDateTimeLocal(datePlanifiee)); }
@@ -167,7 +169,18 @@ function CampagneCard({
 
   function demarrerEdition() { setEditValue(pub[onglet]); setEditing(true); }
 
-  function validerEdition() { onUpdate(onglet, editValue); setEditing(false); }
+  async function validerEdition() {
+    const field = onglet;
+    const value = editValue;
+    setEditing(false);
+    setEditSaving(true);
+    try {
+      await onUpdate(field, value);
+      setEditSaved(true);
+      setTimeout(() => setEditSaved(false), 2000);
+    } catch { /* état local déjà mis à jour */ }
+    finally { setEditSaving(false); }
+  }
 
   async function confirmerPlanif() {
     setErreurPlanif(false);
@@ -318,6 +331,14 @@ function CampagneCard({
           </button>
         </div>
 
+        {(editSaving || editSaved) && (
+          <p className="flex items-center gap-1.5" style={{ fontSize: "11px", color: editSaved ? "var(--ok)" : "var(--txt-4)" }}>
+            {editSaved ? (
+              <><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>Sauvegardé ✓</>
+            ) : "Enregistrement…"}
+          </p>
+        )}
+
         {dateSauvegardee && !datePicker && !planifie && (
           <p className="flex items-center gap-1.5" style={{ fontSize: "11px", color: "var(--ok)" }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -418,12 +439,31 @@ export default function ResultatsPage() {
     setPlanifications((prev) => ({ ...prev, [index]: date }));
   }
 
-  function updatePublication(index: number, field: Onglet, value: string) {
+  async function updatePublication(index: number, field: Onglet, value: string): Promise<void> {
     setData((prev) => {
       if (!prev) return prev;
       const publications = prev.publications.map((p, i) => i === index ? { ...p, [field]: value } : p);
       return { ...prev, publications };
     });
+
+    try {
+      const savedStr = localStorage.getItem("studio_immo_resultat");
+      if (savedStr) {
+        const saved = JSON.parse(savedStr);
+        if (saved.publications?.[index]) {
+          saved.publications[index][field] = value;
+          localStorage.setItem("studio_immo_resultat", JSON.stringify(saved));
+        }
+      }
+    } catch { /* ignore */ }
+
+    if (!generationId) return;
+    const resp = await fetch(`/api/generations/${generationId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ publication_index: index, field, value }),
+    });
+    if (!resp.ok) throw new Error("Échec de la sauvegarde");
   }
 
   if (!data) {
