@@ -16,6 +16,7 @@ Observe attentivement chaque photo fournie et identifie :
 - Les atouts visibles : parquet, baies vitrées, hauteur sous plafond, rénovation récente, prestations (cheminée, îlot central, dressing...)
 - L'état général et le style (moderne, ancien avec charme, contemporain, à rafraîchir)
 RÈGLE ABSOLUE : ne mentionne dans tes textes QUE ce qui est réellement visible sur les photos ou écrit dans la description. N'invente JAMAIS une caractéristique. Si tu vois une terrasse ensoleillée, exploite-la. Si tu ne vois pas de jardin, n'en parle pas.
+Cette analyse factuelle doit être rédigée dans le champ "analysePhotos" du JSON (3 à 5 phrases : pièces identifiées, luminosité, matériaux, état général, extérieurs). Si aucune photo n'est fournie, ce champ reste une chaîne vide. Toutes les publications s'appuient OBLIGATOIREMENT sur ce champ.
 
 ## DÉDUCTION DU PROFIL ACHETEUR
 Croise prix + surface + ville + style du bien pour déduire LE profil acheteur le plus probable (primo-accédant, jeune couple, famille, investisseur locatif, retraité, acheteur résidence secondaire). Tout le ton et les arguments de tes publications s'adaptent à CE profil : ses peurs, ses rêves, son vocabulaire.
@@ -35,6 +36,12 @@ Croise prix + surface + ville + style du bien pour déduire LE profil acheteur l
 - Phrases génériques réutilisables pour n'importe quel bien
 - Tutoiement (vouvoiement uniquement)
 - Mentionner des éléments absents des photos et de la description
+- Éléments géographiques inventés : ne JAMAIS mentionner mer, montagne, plage, lac, vue panoramique ou tout élément géographique naturel sauf s'il est explicitement visible sur les photos ou écrit dans la description — une vue mer inventée détruit la crédibilité de l'agence
+
+## CALIBRAGE — ANCRAGE PHOTO OBLIGATOIRE
+MAUVAIS (générique, réutilisable partout, sans ancrage photo) : "Votre appartement lumineux à Bordeaux vous attend ! Profitez de la vue"
+BON (spécifique, ancré dans les photos, impossible à réutiliser) : "Le parquet chêne capte la lumière du sud toute la journée dans ce séjour traversant — et le balcon filant donne sur les toits, pas sur un mur"
+Chaque publication doit être du niveau "BON" : si elle peut s'appliquer à un autre bien, réécris-la.
 
 ## LES 5 PUBLICATIONS (rôles imposés, dans cet ordre)
 1. DÉCOUVERTE — révéler le bien avec l'accroche la plus forte, vue d'ensemble
@@ -54,6 +61,7 @@ Tu réponds UNIQUEMENT en JSON valide, sans markdown, dans le format exact deman
 const JSON_FORMAT = `
 Format JSON exact attendu (sans markdown, sans commentaire) :
 {
+  "analysePhotos": "",
   "profilAcheteur": "",
   "pointsForts": ["", "", "", ""],
   "strategie": "",
@@ -76,7 +84,7 @@ Exactement 5 publications dans le tableau.`;
 
 /* ── Types pour le content array OpenAI ─────────────────────── */
 type TextPart = { type: "text"; text: string };
-type ImagePart = { type: "image_url"; image_url: { url: string; detail: "low" } };
+type ImagePart = { type: "image_url"; image_url: { url: string; detail: "auto" } };
 type ContentPart = TextPart | ImagePart;
 
 export async function POST(request: Request) {
@@ -104,7 +112,7 @@ ${JSON_FORMAT}`,
 
     const imageParts: ImagePart[] = validPhotos.map((url) => ({
       type: "image_url",
-      image_url: { url, detail: "low" },
+      image_url: { url, detail: "auto" },
     }));
 
     const userContent: ContentPart[] = [textPart, ...imageParts];

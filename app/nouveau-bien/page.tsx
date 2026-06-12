@@ -123,6 +123,7 @@ export default function NouveauBienPage() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 90_000);
     try {
+      console.log("photosUrls avant fetch:", photosUrls);
       const resp = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
