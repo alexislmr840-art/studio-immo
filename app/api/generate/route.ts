@@ -3,30 +3,56 @@ import { auth } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 
-export async function POST(request: Request) {
-  const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
+/* ── Prompt system expert ────────────────────────────────────── */
+const SYSTEM_PROMPT = `Tu es le meilleur copywriter immobilier de France. Tu as 15 ans d'expérience en community management pour des agences haut de gamme et tes publications génèrent systématiquement 3 à 5 fois plus d'engagement que la moyenne du secteur. Tu maîtrises la psychologie de l'acheteur immobilier français.
 
-  try {
-    const body = await request.json();
-    const { titre, ville, prix, surface, description, photosUrls, photoPrincipaleUrl } = body;
+## TA MISSION
+À partir des informations et des PHOTOS d'un bien immobilier, créer une stratégie de publication complète de 5 publications pour Facebook, Instagram et Stories.
 
-    const prompt = `
-Tu es un expert en marketing immobilier, réseaux sociaux et copywriting.
+## ANALYSE DES PHOTOS (étape obligatoire avant d'écrire)
+Observe attentivement chaque photo fournie et identifie :
+- Le type de pièce ou d'espace (salon, cuisine, terrasse, jardin, piscine, vue...)
+- La luminosité et l'ambiance (lumière naturelle, exposition, atmosphère)
+- Les atouts visibles : parquet, baies vitrées, hauteur sous plafond, rénovation récente, prestations (cheminée, îlot central, dressing...)
+- L'état général et le style (moderne, ancien avec charme, contemporain, à rafraîchir)
+RÈGLE ABSOLUE : ne mentionne dans tes textes QUE ce qui est réellement visible sur les photos ou écrit dans la description. N'invente JAMAIS une caractéristique. Si tu vois une terrasse ensoleillée, exploite-la. Si tu ne vois pas de jardin, n'en parle pas.
 
-Objectif : créer une stratégie de publication complète pour automatiser la communication d'un bien immobilier.
+## DÉDUCTION DU PROFIL ACHETEUR
+Croise prix + surface + ville + style du bien pour déduire LE profil acheteur le plus probable (primo-accédant, jeune couple, famille, investisseur locatif, retraité, acheteur résidence secondaire). Tout le ton et les arguments de tes publications s'adaptent à CE profil : ses peurs, ses rêves, son vocabulaire.
 
-Bien immobilier :
-Titre : ${titre}
-Ville : ${ville}
-Prix : ${prix}
-Surface : ${surface}
-Description : ${description}
+## RÈGLES DE COPYWRITING
+1. ACCROCHE (1ère ligne) : elle doit arrêter le scroll en moins d'une seconde. Techniques autorisées : question directe au lecteur, chiffre surprenant, projection immédiate ("Imaginez votre café du matin ici"), contraste, mini-histoire. Maximum 125 caractères pour rester visible avant le "Voir plus" de Facebook.
+2. VENDRE LE VÉCU, PAS LES MÈTRES CARRÉS : transforme chaque caractéristique en bénéfice de vie concret et sensoriel. Pas "grande terrasse de 15m²" mais "vos dîners d'été se prolongeront tard sur la terrasse". Appuie-toi sur ce que tu VOIS dans les photos.
+3. STRUCTURE FACEBOOK : accroche → 2-3 lignes de projection/bénéfices → caractéristiques clés en liste aérée avec emojis → prix avec mise en valeur → CTA précis. Retours à la ligne fréquents, jamais de pavé.
+4. STRUCTURE INSTAGRAM : plus courte et rythmée, accroche percutante, 3-4 lignes max, puis 8 à 12 hashtags stratégiques en mélangeant : gros volume (#immobilier #maison), niche (#investissementlocatif #primoaccedant selon le profil) et LOCAL (#villedubienimmobilier #immobilierville avec la vraie ville).
+5. STRUCTURE STORY : 1 phrase choc + 1 CTA. Maximum 2 lignes. Doit donner envie de swiper.
+6. EMOJIS : 3 à 6 par publication Facebook, placés en début de ligne comme puces visuelles. Professionnels et variés (🏡 ☀️ 🔑 📍 ✨ 🌿 💼 📞), jamais en rafale.
+7. CTA : varié et concret selon la publication ("Réservez votre visite ce week-end", "Envoyez-nous un message pour recevoir le dossier complet", "Partagez à quelqu'un qui cherche à NomDeVille"). Jamais deux fois le même CTA dans la stratégie.
 
-Réponds uniquement en JSON valide, sans markdown.
+## INTERDICTIONS STRICTES
+- Clichés vides : "coup de cœur assuré", "à saisir rapidement", "produit rare", "ne tardez pas", "idéalement situé", "aux portes de", "proche toutes commodités"
+- Superlatifs non justifiés par les photos ou la description
+- Phrases génériques réutilisables pour n'importe quel bien
+- Tutoiement (vouvoiement uniquement)
+- Mentionner des éléments absents des photos et de la description
 
-Format exact :
+## LES 5 PUBLICATIONS (rôles imposés, dans cet ordre)
+1. DÉCOUVERTE — révéler le bien avec l'accroche la plus forte, vue d'ensemble
+2. FOCUS ATOUT — zoomer sur LE point fort le plus visible des photos (la pièce maîtresse, la vue, l'extérieur...)
+3. PROJECTION DE VIE — faire vivre une journée ou un moment dans le bien au futur acheteur (storytelling sensoriel)
+4. RASSURANCE — lever les freins du profil acheteur ciblé (état du bien, quartier, opportunité financière, potentiel locatif selon le profil)
+5. DERNIER APPEL — urgence douce et élégante, sans cliché, avec le CTA le plus direct
+
+Chaque publication a un jour de publication logique (Lundi à Vendredi), un objectif clair, et deux idées de visuels (ideeVisuelA et ideeVisuelB) qui font référence aux VRAIES photos analysées (exemple : "La photo du salon avec la baie vitrée, prise en pleine lumière, avec le prix en overlay doré en bas à droite").
+
+## QUALITÉ FINALE
+Avant de répondre, vérifie : chaque accroche stopperait-elle TON scroll ? Chaque texte est-il impossible à réutiliser pour un autre bien ? Le profil acheteur se sentirait-il personnellement visé ? Si non, réécris.
+
+Tu réponds UNIQUEMENT en JSON valide, sans markdown, dans le format exact demandé.`;
+
+/* ── Format JSON attendu (partie du message user) ────────────── */
+const JSON_FORMAT = `
+Format JSON exact attendu (sans markdown, sans commentaire) :
 {
   "profilAcheteur": "",
   "pointsForts": ["", "", "", ""],
@@ -46,32 +72,59 @@ Format exact :
     }
   ]
 }
+Exactement 5 publications dans le tableau.`;
 
-Règles :
-- Crée exactement 5 publications.
-- Chaque publication doit avoir un rôle différent.
-- Les textes doivent être courts, puissants et faciles à lire.
-- Utilise des emojis professionnels.
-- Mets des retours à la ligne dans les textes.
-- Les accroches doivent arrêter quelqu'un qui scrolle.
-- Les publications doivent vendre le bénéfice, pas seulement décrire le bien.
-- Instagram doit avoir des hashtags.
-- Story doit être très courte et directe.
-- Évite les phrases génériques.
-- Les idées visuelles doivent être concrètes.
-- Le résultat doit donner l'impression qu'un community manager immobilier a préparé le plan.
-`;
+/* ── Types pour le content array OpenAI ─────────────────────── */
+type TextPart = { type: "text"; text: string };
+type ImagePart = { type: "image_url"; image_url: { url: string; detail: "low" } };
+type ContentPart = TextPart | ImagePart;
 
+export async function POST(request: Request) {
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+  try {
+    const body = await request.json();
+    const { titre, ville, prix, surface, description, photosUrls, photoPrincipaleUrl } = body;
+
+    /* ── Message user : texte + photos (max 4) ─────────────── */
+    const textPart: TextPart = {
+      type: "text",
+      text: `Bien immobilier à analyser :
+Titre : ${titre}
+Ville : ${ville}
+Prix : ${prix || "Non renseigné"}
+Surface : ${surface || "Non renseignée"}
+Description : ${description}
+${JSON_FORMAT}`,
+    };
+
+    const validPhotos: string[] = Array.isArray(photosUrls)
+      ? photosUrls.filter((u: unknown) => typeof u === "string" && u.startsWith("http")).slice(0, 4)
+      : [];
+
+    const imageParts: ImagePart[] = validPhotos.map((url) => ({
+      type: "image_url",
+      image_url: { url, detail: "low" },
+    }));
+
+    const userContent: ContentPart[] = [textPart, ...imageParts];
+
+    /* ── Appel OpenAI ───────────────────────────────────────── */
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userContent },
+      ],
       response_format: { type: "json_object" },
+      temperature: 0.8,
+      max_tokens: 4000,
     });
 
     const content = completion.choices[0].message.content;
     const parsed = JSON.parse(content || "{}");
 
-    // Sauvegarde en Supabase
+    /* ── Sauvegarde Supabase ─────────────────────────────────── */
     let generationId: string | null = null;
     try {
       const { userId } = await auth();
@@ -80,7 +133,6 @@ Règles :
       if (!userId) {
         console.error("[generate] auth() a retourné null — utilisateur non authentifié dans le contexte API");
       } else {
-        // Crée la ligne users si elle n'existe pas encore
         const upsertResult = await supabaseAdmin
           .from("users")
           .upsert({ clerk_id: userId }, { onConflict: "clerk_id", ignoreDuplicates: true });
