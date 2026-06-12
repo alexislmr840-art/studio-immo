@@ -146,6 +146,19 @@ ${JSON_FORMAT}`,
     console.log("réponse OpenAI:", content);
     const parsed = JSON.parse(content || "{}");
 
+    /* ── Nettoyage markdown (astérisques) ───────────────────── */
+    const stripMd = (s: unknown) =>
+      typeof s === "string" ? s.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1") : s;
+    if (Array.isArray(parsed.publications)) {
+      parsed.publications = parsed.publications.map((pub: Record<string, unknown>) => ({
+        ...pub,
+        accroche:  stripMd(pub.accroche),
+        facebook:  stripMd(pub.facebook),
+        instagram: stripMd(pub.instagram),
+        story:     stripMd(pub.story),
+      }));
+    }
+
     /* ── Sauvegarde Supabase ─────────────────────────────────── */
     let generationId: string | null = null;
     try {
