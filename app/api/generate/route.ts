@@ -110,6 +110,7 @@ ${JSON_FORMAT}`,
     const userContent: ContentPart[] = [textPart, ...imageParts];
 
     /* ── Appel OpenAI ───────────────────────────────────────── */
+    console.log("photos reçues:", photosUrls);
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -122,6 +123,7 @@ ${JSON_FORMAT}`,
     });
 
     const content = completion.choices[0].message.content;
+    console.log("réponse OpenAI:", content);
     const parsed = JSON.parse(content || "{}");
 
     /* ── Sauvegarde Supabase ─────────────────────────────────── */
