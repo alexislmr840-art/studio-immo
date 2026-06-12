@@ -24,11 +24,12 @@ Croise prix + surface + ville + style du bien pour déduire LE profil acheteur l
 ## RÈGLES DE COPYWRITING
 1. ACCROCHE (1ère ligne) : elle doit arrêter le scroll en moins d'une seconde. Techniques autorisées : question directe au lecteur, chiffre surprenant, projection immédiate ("Imaginez votre café du matin ici"), contraste, mini-histoire. Maximum 125 caractères pour rester visible avant le "Voir plus" de Facebook.
 2. VENDRE LE VÉCU, PAS LES MÈTRES CARRÉS : transforme chaque caractéristique en bénéfice de vie concret et sensoriel. Pas "grande terrasse de 15m²" mais "vos dîners d'été se prolongeront tard sur la terrasse". Appuie-toi sur ce que tu VOIS dans les photos.
-3. STRUCTURE FACEBOOK : accroche → 2-3 lignes de projection/bénéfices → caractéristiques clés en liste aérée avec emojis → prix avec mise en valeur → CTA précis. Retours à la ligne fréquents, jamais de pavé.
-4. STRUCTURE INSTAGRAM : plus courte et rythmée, accroche percutante, 3-4 lignes max, puis 8 à 12 hashtags stratégiques en mélangeant : gros volume (#immobilier #maison), niche (#investissementlocatif #primoaccedant selon le profil) et LOCAL (#villedubienimmobilier #immobilierville avec la vraie ville).
-5. STRUCTURE STORY : 1 phrase choc + 1 CTA. Maximum 2 lignes. Doit donner envie de swiper.
+3. STRUCTURE FACEBOOK : accroche → 2-3 lignes de projection/bénéfices → caractéristiques clés en liste aérée avec emojis → surface en m² mentionnée au moins une fois dans le texte courant → prix → CTA précis. Retours à la ligne fréquents, jamais de pavé.
+4. STRUCTURE INSTAGRAM : plus courte et rythmée, accroche percutante, 3-4 lignes max. Les textes Instagram doivent avoir le MÊME niveau d'ancrage dans les photos que les textes Facebook : citer au moins un élément concret visible sur les photos (parquet foncé, baie vitrée, escalier, briques blanches…). La surface en m² doit apparaître au moins une fois dans le texte courant (hors hashtags). Puis 8 à 12 hashtags stratégiques en mélangeant : gros volume (#immobilier #maison), niche (#investissementlocatif #primoaccedant selon le profil) et LOCAL (#villedubienimmobilier #immobilierville avec la vraie ville). INTERDIT d'écrire un texte Instagram générique et réutilisable.
+5. STRUCTURE STORY : 1 phrase choc + 1 CTA. Maximum 2 lignes. Chaque Story doit contenir un détail spécifique visible sur les photos + le prix ou la ville + un contact direct (numéro de téléphone ou invitation à envoyer un message). Doit donner envie de swiper.
 6. EMOJIS : 3 à 6 par publication Facebook, placés en début de ligne comme puces visuelles. Professionnels et variés (🏡 ☀️ 🔑 📍 ✨ 🌿 💼 📞), jamais en rafale.
 7. CTA : varié et concret selon la publication ("Réservez votre visite ce week-end", "Envoyez-nous un message pour recevoir le dossier complet", "Partagez à quelqu'un qui cherche à NomDeVille"). Jamais deux fois le même CTA dans la stratégie.
+8. TÉLÉPHONE : le numéro de téléphone de l'agence DOIT apparaître dans le CTA d'au moins une publication sur deux, sur TOUS les réseaux — Facebook, Instagram ET Story (exemple : "Appelez le 06 12 34 56 78 pour visiter"). Une Story sans moyen de contact est une Story inutile.
 
 ## INTERDICTIONS STRICTES
 - Clichés vides : "coup de cœur assuré", "à saisir rapidement", "produit rare", "ne tardez pas", "idéalement situé", "aux portes de", "proche toutes commodités"
@@ -37,10 +38,20 @@ Croise prix + surface + ville + style du bien pour déduire LE profil acheteur l
 - Tutoiement (vouvoiement uniquement)
 - Mentionner des éléments absents des photos et de la description
 - Éléments géographiques inventés : ne JAMAIS mentionner mer, montagne, plage, lac, vue panoramique ou tout élément géographique naturel sauf s'il est explicitement visible sur les photos ou écrit dans la description — une vue mer inventée détruit la crédibilité de l'agence
+- Astérisques, étoiles ou tout formatage markdown dans les textes : le prix s'écrit simplement "145 000 €", jamais "**145 000 €**" ni "***145 000 €***"
+- Publication Facebook ou Instagram ne mentionnant pas la surface en m² au moins une fois dans le texte courant
+- Texte Instagram ou Story générique et réutilisable : même exigence d'ancrage photo que Facebook
 
-## CALIBRAGE — ANCRAGE PHOTO OBLIGATOIRE
-MAUVAIS (générique, réutilisable partout, sans ancrage photo) : "Votre appartement lumineux à Bordeaux vous attend ! Profitez de la vue"
-BON (spécifique, ancré dans les photos, impossible à réutiliser) : "Le parquet chêne capte la lumière du sud toute la journée dans ce séjour traversant — et le balcon filant donne sur les toits, pas sur un mur"
+## CALIBRAGE — ANCRAGE PHOTO OBLIGATOIRE (FACEBOOK, INSTAGRAM ET STORY)
+FACEBOOK — MAUVAIS (générique, réutilisable partout, sans ancrage photo) : "Votre appartement lumineux à Bordeaux vous attend ! Profitez de la vue"
+FACEBOOK — BON (spécifique, ancré dans les photos, impossible à réutiliser) : "Le parquet chêne capte la lumière du sud toute la journée dans ce séjour traversant — et le balcon filant donne sur les toits, pas sur un mur"
+
+INSTAGRAM — MAUVAIS : "Un espace lumineux à personnaliser à Lille. #immobilier #Lille" (générique, aucun ancrage)
+INSTAGRAM — BON : "Briques blanches, escalier d'origine et parquet sombre — ce séjour de 62 m² a du caractère à revendre. 145 000 € à Lille. Appelez le 06 12 34 56 78. #immobilierlille #renovation #primoaccedant"
+
+STORY — MAUVAIS : "Faites de ce séjour votre havre de paix !" (aucun détail, pas de contact)
+STORY — BON : "62 m² à rénover à votre goût — 145 000 € à Lille. Appelez le 06 12 34 56 78"
+
 Chaque publication doit être du niveau "BON" : si elle peut s'appliquer à un autre bien, réécris-la.
 
 ## LES 5 PUBLICATIONS (rôles imposés, dans cet ordre)
@@ -92,7 +103,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { titre, ville, prix, surface, description, photosUrls, photoPrincipaleUrl } = body;
+    const { titre, ville, prix, surface, description, telephone, photosUrls, photoPrincipaleUrl } = body;
 
     /* ── Message user : texte + photos (max 4) ─────────────── */
     const textPart: TextPart = {
@@ -102,6 +113,7 @@ Titre : ${titre}
 Ville : ${ville}
 Prix : ${prix || "Non renseigné"}
 Surface : ${surface || "Non renseignée"}
+Téléphone agence : ${telephone || "Non renseigné"}
 Description : ${description}
 ${JSON_FORMAT}`,
     };

@@ -127,7 +127,7 @@ export default function NouveauBienPage() {
       const resp = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ titre, ville, prix, surface, description, photosUrls, photoPrincipaleUrl }),
+        body: JSON.stringify({ titre, ville, prix, surface, description, telephone, photosUrls, photoPrincipaleUrl }),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
