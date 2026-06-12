@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -18,6 +18,7 @@ interface Publication {
 }
 
 interface ResultatIA {
+  analysePhotos?: string;
   profilAcheteur: string;
   pointsForts: string[];
   strategie: string;
@@ -54,71 +55,119 @@ function formatDatePlanifiee(iso: string): string {
   } catch { return iso; }
 }
 
+function getInitials(name: string): string {
+  return name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "SI";
+}
+
 const ONGLETS: { key: Onglet; label: string; color: string }[] = [
-  { key: "facebook", label: "Facebook", color: "#3b82f6" },
+  { key: "facebook",  label: "Facebook",  color: "#3b82f6" },
   { key: "instagram", label: "Instagram", color: "#ec4899" },
-  { key: "story", label: "Story", color: "var(--gold)" },
+  { key: "story",     label: "Story",     color: "var(--gold)" },
 ];
 
+/* ── Photo album (style Facebook) ───────────────────────────── */
+function PhotoAlbum({ photos }: { photos: string[] }) {
+  if (photos.length === 0) return null;
+
+  const maxShow = 4;
+  const shown = photos.slice(0, maxShow);
+  const extra = Math.max(0, photos.length - maxShow);
+  const n = shown.length;
+
+  const img = (src: string, h: string, style?: CSSProperties) => (
+    <img src={src} alt="" style={{ width: "100%", height: h, objectFit: "cover", display: "block", ...style }} />
+  );
+
+  if (n === 1) return img(shown[0], "280px");
+
+  if (n === 2) return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px" }}>
+      {shown.map((p, i) => <div key={i}>{img(p, "220px")}</div>)}
+    </div>
+  );
+
+  if (n === 3) return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+      {img(shown[0], "200px")}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px" }}>
+        {img(shown[1], "140px")}
+        {img(shown[2], "140px")}
+      </div>
+    </div>
+  );
+
+  /* 4+ photos */
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+      {img(shown[0], "200px")}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "2px" }}>
+        {shown.slice(1).map((p, i) => {
+          const isLast = i === 2 && extra > 0;
+          return (
+            <div key={i} style={{ position: "relative" }}>
+              {img(p, "130px")}
+              {isLast && (
+                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: "22px", fontWeight: 700, color: "white" }}>+{extra}</span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── CampagneCard ────────────────────────────────────────────── */
 function CampagneCard({
-  pub, index, photos, photoPrincipale, bien, agence, logo, onTelecharger, onUpdate, datePlanifiee, onPlanifier,
+  pub, index, photos, photoPrincipale, agence, logo, onUpdate, datePlanifiee, onPlanifier,
 }: {
   pub: Publication; index: number; photos: string[]; photoPrincipale: number;
-  bien: Bien | null; agence: Agence | null; logo: string;
-  onTelecharger: (p: Publication, i: number, v: "A" | "B") => void;
+  agence: Agence | null; logo: string;
   onUpdate: (field: Onglet, value: string) => void;
   datePlanifiee?: string;
   onPlanifier: (date: string) => Promise<void>;
 }) {
-  const [onglet, setOnglet] = useState<Onglet>("facebook");
-  const [copieId, setCopieId] = useState<string | null>(null);
-  const [planifie, setPlanifie] = useState(false);
-  const [datePicker, setDatePicker] = useState(false);
-  const [date, setDate] = useState(() => {
+  const [onglet, setOnglet]               = useState<Onglet>("facebook");
+  const [copieId, setCopieId]             = useState<string | null>(null);
+  const [planifie, setPlanifie]           = useState(false);
+  const [datePicker, setDatePicker]       = useState(false);
+  const [date, setDate]                   = useState(() => {
     if (datePlanifiee) return toDateTimeLocal(datePlanifiee);
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    d.setHours(9, 0, 0, 0);
+    const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(9, 0, 0, 0);
     const pad = (n: number) => String(n).padStart(2, "0");
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T09:00`;
   });
   const [dateSauvegardee, setDateSauvegardee] = useState(datePlanifiee ?? "");
+  const [saving, setSaving]               = useState(false);
+  const [erreurPlanif, setErreurPlanif]   = useState(false);
+  const [editing, setEditing]             = useState(false);
+  const [editValue, setEditValue]         = useState("");
 
   useEffect(() => {
-    if (datePlanifiee) {
-      setDateSauvegardee(datePlanifiee);
-      setDate(toDateTimeLocal(datePlanifiee));
-    }
+    if (datePlanifiee) { setDateSauvegardee(datePlanifiee); setDate(toDateTimeLocal(datePlanifiee)); }
   }, [datePlanifiee]);
-  const [saving, setSaving] = useState(false);
-  const [erreurPlanif, setErreurPlanif] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [editValue, setEditValue] = useState("");
 
-  const cover = photos[photoPrincipale] || photos[0];
-  const autres = photos.filter((_, i) => i !== photoPrincipale);
-  const selected = [cover, ...autres].filter(Boolean).slice(0, 4);
+  /* ordered photos — cover first */
+  const cover = photos[photoPrincipale] ?? photos[0];
+  const orderedPhotos = cover
+    ? [cover, ...photos.filter((_, i) => i !== photoPrincipale)].filter(Boolean)
+    : photos.filter(Boolean);
+
+  const nomAgence = agence?.nomAgence || "Studio Immo";
+  const initials  = getInitials(nomAgence);
 
   function copier(texte: string, id: string) {
     navigator.clipboard.writeText(texte).catch(() => {});
-    setCopieId(id);
-    setTimeout(() => setCopieId(null), 2000);
+    setCopieId(id); setTimeout(() => setCopieId(null), 2000);
   }
 
-  function changerOnglet(o: Onglet) {
-    setEditing(false);
-    setOnglet(o);
-  }
+  function changerOnglet(o: Onglet) { setEditing(false); setOnglet(o); }
 
-  function demarrerEdition() {
-    setEditValue(pub[onglet]);
-    setEditing(true);
-  }
+  function demarrerEdition() { setEditValue(pub[onglet]); setEditing(true); }
 
-  function validerEdition() {
-    onUpdate(onglet, editValue);
-    setEditing(false);
-  }
+  function validerEdition() { onUpdate(onglet, editValue); setEditing(false); }
 
   async function confirmerPlanif() {
     setErreurPlanif(false);
@@ -126,274 +175,195 @@ function CampagneCard({
     setSaving(true);
     try {
       await onPlanifier(date);
-      setDateSauvegardee(date);
-      setPlanifie(true);
-      setDatePicker(false);
+      setDateSauvegardee(date); setPlanifie(true); setDatePicker(false);
       setTimeout(() => setPlanifie(false), 4000);
     } catch (e) {
       console.error("[confirmerPlanif] erreur:", e);
       setErreurPlanif(true);
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   }
-
-  const activeOnglet = ONGLETS.find((o) => o.key === onglet)!;
 
   return (
     <div className="card overflow-hidden animate-fade-up">
-      {/* Header */}
+      {/* Publication header */}
       <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-4" style={{ borderBottom: "1px solid var(--border-s)" }}>
         <div>
-          <p className="label mb-1.5" style={{ color: "var(--gold)" }}>{pub.jourPublication}</p>
+          <p className="label mb-1" style={{ color: "var(--gold)" }}>{pub.jourPublication}</p>
           <h2 className="font-bold text-white" style={{ fontSize: "16px", letterSpacing: "-0.015em" }}>{pub.titre}</h2>
           <p style={{ fontSize: "12.5px", color: "var(--txt-4)", marginTop: "2px" }}>{pub.objectif}</p>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-5">
-        {/* Text content — 3/5 */}
-        <div className="lg:col-span-3 p-5" style={{ borderRight: "1px solid var(--border-s)" }}>
-          {/* Network tabs */}
-          <div className="flex gap-1 p-1 rounded-xl mb-4" style={{ background: "var(--bg-2)", border: "1px solid var(--border-s)" }}>
-            {ONGLETS.map(({ key, label, color }) => (
-              <button
-                key={key}
-                onClick={() => changerOnglet(key)}
-                className="flex-1 rounded-lg py-2 text-xs font-semibold transition-all duration-150"
-                style={{
-                  background: onglet === key ? "var(--bg-4)" : "transparent",
-                  color: onglet === key ? "#fff" : "var(--txt-4)",
-                  borderBottom: onglet === key ? `2px solid ${color}` : "2px solid transparent",
-                }}
-              >
-                {label}
-              </button>
-            ))}
+      <div className="p-5 space-y-4">
+        {/* Network tabs */}
+        <div className="flex gap-1 p-1 rounded-xl" style={{ background: "var(--bg-2)", border: "1px solid var(--border-s)" }}>
+          {ONGLETS.map(({ key, label, color }) => (
+            <button
+              key={key}
+              onClick={() => changerOnglet(key)}
+              className="flex-1 rounded-lg py-2 text-xs font-semibold transition-all duration-150"
+              style={{
+                background: onglet === key ? "var(--bg-4)" : "transparent",
+                color: onglet === key ? "#fff" : "var(--txt-4)",
+                borderBottom: onglet === key ? `2px solid ${color}` : "2px solid transparent",
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Post preview */}
+        <div style={{ background: "#FFFFFF", borderRadius: "12px", overflow: "hidden", border: "1px solid #E5E7EB" }}>
+          {/* Agency header */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 14px", borderBottom: "1px solid #F3F4F6" }}>
+            {logo ? (
+              <img src={logo} alt={nomAgence} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "contain", background: "#F3F4F6", padding: "2px", flexShrink: 0 }} />
+            ) : (
+              <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: 700, color: "white", flexShrink: 0 }}>
+                {initials}
+              </div>
+            )}
+            <div>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "#111827", margin: 0 }}>{nomAgence}</p>
+              <p style={{ fontSize: "11px", color: "#6B7280", margin: 0 }}>Page · Immobilier</p>
+            </div>
           </div>
 
-          {/* Text content */}
-          <div
-            className="rounded-xl p-4 mb-4 min-h-36"
-            style={{ background: "var(--bg-2)", border: editing ? "1px solid var(--gold)" : "1px solid var(--border-s)" }}
-          >
+          {/* Post text */}
+          <div style={{ padding: "12px 14px", borderBottom: orderedPhotos.length > 0 ? "1px solid #F3F4F6" : "none" }}>
             {editing ? (
               <textarea
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-                className="w-full resize-none bg-transparent text-sm leading-relaxed outline-none"
-                style={{ color: "var(--txt-2)", minHeight: "120px" }}
+                style={{ width: "100%", resize: "vertical", background: "transparent", outline: "none", fontSize: "14px", color: "#111827", lineHeight: 1.6, minHeight: "120px", border: "1px solid #D1D5DB", borderRadius: "6px", padding: "8px", fontFamily: "inherit" }}
                 autoFocus
               />
             ) : (
-              <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "var(--txt-2)" }}>
+              <p style={{ fontSize: "14px", color: "#111827", lineHeight: 1.6, whiteSpace: "pre-wrap", margin: 0 }}>
                 {pub[onglet]}
               </p>
             )}
           </div>
 
-          {/* Actions */}
-          <div className="flex flex-wrap gap-2">
-            {editing ? (
-              <button
-                onClick={validerEdition}
-                className="btn"
-                style={{ background: "var(--ok-10)", color: "var(--ok)", border: "1px solid rgba(34,197,94,0.2)", padding: "9px 16px" }}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Valider
-              </button>
+          {/* Photo album */}
+          {orderedPhotos.length > 0 && <PhotoAlbum photos={orderedPhotos} />}
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex flex-wrap gap-2">
+          {editing ? (
+            <button
+              onClick={validerEdition}
+              className="btn"
+              style={{ background: "var(--ok-10)", color: "var(--ok)", border: "1px solid rgba(34,197,94,0.2)", padding: "9px 16px" }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Valider
+            </button>
+          ) : (
+            <button onClick={demarrerEdition} className="btn btn-secondary" style={{ padding: "9px 14px" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Modifier
+            </button>
+          )}
+
+          <button
+            onClick={() => copier(pub[onglet], `${index}-${onglet}`)}
+            className="btn"
+            style={{
+              background: copieId === `${index}-${onglet}` ? "var(--ok-10)" : "var(--gold)",
+              color:      copieId === `${index}-${onglet}` ? "var(--ok)" : "#0a0a0a",
+              border:     copieId === `${index}-${onglet}` ? "1px solid rgba(34,197,94,0.2)" : "none",
+              padding: "9px 16px",
+            }}
+          >
+            {copieId === `${index}-${onglet}` ? (
+              <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> Copié !</>
             ) : (
-              <button
-                onClick={demarrerEdition}
-                className="btn btn-secondary"
-                style={{ padding: "9px 14px" }}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
-                Modifier
-              </button>
+              <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copier</>
             )}
+          </button>
 
-            <button
-              onClick={() => copier(pub[onglet], `${index}-${onglet}`)}
-              className="btn"
-              style={{
-                background: copieId === `${index}-${onglet}` ? "var(--ok-10)" : "var(--gold)",
-                color: copieId === `${index}-${onglet}` ? "var(--ok)" : "#0a0a0a",
-                border: copieId === `${index}-${onglet}` ? "1px solid rgba(34,197,94,0.2)" : "none",
-                padding: "9px 16px",
-              }}
-            >
-              {copieId === `${index}-${onglet}` ? (
-                <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> Copié !</>
-              ) : (
-                <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copier</>
-              )}
-            </button>
+          <button
+            onClick={() => { setDatePicker(!datePicker); setErreurPlanif(false); }}
+            className="btn btn-secondary"
+            style={{
+              padding: "9px 14px",
+              color:  planifie || dateSauvegardee ? "var(--ok)" : undefined,
+              border: dateSauvegardee && !planifie ? "1px solid rgba(34,197,94,0.3)" : undefined,
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            {planifie ? "✓ Planifié" : dateSauvegardee ? "Replanifier" : "Planifier"}
+          </button>
 
-            <button
-              onClick={() => { setDatePicker(!datePicker); setErreurPlanif(false); }}
-              className="btn btn-secondary"
-              style={{
-                padding: "9px 14px",
-                color: planifie || dateSauvegardee ? "var(--ok)" : undefined,
-                border: dateSauvegardee && !planifie ? "1px solid rgba(34,197,94,0.3)" : undefined,
-              }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-              {planifie ? "✓ Planifié" : dateSauvegardee ? "Replanifier" : "Planifier"}
-            </button>
+          <button
+            className="btn"
+            style={{ background: "var(--bg-3)", color: "var(--txt-4)", border: "1px solid var(--border-s)", padding: "9px 14px", cursor: "not-allowed" }}
+            title="Intégration Meta disponible prochainement"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/>
+            </svg>
+            Publier
+            <span className="rounded px-1.5 py-0.5 text-xs" style={{ background: "var(--bg-4)", color: "var(--txt-4)", fontSize: "9px" }}>
+              Bientôt
+            </span>
+          </button>
+        </div>
 
+        {dateSauvegardee && !datePicker && !planifie && (
+          <p className="flex items-center gap-1.5" style={{ fontSize: "11px", color: "var(--ok)" }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Planifié le {formatDatePlanifiee(dateSauvegardee)}
+          </p>
+        )}
+
+        {datePicker && (
+          <div className="rounded-xl p-4 space-y-3 animate-scale-in" style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}>
+            <p className="label">Date et heure de publication</p>
+            <input
+              type="datetime-local"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              min={(() => { const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); return n.toISOString().slice(0, 16); })()}
+              className="input text-sm"
+            />
+            {erreurPlanif && (
+              <p style={{ fontSize: "12px", color: "var(--err)" }}>La sauvegarde a échoué. Réessayez.</p>
+            )}
             <button
-              className="btn"
-              style={{
-                background: "var(--bg-3)",
-                color: "var(--txt-4)",
-                border: "1px solid var(--border-s)",
-                padding: "9px 14px",
-                cursor: "not-allowed",
-              }}
-              title="Intégration Meta disponible prochainement"
+              onClick={confirmerPlanif}
+              disabled={!date || saving}
+              className="btn btn-primary"
+              style={{ padding: "9px 16px" }}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/>
-              </svg>
-              Publier
-              <span className="rounded px-1.5 py-0.5 text-xs" style={{ background: "var(--bg-4)", color: "var(--txt-4)", fontSize: "9px" }}>
-                Bientôt
-              </span>
+              {saving ? "Enregistrement…" : "Confirmer"}
             </button>
           </div>
-
-          {dateSauvegardee && !datePicker && !planifie && (
-            <p className="mt-2 flex items-center gap-1.5" style={{ fontSize: "11px", color: "var(--ok)" }}>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              Planifié le {formatDatePlanifiee(dateSauvegardee)}
-            </p>
-          )}
-
-          {datePicker && (
-            <div
-              className="mt-3 rounded-xl p-4 space-y-3 animate-scale-in"
-              style={{ background: "var(--bg-2)", border: "1px solid var(--border)" }}
-            >
-              <p className="label">Date et heure de publication</p>
-              <input
-                type="datetime-local"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                min={(() => { const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); return n.toISOString().slice(0, 16); })()}
-                className="input text-sm"
-              />
-              {erreurPlanif && (
-                <p style={{ fontSize: "12px", color: "var(--err)" }}>
-                  La sauvegarde a échoué. Réessayez.
-                </p>
-              )}
-              <button
-                onClick={confirmerPlanif}
-                disabled={!date || saving}
-                className="btn btn-primary"
-                style={{ padding: "9px 16px" }}
-              >
-                {saving ? "Enregistrement…" : "Confirmer"}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Visuals — 2/5 */}
-        <div className="lg:col-span-2 p-4 space-y-3" style={{ background: "var(--bg-2)" }}>
-          {(["A", "B"] as const).map((v) => (
-            <div key={v} className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border-s)" }}>
-              {/* Visual header */}
-              <div className="flex items-center justify-between px-3 py-2"
-                   style={{ background: v === "A" ? "#172554" : "#0f172a" }}>
-                {logo ? (
-                  <img src={logo} alt="" className="h-6 max-w-20 object-contain rounded"
-                       style={{ background: "rgba(255,255,255,0.9)", padding: "2px" }}/>
-                ) : (
-                  <p className="text-xs font-bold text-white">{agence?.nomAgence || "Studio Immo"}</p>
-                )}
-                <span className="rounded-full px-2 py-0.5 text-xs font-bold"
-                      style={{ background: "var(--gold)", color: "#0a0a0a", fontSize: "9px" }}>
-                  {v === "A" ? "Nouveau bien" : "Coup de cœur"}
-                </span>
-              </div>
-
-              {/* Photo */}
-              {selected.length > 0 ? (
-                <div className="grid h-32 grid-cols-3 grid-rows-3 gap-px" style={{ background: "var(--border-s)" }}>
-                  <img src={selected[0]} className="col-span-3 row-span-2 h-full w-full object-cover" alt=""/>
-                  {selected.slice(1, 4).map((p, i) => (
-                    <img key={i} src={p} className="h-full w-full object-cover" alt=""/>
-                  ))}
-                </div>
-              ) : (
-                <div className="h-32 flex items-center justify-center" style={{ background: "var(--bg-3)" }}>
-                  <p style={{ fontSize: "11px", color: "var(--txt-4)" }}>Aucune photo</p>
-                </div>
-              )}
-
-              {/* Caption */}
-              <div className="p-3">
-                <p className="font-semibold text-white text-xs leading-snug line-clamp-2 mb-2">{pub.accroche}</p>
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {bien?.ville && (
-                    <span className="rounded-full px-1.5 py-0.5 text-xs" style={{ background: "#172554", color: "#fff", fontSize: "9px" }}>
-                      {bien.ville}
-                    </span>
-                  )}
-                  {bien?.afficherPrix && bien?.prix && (
-                    <span className="rounded-full px-1.5 py-0.5 text-xs font-bold" style={{ background: "var(--gold)", color: "#0a0a0a", fontSize: "9px" }}>
-                      {bien.prix}
-                    </span>
-                  )}
-                </div>
-                <button
-                  onClick={() => onTelecharger(pub, index, v)}
-                  className="btn btn-primary w-full"
-                  style={{ padding: "7px", fontSize: "11px" }}
-                >
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
-                  Télécharger {v}
-                </button>
-              </div>
-
-              {(v === "A" ? pub.ideeVisuelA : pub.ideeVisuelB) && (
-                <div className="px-3 pb-3">
-                  <p style={{ fontSize: "10px", color: "var(--txt-4)", lineHeight: 1.5 }}>
-                    💡 {v === "A" ? pub.ideeVisuelA : pub.ideeVisuelB}
-                  </p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        )}
       </div>
     </div>
   );
 }
 
+/* ── Page principale ─────────────────────────────────────────── */
 export default function ResultatsPage() {
   const router = useRouter();
-  const [data, setData] = useState<ResultatIA | null>(null);
-  const [photos, setPhotos] = useState<string[]>([]);
-  const [bien, setBien] = useState<Bien | null>(null);
-  const [agence, setAgence] = useState<Agence | null>(null);
-  const [logo, setLogo] = useState("");
+  const [data,           setData]           = useState<ResultatIA | null>(null);
+  const [photos,         setPhotos]         = useState<string[]>([]);
+  const [bien,           setBien]           = useState<Bien | null>(null);
+  const [agence,         setAgence]         = useState<Agence | null>(null);
+  const [logo,           setLogo]           = useState("");
   const [photoPrincipale, setPhotoPrincipale] = useState(0);
-  const [photosToast, setPhotosToast] = useState(false);
-  const [generationId, setGenerationId] = useState<string | null>(null);
+  const [photosToast,    setPhotosToast]    = useState(false);
+  const [generationId,   setGenerationId]   = useState<string | null>(null);
   const [planifications, setPlanifications] = useState<Record<number, string>>({});
 
   useEffect(() => {
@@ -411,9 +381,9 @@ export default function ResultatsPage() {
     }
 
     setData(JSON.parse(saved));
-    const b = localStorage.getItem("studio_immo_bien");
-    const a = localStorage.getItem("studio_immo_agence");
-    const l = sessionStorage.getItem("studio_immo_logo") || localStorage.getItem("studio_immo_logo");
+    const b   = localStorage.getItem("studio_immo_bien");
+    const a   = localStorage.getItem("studio_immo_agence");
+    const l   = sessionStorage.getItem("studio_immo_logo") || localStorage.getItem("studio_immo_logo");
     const idx = localStorage.getItem("studio_immo_photo_principale");
     const genId = localStorage.getItem("studio_immo_generation_id");
     if (b) setBien(JSON.parse(b));
@@ -439,7 +409,6 @@ export default function ResultatsPage() {
       console.error("[planifier] generationId est null — la génération n'a pas été sauvegardée en base");
       throw new Error("Génération non liée");
     }
-    console.log("[planifier] fetch PUT", `/api/generations/${generationId}/planification`);
     const resp = await fetch(`/api/generations/${generationId}/planification`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -452,83 +421,9 @@ export default function ResultatsPage() {
   function updatePublication(index: number, field: Onglet, value: string) {
     setData((prev) => {
       if (!prev) return prev;
-      const publications = prev.publications.map((p, i) =>
-        i === index ? { ...p, [field]: value } : p
-      );
+      const publications = prev.publications.map((p, i) => i === index ? { ...p, [field]: value } : p);
       return { ...prev, publications };
     });
-  }
-
-  function loadImage(src: string): Promise<HTMLImageElement> {
-    return new Promise((res, rej) => {
-      const img = new Image();
-      if (!src.startsWith("data:")) img.crossOrigin = "anonymous";
-      img.onload = () => res(img);
-      img.onerror = rej;
-      img.src = src;
-    });
-  }
-
-  function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, w: number, h: number) {
-    const ratio = Math.max(w / img.width, h / img.height);
-    const nw = img.width * ratio, nh = img.height * ratio;
-    ctx.drawImage(img, x + (w - nw) / 2, y + (h - nh) / 2, nw, nh);
-  }
-
-  function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxW: number, lh: number, maxLines: number) {
-    const words = text.split(" ");
-    let line = "", drawn = 0;
-    for (let i = 0; i < words.length; i++) {
-      const test = line + words[i] + " ";
-      if (ctx.measureText(test).width > maxW && i > 0) {
-        if (drawn >= maxLines - 1) { ctx.fillText(line.trimEnd() + "…", x, y); return; }
-        ctx.fillText(line, x, y); line = words[i] + " "; y += lh; drawn++;
-      } else line = test;
-    }
-    ctx.fillText(line, x, y);
-  }
-
-  async function telechargerVisuel(pub: Publication, index: number, variante: "A" | "B") {
-    try {
-      const canvas = document.createElement("canvas");
-      canvas.width = 1080; canvas.height = 1350;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      const cover = photos[photoPrincipale] || photos[0];
-      const autres = photos.filter((_, i) => i !== photoPrincipale);
-      const selected = [cover, ...autres].filter(Boolean).slice(0, 4);
-
-      ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, 1080, 1350);
-      ctx.fillStyle = variante === "A" ? "#172554" : "#0f172a"; ctx.fillRect(0, 0, 1080, 150);
-
-      if (logo) { const li = await loadImage(logo); drawCover(ctx, li, 55, 35, 170, 80); }
-      else { ctx.fillStyle = "#fff"; ctx.font = "bold 44px Arial"; ctx.fillText(agence?.nomAgence || "STUDIO IMMO", 55, 92); }
-
-      ctx.fillStyle = "#f59e0b"; ctx.font = "bold 32px Arial";
-      ctx.fillText(variante === "A" ? "NOUVEAU BIEN" : "COUP DE CŒUR", 730, 92);
-
-      if (selected.length > 0) {
-        const img1 = await loadImage(selected[0]); drawCover(ctx, img1, 55, 190, 970, 580);
-        for (let i = 1; i < Math.min(selected.length, 4); i++) {
-          const img = await loadImage(selected[i]); drawCover(ctx, img, 55 + (i - 1) * 330, 790, 310, 210);
-        }
-      }
-
-      ctx.fillStyle = "#172554"; ctx.font = "bold 54px Arial";
-      wrapText(ctx, pub.accroche || "Votre futur bien vous attend", 55, 1100, 970, 62, 3);
-
-      ctx.font = "bold 30px Arial";
-      if (bien?.ville) { ctx.fillStyle = "#172554"; ctx.fillText(`📍 ${bien.ville}`, 55, 1245); }
-      if (bien?.surface) { ctx.fillStyle = "#172554"; ctx.fillText(`🏠 ${bien.surface}`, 360, 1245); }
-      if (bien?.afficherPrix && bien?.prix) { ctx.fillStyle = "#f59e0b"; ctx.fillText(`💰 ${bien.prix}`, 610, 1245); }
-      if (agence?.telephone) { ctx.fillStyle = "#475569"; ctx.font = "bold 28px Arial"; ctx.fillText(`📞 ${agence.telephone}`, 55, 1310); }
-
-      const link = document.createElement("a");
-      link.download = `studio-immo-${index + 1}-${variante}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    } catch { alert("Erreur lors de la génération du visuel."); }
   }
 
   if (!data) {
@@ -569,7 +464,7 @@ export default function ResultatsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-8 lg:px-8 space-y-6">
+      <main className="mx-auto max-w-3xl px-6 py-8 lg:px-8 space-y-6">
 
         {/* Photos toast */}
         {photosToast && (
@@ -584,7 +479,7 @@ export default function ResultatsPage() {
           </div>
         )}
 
-        {/* Header */}
+        {/* Page header */}
         <div>
           <div className="flex items-center gap-2 mb-1">
             <p className="label" style={{ color: "var(--gold)" }}>Stratégie générée</p>
@@ -629,7 +524,7 @@ export default function ResultatsPage() {
         )}
 
         {/* Campaigns */}
-        <div className="space-y-4">
+        <div className="space-y-5">
           {data.publications?.map((pub, idx) => (
             <CampagneCard
               key={idx}
@@ -637,10 +532,8 @@ export default function ResultatsPage() {
               index={idx}
               photos={photos}
               photoPrincipale={photoPrincipale}
-              bien={bien}
               agence={agence}
               logo={logo}
-              onTelecharger={telechargerVisuel}
               onUpdate={(field, value) => updatePublication(idx, field, value)}
               datePlanifiee={planifications[idx]}
               onPlanifier={(date) => planifier(idx, date)}
