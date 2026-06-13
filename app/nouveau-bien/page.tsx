@@ -6,17 +6,18 @@ import Link from "next/link";
 const CARD: React.CSSProperties = {
   background: "white",
   border: "1.5px solid #E0E0E8",
-  borderRadius: "14px",
+  borderRadius: "16px",
   boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
   overflow: "hidden",
 };
 
 const INPUT: React.CSSProperties = {
   width: "100%",
-  padding: "10px 12px",
+  height: "46px",
+  padding: "12px 14px",
   borderRadius: "9px",
   border: "1.5px solid #E0E0E8",
-  fontSize: "14px",
+  fontSize: "15px",
   color: "#111827",
   background: "white",
   outline: "none",
@@ -259,7 +260,7 @@ export default function NouveauBienPage() {
         </div>
       </header>
 
-      <main style={{ maxWidth: "680px", margin: "0 auto", padding: "32px 28px 80px" }}>
+      <main style={{ maxWidth: "760px", margin: "0 auto", padding: "32px 28px 80px" }}>
 
         {/* Stepper */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "32px" }}>
@@ -276,12 +277,12 @@ export default function NouveauBienPage() {
                   }} />
                 )}
                 <div style={{
-                  width: "28px", height: "28px", borderRadius: "50%",
+                  width: "32px", height: "32px", borderRadius: "50%",
                   background: active || done ? "#7C3AED" : "#F0EEF8",
                   border: active || done ? "none" : "1.5px solid #E0E0E8",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "12px", fontWeight: 600,
-                  color: active || done ? "white" : "#9CA3AF",
+                  fontSize: "13px", fontWeight: 600,
+                  color: active || done ? "white" : "#4B5563",
                   transition: "all 0.3s", flexShrink: 0,
                 }}>
                   {done ? (
@@ -297,8 +298,8 @@ export default function NouveauBienPage() {
 
         <div style={{ marginBottom: "24px" }}>
           <p style={{ fontSize: "11px", fontWeight: 600, color: "#7C3AED", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 6px" }}>Nouveau bien</p>
-          <h1 style={{ fontSize: "26px", fontWeight: 700, color: "#111827", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Renseignez votre mandat</h1>
-          <p style={{ fontSize: "13px", color: "#9CA3AF", margin: 0 }}>L&apos;IA génère une stratégie complète en ~15 secondes.</p>
+          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#111827", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Renseignez votre mandat</h1>
+          <p style={{ fontSize: "13px", color: "#4B5563", margin: 0 }}>L&apos;IA génère une stratégie complète en ~15 secondes.</p>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -315,8 +316,8 @@ export default function NouveauBienPage() {
                 </svg>
               </div>
               <div>
-                <h2 style={{ fontSize: "15px", fontWeight: 600, color: "#111827", margin: 0 }}>Le bien</h2>
-                <p style={{ fontSize: "12px", color: "#9CA3AF", margin: 0 }}>Informations principales du mandat</p>
+                <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#111827", margin: 0 }}>Le bien</h2>
+                <p style={{ fontSize: "13px", color: "#4B5563", margin: 0 }}>Informations principales du mandat</p>
               </div>
             </div>
 
@@ -356,7 +357,7 @@ export default function NouveauBienPage() {
               }}>
                 <div>
                   <p style={{ fontSize: "13px", fontWeight: 500, color: "#374151", margin: "0 0 1px" }}>Afficher le prix</p>
-                  <p style={{ fontSize: "11px", color: "#9CA3AF", margin: 0 }}>Visible sur les visuels générés</p>
+                  <p style={{ fontSize: "13px", color: "#4B5563", margin: 0 }}>Visible sur les visuels générés</p>
                 </div>
                 <div
                   onClick={() => setAfficherPrix((v) => !v)}
@@ -381,7 +382,7 @@ export default function NouveauBienPage() {
               <div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
                   <label style={{ ...LBL, margin: 0 }}>Description <span style={{ color: "#7C3AED" }}>*</span></label>
-                  <span style={{ fontSize: "11px", color: charCount > 50 ? "#059669" : "#9CA3AF" }}>
+                  <span style={{ fontSize: "13px", color: charCount > 50 ? "#059669" : "#4B5563" }}>
                     {charCount} caractères
                   </span>
                 </div>
@@ -390,9 +391,9 @@ export default function NouveauBienPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   rows={5}
                   placeholder="Décrivez les points forts du bien : exposition, vue, rénovation, quartier, prestations, état général…"
-                  style={{ ...INPUT, resize: "vertical" }}
+                  style={{ ...INPUT, height: "auto", resize: "vertical" }}
                 />
-                <p style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "6px", marginBottom: 0 }}>
+                <p style={{ fontSize: "13px", color: "#4B5563", marginTop: "6px", marginBottom: 0 }}>
                   ✨ Plus la description est précise, meilleure sera la stratégie générée.
                 </p>
               </div>
@@ -411,8 +412,8 @@ export default function NouveauBienPage() {
                 </svg>
               </div>
               <div>
-                <h2 style={{ fontSize: "15px", fontWeight: 600, color: "#111827", margin: 0 }}>L&apos;agence</h2>
-                <p style={{ fontSize: "12px", color: "#9CA3AF", margin: 0 }}>Apparaît sur vos publications</p>
+                <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#111827", margin: 0 }}>L&apos;agence</h2>
+                <p style={{ fontSize: "13px", color: "#4B5563", margin: 0 }}>Apparaît sur vos publications</p>
               </div>
             </div>
 
@@ -454,8 +455,8 @@ export default function NouveauBienPage() {
                           <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
                         </svg>
                       </div>
-                      <p style={{ fontSize: "13px", color: "#6B7280", margin: "0 0 2px" }}>Cliquez pour importer votre logo</p>
-                      <p style={{ fontSize: "11px", color: "#9CA3AF", margin: 0 }}>PNG, JPG · max 5 Mo</p>
+                      <p style={{ fontSize: "13px", color: "#4B5563", margin: "0 0 2px" }}>Cliquez pour importer votre logo</p>
+                      <p style={{ fontSize: "13px", color: "#4B5563", margin: 0 }}>PNG, JPG · max 5 Mo</p>
                     </>
                   )}
                   <input type="file" accept="image/*" onChange={handleLogo} style={{ display: "none" }}/>
@@ -476,8 +477,8 @@ export default function NouveauBienPage() {
                 </svg>
               </div>
               <div>
-                <h2 style={{ fontSize: "15px", fontWeight: 600, color: "#111827", margin: 0 }}>Photos du bien</h2>
-                <p style={{ fontSize: "12px", color: "#9CA3AF", margin: 0 }}>
+                <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#111827", margin: 0 }}>Photos du bien</h2>
+                <p style={{ fontSize: "13px", color: "#4B5563", margin: 0 }}>
                   {photos.length === 0
                     ? "Ajoutez vos photos pour ancrer l’IA dans le réel"
                     : `${photos.length} photo${photos.length > 1 ? "s" : ""} ajoutée${photos.length > 1 ? "s" : ""} · ★ = photo principale`}
@@ -549,8 +550,8 @@ export default function NouveauBienPage() {
                       <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                     </svg>
                   </div>
-                  <p style={{ fontSize: "13px", color: "#6B7280", margin: "0 0 2px" }}>Importez vos photos</p>
-                  <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "0 0 12px" }}>JPEG, PNG · plusieurs fichiers acceptés</p>
+                  <p style={{ fontSize: "13px", color: "#4B5563", margin: "0 0 2px" }}>Importez vos photos</p>
+                  <p style={{ fontSize: "13px", color: "#4B5563", margin: "0 0 12px" }}>JPEG, PNG · plusieurs fichiers acceptés</p>
                   <span style={{
                     fontSize: "12px", fontWeight: 500, color: "#7C3AED",
                     padding: "6px 14px", borderRadius: "7px",
@@ -601,10 +602,10 @@ export default function NouveauBienPage() {
             onClick={genererContenus}
             disabled={loading || !isValid}
             style={{
-              width: "100%", padding: "15px", borderRadius: "12px", border: "none",
+              width: "100%", padding: "16px", borderRadius: "12px", border: "none",
               background: isValid ? "#7C3AED" : "#E0E0E8",
-              color: isValid ? "white" : "#9CA3AF",
-              fontSize: "15px", fontWeight: 600,
+              color: isValid ? "white" : "#4B5563",
+              fontSize: "16px", fontWeight: 600,
               cursor: loading || !isValid ? "not-allowed" : "pointer",
               boxShadow: isValid ? "0 4px 14px rgba(124,58,237,0.3)" : "none",
               transition: "all 0.2s",
@@ -626,18 +627,21 @@ export default function NouveauBienPage() {
           </button>
 
           {!isValid && (
-            <p style={{ textAlign: "center", fontSize: "12px", color: "#9CA3AF", margin: 0 }}>
+            <p style={{ textAlign: "center", fontSize: "13px", color: "#4B5563", margin: 0 }}>
               Titre, ville et description sont obligatoires pour générer la stratégie.
             </p>
           )}
 
-          <p style={{ textAlign: "center", fontSize: "11px", color: "#9CA3AF", margin: 0 }}>
+          <p style={{ textAlign: "center", fontSize: "13px", color: "#4B5563", margin: 0 }}>
             500 crédits seront utilisés · génération en ~15s
           </p>
         </div>
       </main>
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        input::placeholder, textarea::placeholder { color: #6B7280; font-size: 14px; }
+      `}</style>
     </div>
   );
 }
