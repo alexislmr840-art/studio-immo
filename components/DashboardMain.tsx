@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { supabase } from "@/lib/supabase";
-import { Building2, Sparkles, Zap, Plus, LayoutDashboard, CreditCard, ChevronRight } from "lucide-react";
+import { Building2, Sparkles, Zap, Plus, Building, CreditCard, ChevronRight } from "lucide-react";
 
 /* ── Types ───────────────────────────────────────────────────── */
 export interface BienDashboard {
@@ -14,71 +14,77 @@ export interface BienDashboard {
   prix: string | null;
   surface: string | null;
   photo_principale_url: string | null;
-  latestGenId: string | null;
-  createdAt: string | null;
-}
-
-interface Stats {
-  biens: number;
-  campagnes: number;
-  visuels: number;
-  credits: number;
-}
-
-interface PubRow {
-  id: string;
-  bienTitre: string;
-  bienVille: string | null;
-  bienPhoto: string | null;
-  pubTitre: string;
-  reseau: string;
-  jourPublication: string;
-  createdAt: string;
+  hasGeneration: boolean;
 }
 
 interface Props {
   prenom: string;
   greeting: string;
   createdAt: string | null;
-  derniersBiens?: BienDashboard[];
-  stats?: Stats;
 }
 
-const DEFAULT_STATS: Stats = { biens: 0, campagnes: 0, visuels: 0, credits: 500 };
-
-const DAYS = ["L", "M", "M", "J", "V", "S", "D"];
-const HEIGHTS = [30, 55, 40, 70, 45, 60, 80];
-const TODAY_IDX = 6;
-
+/* ── Constants ───────────────────────────────────────────────── */
 const CARD: React.CSSProperties = {
   background: "#FFFFFF",
-  border: "0.5px solid #E5E7EB",
+  border: "1.5px solid #E0E0E8",
   borderRadius: "12px",
+  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
 };
 
-/* ── Helpers ─────────────────────────────────────────────────── */
-function badgeReseau(reseau: string) {
-  const r = reseau.toLowerCase();
-  if (r.includes("facebook")) return { bg: "#E7F0FF", color: "#1877F2", label: "Facebook" };
-  if (r.includes("instagram")) return { bg: "#FFF0F7", color: "#C13584", label: "Instagram" };
-  return { bg: "#F3F4F6", color: "#6B7280", label: reseau };
-}
+const CONSEILS = [
+  {
+    emoji: "📅",
+    titre: "Postez le lundi ou mercredi matin",
+    texte: "Les publications immobilières publiées entre 8h et 10h le lundi ou mercredi génèrent en moyenne 40% d'engagement de plus.",
+  },
+  {
+    emoji: "📸",
+    titre: "La première photo est décisive",
+    texte: "80% des clics sur un post immobilier viennent de la première image. Mettez votre pièce la plus lumineuse en premier.",
+  },
+  {
+    emoji: "📱",
+    titre: "Une Story par semaine suffit",
+    texte: "Une Story hebdomadaire bien ciblée avec prix et CTA direct suffit à maintenir la visibilité de votre agence.",
+  },
+  {
+    emoji: "💬",
+    titre: "Répondez aux commentaires en moins d'1h",
+    texte: "Les algorithmes favorisent les publications dont les commentaires reçoivent une réponse rapide — portée augmentée de 25 à 60%.",
+  },
+  {
+    emoji: "🎯",
+    titre: "Le prix dans l'accroche triple les clics",
+    texte: "Mentionner le prix dès la première ligne multiplie par 3 le taux de clics sur Facebook.",
+  },
+];
+
+const QUICK_ACTIONS = [
+  { href: "/nouveau-bien",          label: "Nouveau bien",  sub: "Générer une stratégie", Icon: Plus },
+  { href: "/dashboard/biens",       label: "Mes biens",     sub: "Gérer vos mandats",     Icon: Building },
+  { href: "/dashboard/abonnement",  label: "Abonnement",    sub: "Crédits & plan",        Icon: CreditCard },
+] as const;
 
 /* ── Main component ──────────────────────────────────────────── */
-export default function DashboardMain({ prenom, greeting, createdAt, derniersBiens: propBiens, stats: propStats }: Props) {
+export default function DashboardMain({ prenom, greeting, createdAt }: Props) {
   const { user } = useUser();
-  const [biens, setBiens] = useState<BienDashboard[]>(propBiens ?? []);
-  const [stats, setStats] = useState<Stats>(propStats ?? DEFAULT_STATS);
-  const [pubs, setPubs] = useState<PubRow[]>([]);
+  const [biens,        setBiens]        = useState<BienDashboard[]>([]);
+  const [nbBiens,      setNbBiens]      = useState(0);
+  const [nbGenerations,setNbGenerations]= useState(0);
+  const [credits,      setCredits]      = useState(500);
+  const [conseil,      setConseil]      = useState(0);
 
+  /* ── Fetch data ─────────────────────────────────────────────── */
   useEffect(() => {
-    if (propBiens !== undefined) { setBiens(propBiens); return; }
     if (!user) return;
     (async () => {
-      const { data: dbUser } = await supabase.from("users").select("id").eq("clerk_id", user.id).single();
+      const { data: dbUser } = await supabase
+        .from("users").select("id, credits").eq("clerk_id", user.id).single();
       if (!dbUser) return;
 
-      const [biensRes, gensRes] = await Promise.all([
+      if (dbUser.credits != null) setCredits(dbUser.credits);
+
+      const [biensRes, biensCountRes, gensCountRes, gensRes] = await Promise.all([
         supabase
           .from("biens")
           .select("id, titre, ville, prix, surface, photo_principale_url, created_at")
@@ -86,89 +92,57 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
           .order("created_at", { ascending: false })
           .limit(3),
         supabase
+          .from("biens")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", dbUser.id),
+        supabase
           .from("generations")
-          .select("id, bien_id")
-          .eq("user_id", dbUser.id)
-          .order("created_at", { ascending: false }),
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", dbUser.id),
+        supabase
+          .from("generations")
+          .select("bien_id")
+          .eq("user_id", dbUser.id),
       ]);
 
-      const latestGenMap = new Map<string, string>();
-      for (const g of gensRes.data ?? []) {
-        if (!latestGenMap.has(g.bien_id)) latestGenMap.set(g.bien_id, g.id);
-      }
+      setNbBiens(biensCountRes.count ?? 0);
+      setNbGenerations(gensCountRes.count ?? 0);
 
+      const genBienIds = new Set((gensRes.data ?? []).map((g) => g.bien_id as string));
       if (biensRes.data) {
         setBiens(biensRes.data.map((b) => ({
-          id: b.id, titre: b.titre, ville: b.ville ?? null,
-          prix: b.prix ?? null, surface: b.surface ?? null,
+          id: b.id,
+          titre: b.titre,
+          ville: b.ville ?? null,
+          prix: b.prix ?? null,
+          surface: b.surface ?? null,
           photo_principale_url: b.photo_principale_url ?? null,
-          latestGenId: latestGenMap.get(b.id) ?? null,
-          createdAt: b.created_at ?? null,
+          hasGeneration: genBienIds.has(b.id),
         })));
       }
     })();
-  }, [user, propBiens]);
-
-  useEffect(() => {
-    if (propStats !== undefined) setStats(propStats);
-  }, [propStats]);
-
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data: dbUser } = await supabase.from("users").select("id").eq("clerk_id", user.id).single();
-      if (!dbUser) return;
-
-      const { data } = await supabase
-        .from("generations")
-        .select("id, resultat_json, created_at, biens(titre, ville, photo_principale_url)")
-        .eq("user_id", dbUser.id)
-        .order("created_at", { ascending: false })
-        .limit(3);
-
-      if (!data) return;
-
-      const rows: PubRow[] = data.flatMap((g) => {
-        const bienRaw = g.biens as unknown as { titre: string; ville: string | null; photo_principale_url: string | null } | null;
-        const json = g.resultat_json as { publications?: Array<{ titre: string; reseau: string; jourPublication: string }> } | null;
-        const firstPub = json?.publications?.[0];
-        if (!firstPub) return [];
-        return [{
-          id: g.id,
-          bienTitre: bienRaw?.titre ?? "—",
-          bienVille: bienRaw?.ville ?? null,
-          bienPhoto: bienRaw?.photo_principale_url ?? null,
-          pubTitre: firstPub.titre,
-          reseau: firstPub.reseau,
-          jourPublication: firstPub.jourPublication,
-          createdAt: new Date(g.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }),
-        }];
-      });
-
-      setPubs(rows);
-    })();
   }, [user]);
 
-  const STATS_CARDS = [
-    { label: "Biens traités",  value: stats.biens,     sub: `${stats.biens} mandat${stats.biens !== 1 ? "s" : ""}`,  badge: "+12%", Icon: Building2 },
-    { label: "Créations IA",   value: stats.campagnes, sub: "Facebook & Instagram", badge: "+12%", Icon: Sparkles },
-    { label: "Crédits restants", value: stats.credits, sub: "disponibles ce mois",  badge: null,   Icon: Zap },
-  ];
+  /* ── Carousel auto-advance ──────────────────────────────────── */
+  useEffect(() => {
+    const t = setInterval(() => setConseil((i) => (i + 1) % CONSEILS.length), 4000);
+    return () => clearInterval(t);
+  }, []);
 
-  const QUICK_ACTIONS = [
-    { href: "/nouveau-bien",        label: "Nouveau bien", sub: "Générer une stratégie", Icon: Building2 },
-    { href: "/dashboard/biens",     label: "Mes biens",    sub: "Gérer vos mandats",     Icon: LayoutDashboard },
-    { href: "/dashboard/abonnement", label: "Abonnement",  sub: "Crédits & plan",        Icon: CreditCard },
+  const STATS_CARDS = [
+    { label: "Biens",     value: nbBiens,       sub: `${nbBiens} mandat${nbBiens !== 1 ? "s" : ""}`,  badge: "+12%", Icon: Building2  },
+    { label: "Créations", value: nbGenerations, sub: "Facebook & Instagram", badge: "+12%",             Icon: Sparkles  },
+    { label: "Crédits",   value: credits,       sub: "disponibles ce mois",  badge: null,               Icon: Zap       },
   ];
 
   return (
-    <main style={{ background: "#F5F5F8", flex: 1, minHeight: "100vh", padding: "24px" }}>
+    <main style={{ background: "#F5F5F8", flex: 1, minHeight: "100vh", padding: "24px 26px" }}>
 
       {/* ── Header ──────────────────────────────────────────────── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
         <div>
-          <p style={{ fontSize: "12px", color: "#6B7280", margin: 0 }}>{greeting},</p>
-          <h1 style={{ fontSize: "24px", fontWeight: 500, color: "#111827", margin: "2px 0 0", letterSpacing: "-0.02em" }}>
+          <p style={{ fontSize: "12px", color: "#6B7280", margin: "0 0 2px" }}>{greeting},</p>
+          <h1 style={{ fontSize: "23px", fontWeight: 500, color: "#111827", margin: 0, letterSpacing: "-0.01em" }}>
             {prenom}
           </h1>
           {createdAt && (
@@ -179,51 +153,56 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
         </div>
         <Link
           href="/nouveau-bien"
-          style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#7C3AED", color: "white", borderRadius: "9px", padding: "9px 16px", fontSize: "12.5px", fontWeight: 500, textDecoration: "none" }}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: "6px",
+            background: "#7C3AED", color: "white", borderRadius: "9px",
+            padding: "9px 16px", fontSize: "12.5px", fontWeight: 500, textDecoration: "none",
+          }}
         >
           <Plus size={13} /> Nouveau bien
         </Link>
       </div>
 
       {/* ── 3 stat cards ────────────────────────────────────────── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "20px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "18px" }}>
         {STATS_CARDS.map(({ label, value, sub, badge, Icon }) => (
           <div key={label} style={{ ...CARD, padding: "16px 18px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <Icon size={14} color="#7C3AED" />
-                <span style={{ fontSize: "11px", color: "#6B7280", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.07em" }}>
-                  {label}
-                </span>
-              </div>
+            <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+              <Icon size={14} color="#7C3AED" style={{ flexShrink: 0 }} />
+              <span style={{
+                fontSize: "10.5px", color: "#6B7280", fontWeight: 600,
+                textTransform: "uppercase", letterSpacing: "0.07em", marginLeft: "6px", flex: 1,
+              }}>
+                {label}
+              </span>
               {badge && (
-                <span style={{ background: "#DCFCE7", color: "#15803D", fontSize: "10px", fontWeight: 600, borderRadius: "4px", padding: "1px 6px" }}>
+                <span style={{ fontSize: "11px", fontWeight: 600, color: "#059669", marginLeft: "auto" }}>
                   {badge}
                 </span>
               )}
             </div>
-            <p style={{ fontSize: "30px", fontWeight: 500, color: "#111827", margin: "0 0 2px", lineHeight: 1, letterSpacing: "-0.02em" }}>
+            <p style={{ fontSize: "30px", fontWeight: 500, color: "#111827", margin: 0, lineHeight: 1 }}>
               {value}
             </p>
-            <p style={{ fontSize: "11.5px", color: "#6B7280", margin: 0 }}>{sub}</p>
+            <p style={{ fontSize: "11.5px", color: "#6B7280", margin: "4px 0 0" }}>{sub}</p>
           </div>
         ))}
       </div>
 
-      {/* ── Main grid 1fr + 260px ───────────────────────────────── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: "16px", marginBottom: "16px" }}>
+      {/* ── Main grid 1fr + 252px ───────────────────────────────── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 252px", gap: "14px", marginBottom: "14px" }}>
 
         {/* Left : derniers biens */}
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-            <h2 style={{ fontSize: "14px", fontWeight: 600, color: "#111827", margin: 0 }}>Mes derniers biens</h2>
-            <Link href="/dashboard/biens" style={{ display: "inline-flex", alignItems: "center", gap: "2px", fontSize: "12px", color: "#7C3AED", fontWeight: 500, textDecoration: "none" }}>
-              Voir tous <ChevronRight size={13} />
+            <h2 style={{ fontSize: "14px", fontWeight: 500, color: "#111827", margin: 0 }}>Mes derniers biens</h2>
+            <Link href="/dashboard/biens" style={{ fontSize: "12px", color: "#7C3AED", fontWeight: 500, textDecoration: "none" }}>
+              Voir tous →
             </Link>
           </div>
 
           {biens.length === 0 ? (
-            <div style={{ ...CARD, padding: "36px 24px", textAlign: "center", border: "1px dashed #E5E7EB" }}>
+            <div style={{ ...CARD, padding: "36px 24px", textAlign: "center", border: "1.5px dashed #E0E0E8" }}>
               <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "#F1EBFF", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
                 <Building2 size={20} color="#7C3AED" />
               </div>
@@ -231,7 +210,11 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
               <p style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "16px" }}>
                 Créez votre premier bien et générez une stratégie IA en 15 secondes.
               </p>
-              <Link href="/nouveau-bien" style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "#7C3AED", color: "white", borderRadius: "8px", padding: "8px 16px", fontSize: "12px", fontWeight: 600, textDecoration: "none" }}>
+              <Link href="/nouveau-bien" style={{
+                display: "inline-flex", alignItems: "center", gap: "5px",
+                background: "#7C3AED", color: "white", borderRadius: "8px",
+                padding: "8px 16px", fontSize: "12px", fontWeight: 600, textDecoration: "none",
+              }}>
                 <Plus size={13} /> Créer mon premier bien
               </Link>
             </div>
@@ -252,39 +235,39 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
                         <Building2 size={24} color="#7C3AED" />
                       </div>
                     )}
-                    {/* Badge actif/brouillon */}
                     <span style={{
                       position: "absolute", top: "8px", right: "8px",
-                      background: bien.latestGenId ? "#DCFCE7" : "#FEF3C7",
-                      color: bien.latestGenId ? "#15803D" : "#B45309",
+                      background: bien.hasGeneration ? "#DCFCE7" : "#FEF3C7",
+                      color: bien.hasGeneration ? "#15803D" : "#B45309",
                       fontSize: "9.5px", fontWeight: 600,
-                      borderRadius: "4px", padding: "2px 6px",
+                      borderRadius: "20px", padding: "2px 8px",
                     }}>
-                      {bien.latestGenId ? "Actif" : "Brouillon"}
+                      {bien.hasGeneration ? "Actif" : "Brouillon"}
                     </span>
-                    {/* Prix overlay */}
                     {bien.prix && (
-                      <span style={{ position: "absolute", bottom: "8px", left: "8px", background: "rgba(17,24,39,0.75)", color: "white", fontSize: "10.5px", borderRadius: "6px", padding: "3px 8px" }}>
+                      <span style={{
+                        position: "absolute", bottom: "8px", left: "8px",
+                        background: "rgba(17,24,39,0.78)", color: "white",
+                        fontSize: "10.5px", fontWeight: 500, borderRadius: "6px", padding: "3px 8px",
+                      }}>
                         {bien.prix}
                       </span>
                     )}
                   </div>
+
                   {/* Body */}
                   <div style={{ padding: "12px" }}>
-                    <p style={{ fontSize: "13px", fontWeight: 500, color: "#111827", margin: "0 0 3px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <p style={{ fontSize: "12.5px", fontWeight: 500, color: "#111827", margin: "0 0 3px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {bien.titre}
                     </p>
                     <p style={{ fontSize: "11px", color: "#6B7280", margin: "0 0 10px" }}>
-                      {[bien.ville, bien.surface ? `${bien.surface}` : null].filter(Boolean).join(" · ")}
+                      {[bien.ville, bien.surface].filter(Boolean).join(" · ")}
                     </p>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span style={{ background: "#F1EBFF", color: "#6D28D9", fontSize: "10.5px", fontWeight: 500, borderRadius: "20px", padding: "2px 9px" }}>
-                        {bien.latestGenId ? "IA générée" : "Sans stratégie"}
+                      <span style={{ background: "#F1EBFF", color: "#6D28D9", borderRadius: "20px", fontSize: "10px", padding: "2px 9px", fontWeight: 500 }}>
+                        {bien.hasGeneration ? "IA générée" : "Sans stratégie"}
                       </span>
-                      <Link
-                        href={bien.latestGenId ? `/biens/${bien.id}/generations/${bien.latestGenId}` : `/biens/${bien.id}`}
-                        style={{ fontSize: "11.5px", color: "#7C3AED", fontWeight: 500, textDecoration: "none" }}
-                      >
+                      <Link href={`/dashboard/biens`} style={{ fontSize: "11.5px", color: "#7C3AED", fontWeight: 500, textDecoration: "none" }}>
                         Voir →
                       </Link>
                     </div>
@@ -295,106 +278,73 @@ export default function DashboardMain({ prenom, greeting, createdAt, derniersBie
           )}
         </div>
 
-        {/* Right column */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-
-          {/* Activité */}
+        {/* Right : actions rapides */}
+        <div>
+          <h2 style={{ fontSize: "14px", fontWeight: 500, color: "#111827", margin: "0 0 12px" }}>Actions rapides</h2>
           <div style={{ ...CARD, padding: "16px" }}>
-            <p style={{ fontSize: "13px", fontWeight: 600, color: "#111827", margin: "0 0 2px" }}>Activité cette semaine</p>
-            <p style={{ fontSize: "11px", color: "#6B7280", margin: "0 0 14px" }}>Campagnes générées</p>
-            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", height: "56px", gap: "4px" }}>
-              {DAYS.map((day, i) => (
-                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
-                  <div style={{ width: "100%", height: `${HEIGHTS[i]}%`, borderRadius: "3px", background: i === TODAY_IDX ? "#7C3AED" : "#EDE9FE" }} />
-                  <span style={{ fontSize: "10px", color: i === TODAY_IDX ? "#7C3AED" : "#9CA3AF" }}>{day}</span>
-                </div>
-              ))}
-            </div>
+            {QUICK_ACTIONS.map(({ href, label, sub, Icon }, idx) => (
+              <div key={href}>
+                <Link href={href} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "9px 0", textDecoration: "none" }}>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#F1EBFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Icon size={14} color="#7C3AED" />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: "13px", fontWeight: 500, color: "#111827", margin: 0 }}>{label}</p>
+                    <p style={{ fontSize: "10.5px", color: "#6B7280", margin: 0 }}>{sub}</p>
+                  </div>
+                  <ChevronRight size={13} color="#D1D5DB" style={{ flexShrink: 0 }} />
+                </Link>
+                {idx < QUICK_ACTIONS.length - 1 && (
+                  <div style={{ borderBottom: "1px solid #F3F3F6" }} />
+                )}
+              </div>
+            ))}
           </div>
-
-          {/* Actions rapides */}
-          <div style={{ ...CARD, padding: "16px" }}>
-            <p style={{ fontSize: "13px", fontWeight: 600, color: "#111827", margin: "0 0 12px" }}>Actions rapides</p>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {QUICK_ACTIONS.map(({ href, label, sub, Icon }, idx) => (
-                <div key={href}>
-                  <Link
-                    href={href}
-                    style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 4px", textDecoration: "none" }}
-                  >
-                    <div style={{ width: "30px", height: "30px", borderRadius: "8px", background: "#F1EBFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Icon size={14} color="#7C3AED" />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: "12.5px", fontWeight: 500, color: "#111827", margin: 0 }}>{label}</p>
-                      <p style={{ fontSize: "10.5px", color: "#6B7280", margin: 0 }}>{sub}</p>
-                    </div>
-                  </Link>
-                  {idx < QUICK_ACTIONS.length - 1 && (
-                    <div style={{ borderBottom: "0.5px solid #E5E7EB", margin: "0 4px" }} />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
         </div>
       </div>
 
-      {/* ── Dernières publications générées ─────────────────────── */}
-      <div style={{ ...CARD, padding: "18px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-          <h2 style={{ fontSize: "14px", fontWeight: 600, color: "#111827", margin: 0 }}>Dernières publications générées</h2>
-          <Link href="/dashboard/biens" style={{ display: "inline-flex", alignItems: "center", gap: "2px", fontSize: "12px", color: "#7C3AED", fontWeight: 500, textDecoration: "none" }}>
-            Voir toutes <ChevronRight size={13} />
-          </Link>
+      {/* ── Conseils du moment ──────────────────────────────────── */}
+      <div style={{ ...CARD, padding: "18px 20px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+          <p style={{ fontSize: "14px", fontWeight: 500, color: "#111827", margin: 0 }}>💡 Conseils du moment</p>
         </div>
 
-        {pubs.length === 0 ? (
-          <p style={{ fontSize: "13px", color: "#9CA3AF", textAlign: "center", padding: "20px 0" }}>
-            Aucune publication générée pour l'instant.
-          </p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {pubs.map((pub, idx) => {
-              const badge = badgeReseau(pub.reseau);
-              return (
-                <div key={pub.id}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 0" }}>
-                    {/* Miniature */}
-                    <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#F1EBFF", overflow: "hidden", flexShrink: 0 }}>
-                      {pub.bienPhoto ? (
-                        <img src={pub.bienPhoto} alt={pub.bienTitre} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                      ) : (
-                        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <Building2 size={14} color="#7C3AED" />
-                        </div>
-                      )}
-                    </div>
-                    {/* Titre + ville */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: "13px", fontWeight: 500, color: "#111827", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {pub.pubTitre}
-                      </p>
-                      <p style={{ fontSize: "11px", color: "#6B7280", margin: 0 }}>
-                        {[pub.bienVille, pub.createdAt].filter(Boolean).join(" · ")}
-                      </p>
-                    </div>
-                    {/* Badge réseau */}
-                    <span style={{ background: badge.bg, color: badge.color, fontSize: "10.5px", fontWeight: 600, borderRadius: "4px", padding: "2px 7px", flexShrink: 0 }}>
-                      {badge.label}
-                    </span>
-                    {/* Jour */}
-                    <span style={{ fontSize: "11px", color: "#6B7280", flexShrink: 0, whiteSpace: "nowrap" }}>
-                      {pub.jourPublication}
-                    </span>
-                  </div>
-                  {idx < pubs.length - 1 && <div style={{ borderBottom: "0.5px solid #E5E7EB" }} />}
-                </div>
-              );
-            })}
+        <div key={conseil} className="animate-fade-in" style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
+          <div style={{
+            width: "38px", height: "38px", borderRadius: "10px",
+            background: "linear-gradient(135deg,#F1EBFF,#EDE4FF)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "18px", flexShrink: 0,
+          }}>
+            {CONSEILS[conseil].emoji}
           </div>
-        )}
+          <div>
+            <p style={{ fontSize: "13px", fontWeight: 600, color: "#111827", margin: "0 0 4px" }}>
+              {CONSEILS[conseil].titre}
+            </p>
+            <p style={{ fontSize: "12px", color: "#6B7280", margin: 0, lineHeight: 1.55 }}>
+              {CONSEILS[conseil].texte}
+            </p>
+          </div>
+        </div>
+
+        {/* Navigation dots */}
+        <div style={{ display: "flex", gap: "5px", marginTop: "14px", justifyContent: "center" }}>
+          {CONSEILS.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setConseil(i)}
+              style={{
+                width: i === conseil ? "16px" : "6px",
+                height: "6px",
+                borderRadius: i === conseil ? "3px" : "50%",
+                background: i === conseil ? "#7C3AED" : "#E0E0E8",
+                border: "none", padding: 0, cursor: "pointer",
+                transition: "all 0.3s",
+              }}
+            />
+          ))}
+        </div>
       </div>
 
     </main>
