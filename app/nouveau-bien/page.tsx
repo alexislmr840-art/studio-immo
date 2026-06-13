@@ -25,7 +25,7 @@ const INPUT: React.CSSProperties = {
 };
 
 const LBL: React.CSSProperties = {
-  fontSize: "13px",
+  fontSize: "12px",
   fontWeight: 500,
   color: "#374151",
   display: "block",
@@ -219,10 +219,10 @@ export default function NouveauBienPage() {
     <div style={{ minHeight: "100vh", background: "#F5F5F8" }}>
 
       {/* Topbar */}
-      <header style={{ background: "white", borderBottom: "1px solid #F0EEF8", position: "sticky", top: 0, zIndex: 20 }}>
+      <header style={{ background: "white", borderBottom: "1.5px solid #E0E0E8", position: "sticky", top: 0, zIndex: 20 }}>
         <div style={{
-          display: "grid", gridTemplateColumns: "1fr auto 1fr",
-          alignItems: "center", padding: "0 24px", height: "56px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "14px 32px",
         }}>
           {/* Logo */}
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
@@ -238,22 +238,16 @@ export default function NouveauBienPage() {
           </Link>
 
           {/* Step indicator */}
-          <span style={{ fontSize: "13px", fontWeight: 500, color: "#7C3AED", whiteSpace: "nowrap" }}>
-            Étape {currentStep}/3 — {STEP_NAMES[currentStep - 1]}
+          <span style={{ fontSize: "12px", fontWeight: 500, color: "#374151", whiteSpace: "nowrap" }}>
+            Étape {currentStep} / 3 — {STEP_NAMES[currentStep - 1]}
           </span>
 
           {/* Dashboard link */}
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <Link href="/dashboard" style={{
-              display: "flex", alignItems: "center", gap: "6px",
-              fontSize: "13px", fontWeight: 500, color: "#6B7280", textDecoration: "none",
-            }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-              </svg>
-              Tableau de bord
-            </Link>
-          </div>
+          <Link href="/dashboard" style={{
+            fontSize: "12.5px", fontWeight: 500, color: "#7C3AED", textDecoration: "none",
+          }}>
+            ← Tableau de bord
+          </Link>
         </div>
 
         {/* Progress bar */}
@@ -265,7 +259,7 @@ export default function NouveauBienPage() {
         </div>
       </header>
 
-      <main style={{ maxWidth: "640px", margin: "0 auto", padding: "32px 24px 80px" }}>
+      <main style={{ maxWidth: "680px", margin: "0 auto", padding: "32px 28px 80px" }}>
 
         {/* Stepper */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "32px" }}>
@@ -301,6 +295,12 @@ export default function NouveauBienPage() {
           })}
         </div>
 
+        <div style={{ marginBottom: "24px" }}>
+          <p style={{ fontSize: "11px", fontWeight: 600, color: "#7C3AED", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 6px" }}>Nouveau bien</p>
+          <h1 style={{ fontSize: "26px", fontWeight: 700, color: "#111827", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Renseignez votre mandat</h1>
+          <p style={{ fontSize: "13px", color: "#9CA3AF", margin: 0 }}>L&apos;IA génère une stratégie complète en ~15 secondes.</p>
+        </div>
+
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
           {/* ── Card 1 : Le bien ────────────────────────────────── */}
@@ -320,7 +320,7 @@ export default function NouveauBienPage() {
               </div>
             </div>
 
-            <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ padding: "28px", display: "flex", flexDirection: "column", gap: "16px" }}>
               {/* Titre */}
               <div>
                 <label style={LBL}>Titre <span style={{ color: "#7C3AED" }}>*</span></label>
@@ -416,7 +416,7 @@ export default function NouveauBienPage() {
               </div>
             </div>
 
-            <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ padding: "28px", display: "flex", flexDirection: "column", gap: "16px" }}>
               {/* Nom agence / Téléphone */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <div>
@@ -485,7 +485,7 @@ export default function NouveauBienPage() {
               </div>
             </div>
 
-            <div style={{ padding: "20px" }}>
+            <div style={{ padding: "28px" }}>
               {photos.length > 0 ? (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                   {photos.map((photo, idx) => (
@@ -601,7 +601,7 @@ export default function NouveauBienPage() {
             onClick={genererContenus}
             disabled={loading || !isValid}
             style={{
-              width: "100%", padding: "16px", borderRadius: "12px", border: "none",
+              width: "100%", padding: "15px", borderRadius: "12px", border: "none",
               background: isValid ? "#7C3AED" : "#E0E0E8",
               color: isValid ? "white" : "#9CA3AF",
               fontSize: "15px", fontWeight: 600,
