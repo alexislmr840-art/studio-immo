@@ -146,7 +146,7 @@ export default function DashboardMain({ prenom, greeting, createdAt }: Props) {
             {prenom}
           </h1>
           {createdAt && (
-            <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "3px 0 0" }}>
+            <p style={{ fontSize: "11px", color: "#6B7280", margin: "3px 0 0" }}>
               Membre depuis le {createdAt}
             </p>
           )}
@@ -184,7 +184,7 @@ export default function DashboardMain({ prenom, greeting, createdAt }: Props) {
             <p style={{ fontSize: "30px", fontWeight: 500, color: "#111827", margin: 0, lineHeight: 1 }}>
               {value}
             </p>
-            <p style={{ fontSize: "11.5px", color: "#6B7280", margin: "4px 0 0" }}>{sub}</p>
+            <p style={{ fontSize: "11.5px", color: "#374151", margin: "4px 0 0" }}>{sub}</p>
           </div>
         ))}
       </div>
@@ -207,7 +207,7 @@ export default function DashboardMain({ prenom, greeting, createdAt }: Props) {
                 <Building2 size={20} color="#7C3AED" />
               </div>
               <p style={{ fontSize: "13px", fontWeight: 500, color: "#374151", marginBottom: "6px" }}>Aucun bien pour l'instant</p>
-              <p style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "16px" }}>
+              <p style={{ fontSize: "12px", color: "#6B7280", marginBottom: "16px" }}>
                 Créez votre premier bien et générez une stratégie IA en 15 secondes.
               </p>
               <Link href="/nouveau-bien" style={{
@@ -290,9 +290,9 @@ export default function DashboardMain({ prenom, greeting, createdAt }: Props) {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: "13px", fontWeight: 500, color: "#111827", margin: 0 }}>{label}</p>
-                    <p style={{ fontSize: "10.5px", color: "#6B7280", margin: 0 }}>{sub}</p>
+                    <p style={{ fontSize: "10.5px", color: "#374151", margin: 0 }}>{sub}</p>
                   </div>
-                  <ChevronRight size={13} color="#D1D5DB" style={{ flexShrink: 0 }} />
+                  <ChevronRight size={13} color="#6B7280" style={{ flexShrink: 0 }} />
                 </Link>
                 {idx < QUICK_ACTIONS.length - 1 && (
                   <div style={{ borderBottom: "1px solid #F3F3F6" }} />
@@ -304,25 +304,25 @@ export default function DashboardMain({ prenom, greeting, createdAt }: Props) {
       </div>
 
       {/* ── Conseils du moment ──────────────────────────────────── */}
-      <div style={{ ...CARD, padding: "18px 20px" }}>
+      <div style={{ ...CARD, padding: "24px", width: "100%" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
           <p style={{ fontSize: "14px", fontWeight: 500, color: "#111827", margin: 0 }}>💡 Conseils du moment</p>
         </div>
 
-        <div key={conseil} className="animate-fade-in" style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
+        <div key={conseil} className="animate-fade-in" style={{ display: "flex", alignItems: "flex-start", gap: "14px", minHeight: "120px" }}>
           <div style={{
-            width: "38px", height: "38px", borderRadius: "10px",
+            width: "44px", height: "44px", borderRadius: "10px",
             background: "linear-gradient(135deg,#F1EBFF,#EDE4FF)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "18px", flexShrink: 0,
+            fontSize: "20px", flexShrink: 0,
           }}>
             {CONSEILS[conseil].emoji}
           </div>
           <div>
-            <p style={{ fontSize: "13px", fontWeight: 600, color: "#111827", margin: "0 0 4px" }}>
+            <p style={{ fontSize: "15px", fontWeight: 600, color: "#111827", margin: "0 0 4px" }}>
               {CONSEILS[conseil].titre}
             </p>
-            <p style={{ fontSize: "12px", color: "#6B7280", margin: 0, lineHeight: 1.55 }}>
+            <p style={{ fontSize: "13px", color: "#374151", margin: 0, lineHeight: 1.55 }}>
               {CONSEILS[conseil].texte}
             </p>
           </div>

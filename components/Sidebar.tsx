@@ -39,8 +39,8 @@ export default function Sidebar({ prenom, initiale, email }: Props) {
       className="hidden lg:flex flex-col flex-shrink-0"
       style={{
         width: "200px", height: "100vh", position: "sticky", top: 0,
-        background: "#1E1B2E", padding: "16px 12px", overflowY: "auto",
-        gap: "3px",
+        background: "#1E1B2E", backgroundColor: "#1E1B2E",
+        padding: "16px 12px", overflowY: "auto", gap: "3px",
       }}
     >
       {/* Logo */}
