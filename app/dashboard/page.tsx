@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import DashboardMain from "@/components/DashboardMain";
