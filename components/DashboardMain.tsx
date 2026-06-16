@@ -21,6 +21,8 @@ interface Props {
   prenom: string;
   greeting: string;
   createdAt: string | null;
+  stats: { biens: number; campagnes: number; visuels: number; credits: number };
+  derniersBiens?: BienDashboard[];
 }
 
 /* ── Constants ───────────────────────────────────────────────── */
@@ -66,25 +68,21 @@ const QUICK_ACTIONS = [
 ] as const;
 
 /* ── Main component ──────────────────────────────────────────── */
-export default function DashboardMain({ prenom, greeting, createdAt }: Props) {
+export default function DashboardMain({ prenom, greeting, createdAt, stats }: Props) {
   const { user } = useUser();
-  const [biens,        setBiens]        = useState<BienDashboard[]>([]);
-  const [nbBiens,      setNbBiens]      = useState(0);
-  const [nbGenerations,setNbGenerations]= useState(0);
-  const [credits,      setCredits]      = useState(500);
-  const [conseil,      setConseil]      = useState(0);
+  const [biens,   setBiens]  = useState<BienDashboard[]>([]);
+  const [conseil, setConseil] = useState(0);
 
   /* ── Fetch data ─────────────────────────────────────────────── */
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data: dbUser } = await supabase
+      const { data: dbUser, error: dbUserError } = await supabase
         .from("users").select("id, credits").eq("clerk_id", user.id).single();
       if (!dbUser) return;
 
-      if (dbUser.credits != null) setCredits(dbUser.credits);
 
-      const [biensRes, biensCountRes, gensCountRes, gensRes] = await Promise.all([
+      const [biensRes, gensRes] = await Promise.all([
         supabase
           .from("biens")
           .select("id, titre, ville, prix, surface, photo_principale_url, created_at")
@@ -92,21 +90,10 @@ export default function DashboardMain({ prenom, greeting, createdAt }: Props) {
           .order("created_at", { ascending: false })
           .limit(3),
         supabase
-          .from("biens")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", dbUser.id),
-        supabase
-          .from("generations")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", dbUser.id),
-        supabase
           .from("generations")
           .select("bien_id")
           .eq("user_id", dbUser.id),
       ]);
-
-      setNbBiens(biensCountRes.count ?? 0);
-      setNbGenerations(gensCountRes.count ?? 0);
 
       const genBienIds = new Set((gensRes.data ?? []).map((g) => g.bien_id as string));
       if (biensRes.data) {
@@ -130,9 +117,9 @@ export default function DashboardMain({ prenom, greeting, createdAt }: Props) {
   }, []);
 
   const STATS_CARDS = [
-    { label: "Biens",     value: nbBiens,       sub: `${nbBiens} mandat${nbBiens !== 1 ? "s" : ""}`,  badge: "+12%", Icon: Building2  },
-    { label: "Créations", value: nbGenerations, sub: "Facebook & Instagram", badge: "+12%",             Icon: Sparkles  },
-    { label: "Crédits",   value: credits,       sub: "disponibles ce mois",  badge: null,               Icon: Zap       },
+    { label: "Biens",     value: stats.biens,     sub: `${stats.biens} mandat${stats.biens !== 1 ? "s" : ""}`, badge: "+12%", Icon: Building2 },
+    { label: "Créations", value: stats.campagnes, sub: "Facebook & Instagram", badge: "+12%",                          Icon: Sparkles  },
+    { label: "Crédits",   value: stats.credits, sub: "disponibles ce mois",  badge: null,               Icon: Zap       },
   ];
 
   return (
