@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
-import { supabase } from "@/lib/supabase";
 import { Building2, Sparkles, Zap, Plus, Building, CreditCard, ChevronRight } from "lucide-react";
 
 /* ── Types ───────────────────────────────────────────────────── */
@@ -14,7 +12,8 @@ export interface BienDashboard {
   prix: string | null;
   surface: string | null;
   photo_principale_url: string | null;
-  hasGeneration: boolean;
+  latestGenId: string | null;
+  createdAt: string | null;
 }
 
 interface Props {
@@ -68,47 +67,8 @@ const QUICK_ACTIONS = [
 ] as const;
 
 /* ── Main component ──────────────────────────────────────────── */
-export default function DashboardMain({ prenom, greeting, createdAt, stats }: Props) {
-  const { user } = useUser();
-  const [biens,   setBiens]  = useState<BienDashboard[]>([]);
+export default function DashboardMain({ prenom, greeting, createdAt, stats, derniersBiens = [] }: Props) {
   const [conseil, setConseil] = useState(0);
-
-  /* ── Fetch data ─────────────────────────────────────────────── */
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data: dbUser, error: dbUserError } = await supabase
-        .from("users").select("id, credits").eq("clerk_id", user.id).single();
-      if (!dbUser) return;
-
-
-      const [biensRes, gensRes] = await Promise.all([
-        supabase
-          .from("biens")
-          .select("id, titre, ville, prix, surface, photo_principale_url, created_at")
-          .eq("user_id", dbUser.id)
-          .order("created_at", { ascending: false })
-          .limit(3),
-        supabase
-          .from("generations")
-          .select("bien_id")
-          .eq("user_id", dbUser.id),
-      ]);
-
-      const genBienIds = new Set((gensRes.data ?? []).map((g) => g.bien_id as string));
-      if (biensRes.data) {
-        setBiens(biensRes.data.map((b) => ({
-          id: b.id,
-          titre: b.titre,
-          ville: b.ville ?? null,
-          prix: b.prix ?? null,
-          surface: b.surface ?? null,
-          photo_principale_url: b.photo_principale_url ?? null,
-          hasGeneration: genBienIds.has(b.id),
-        })));
-      }
-    })();
-  }, [user]);
 
   /* ── Carousel auto-advance ──────────────────────────────────── */
   useEffect(() => {
@@ -117,9 +77,9 @@ export default function DashboardMain({ prenom, greeting, createdAt, stats }: Pr
   }, []);
 
   const STATS_CARDS = [
-    { label: "Biens",     value: stats.biens,     sub: `${stats.biens} mandat${stats.biens !== 1 ? "s" : ""}`, badge: "+12%", Icon: Building2 },
-    { label: "Créations", value: stats.campagnes, sub: "Facebook & Instagram", badge: "+12%",                          Icon: Sparkles  },
-    { label: "Crédits",   value: stats.credits, sub: "disponibles ce mois",  badge: null,               Icon: Zap       },
+    { label: "Biens",     value: stats.biens,     sub: `${stats.biens} mandat${stats.biens !== 1 ? "s" : ""}`, Icon: Building2 },
+    { label: "Créations", value: stats.campagnes, sub: "Facebook & Instagram",                                         Icon: Sparkles  },
+    { label: "Crédits",   value: stats.credits,   sub: "disponibles ce mois",                                          Icon: Zap       },
   ];
 
   return (
@@ -152,21 +112,16 @@ export default function DashboardMain({ prenom, greeting, createdAt, stats }: Pr
 
       {/* ── 3 stat cards ────────────────────────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "18px" }}>
-        {STATS_CARDS.map(({ label, value, sub, badge, Icon }) => (
+        {STATS_CARDS.map(({ label, value, sub, Icon }) => (
           <div key={label} style={{ ...CARD, padding: "16px 18px" }}>
             <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
               <Icon size={14} color="#7C3AED" style={{ flexShrink: 0 }} />
               <span style={{
                 fontSize: "10.5px", color: "#6B7280", fontWeight: 600,
-                textTransform: "uppercase", letterSpacing: "0.07em", marginLeft: "6px", flex: 1,
+                textTransform: "uppercase", letterSpacing: "0.07em", marginLeft: "6px",
               }}>
                 {label}
               </span>
-              {badge && (
-                <span style={{ fontSize: "11px", fontWeight: 600, color: "#059669", marginLeft: "auto" }}>
-                  {badge}
-                </span>
-              )}
             </div>
             <p style={{ fontSize: "30px", fontWeight: 500, color: "#111827", margin: 0, lineHeight: 1 }}>
               {value}
@@ -188,7 +143,7 @@ export default function DashboardMain({ prenom, greeting, createdAt, stats }: Pr
             </Link>
           </div>
 
-          {biens.length === 0 ? (
+          {derniersBiens.length === 0 ? (
             <div style={{ ...CARD, padding: "36px 24px", textAlign: "center", border: "1.5px dashed #E0E0E8" }}>
               <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "#F1EBFF", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
                 <Building2 size={20} color="#7C3AED" />
@@ -207,7 +162,7 @@ export default function DashboardMain({ prenom, greeting, createdAt, stats }: Pr
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
-              {biens.map((bien) => (
+              {derniersBiens.map((bien) => (
                 <div key={bien.id} style={{ ...CARD, overflow: "hidden" }}>
                   {/* Image */}
                   <div style={{ height: "110px", background: "#F1EBFF", position: "relative", overflow: "hidden" }}>
@@ -224,12 +179,12 @@ export default function DashboardMain({ prenom, greeting, createdAt, stats }: Pr
                     )}
                     <span style={{
                       position: "absolute", top: "8px", right: "8px",
-                      background: bien.hasGeneration ? "#DCFCE7" : "#FEF3C7",
-                      color: bien.hasGeneration ? "#15803D" : "#B45309",
+                      background: bien.latestGenId !== null ? "#DCFCE7" : "#FEF3C7",
+                      color: bien.latestGenId !== null ? "#15803D" : "#B45309",
                       fontSize: "9.5px", fontWeight: 600,
                       borderRadius: "20px", padding: "2px 8px",
                     }}>
-                      {bien.hasGeneration ? "Actif" : "Brouillon"}
+                      {bien.latestGenId !== null ? "Actif" : "Brouillon"}
                     </span>
                     {bien.prix && (
                       <span style={{
@@ -252,7 +207,7 @@ export default function DashboardMain({ prenom, greeting, createdAt, stats }: Pr
                     </p>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <span style={{ background: "#F1EBFF", color: "#6D28D9", borderRadius: "20px", fontSize: "10px", padding: "2px 9px", fontWeight: 500 }}>
-                        {bien.hasGeneration ? "IA générée" : "Sans stratégie"}
+                        {bien.latestGenId !== null ? "IA générée" : "Sans stratégie"}
                       </span>
                       <Link href={`/dashboard/biens`} style={{ fontSize: "11.5px", color: "#7C3AED", fontWeight: 500, textDecoration: "none" }}>
                         Voir →
