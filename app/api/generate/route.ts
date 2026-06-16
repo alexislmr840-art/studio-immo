@@ -105,7 +105,50 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { titre, ville, prix, surface, description, telephone, photosUrls, photoPrincipaleUrl } = body;
 
-    /* ── Message user : texte + photos (max 4) ─────────────── */
+    /* ── 1. Auth + déduction crédits (avant OpenAI) ─────────────── */
+    let dbUserId: string | null = null;
+
+    const { userId } = await auth();
+    console.log("[generate] clerk userId:", userId);
+
+    if (userId) {
+      const upsertResult = await supabaseAdmin
+        .from("users")
+        .upsert({ clerk_id: userId }, { onConflict: "clerk_id", ignoreDuplicates: true });
+      console.log("[generate] upsert users:", { data: upsertResult.data, error: upsertResult.error });
+
+      const { data: dbUser, error: selectError } = await supabaseAdmin
+        .from("users")
+        .select("id, plan")
+        .eq("clerk_id", userId)
+        .single();
+      console.log("[generate] SELECT users:", { dbUser, selectError });
+
+      if (!dbUser) {
+        console.error("[generate] dbUser null après upsert — génération sans sauvegarde");
+      } else {
+        dbUserId = dbUser.id;
+
+        if (!dbUser.plan || dbUser.plan === "free") {
+          const { data: creditsRestants } = await supabaseAdmin
+            .rpc("use_credits", { uid: dbUser.id, amount: 500 });
+          console.log("[generate] crédits restants après déduction:", creditsRestants);
+
+          if (creditsRestants === null) {
+            return Response.json(
+              { error: "Crédits insuffisants. Rechargez votre plan pour continuer." },
+              { status: 402 }
+            );
+          }
+        } else {
+          console.log("[generate] plan payant — déduction crédits ignorée:", dbUser.plan);
+        }
+      }
+    } else {
+      console.error("[generate] auth() a retourné null — utilisateur non authentifié dans le contexte API");
+    }
+
+    /* ── 2. Construction du message OpenAI ───────────────────────── */
     const textPart: TextPart = {
       type: "text",
       text: `Bien immobilier à analyser :
@@ -129,7 +172,7 @@ ${JSON_FORMAT}`,
 
     const userContent: ContentPart[] = [textPart, ...imageParts];
 
-    /* ── Appel OpenAI ───────────────────────────────────────── */
+    /* ── 3. Appel OpenAI ─────────────────────────────────────────── */
     console.log("photos reçues:", photosUrls);
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
@@ -159,69 +202,50 @@ ${JSON_FORMAT}`,
       }));
     }
 
-    /* ── Sauvegarde Supabase ─────────────────────────────────── */
+    /* ── 4. Sauvegarde Supabase ──────────────────────────────────── */
     let generationId: string | null = null;
     try {
-      const { userId } = await auth();
-      console.log("[generate] clerk userId:", userId);
-
-      if (!userId) {
-        console.error("[generate] auth() a retourné null — utilisateur non authentifié dans le contexte API");
+      if (!dbUserId) {
+        console.error("[generate] dbUserId null — INSERT biens annulé");
       } else {
-        const upsertResult = await supabaseAdmin
-          .from("users")
-          .upsert({ clerk_id: userId }, { onConflict: "clerk_id", ignoreDuplicates: true });
-        console.log("[generate] upsert users:", { data: upsertResult.data, error: upsertResult.error });
-
-        const { data: dbUser, error: selectError } = await supabaseAdmin
-          .from("users")
+        const { data: bien, error: bienError } = await supabaseAdmin
+          .from("biens")
+          .insert({
+            user_id: dbUserId,
+            titre,
+            ville: ville || "",
+            prix: prix || null,
+            surface: surface || null,
+            description: description || null,
+            afficher_prix: true,
+            photos_urls: Array.isArray(photosUrls) ? photosUrls : [],
+            photo_principale_url: photoPrincipaleUrl || null,
+          })
           .select("id")
-          .eq("clerk_id", userId)
           .single();
-        console.log("[generate] SELECT users:", { dbUser, selectError });
+        console.log("[generate] INSERT biens:", { bien, bienError });
 
-        if (!dbUser) {
-          console.error("[generate] dbUser null après upsert — INSERT biens annulé");
+        if (!bien) {
+          console.error("[generate] INSERT biens échoué — INSERT generations annulé");
         } else {
-          const { data: bien, error: bienError } = await supabaseAdmin
-            .from("biens")
+          const { data: generation, error: genError } = await supabaseAdmin
+            .from("generations")
             .insert({
-              user_id: dbUser.id,
-              titre,
-              ville: ville || "",
-              prix: prix || null,
-              surface: surface || null,
-              description: description || null,
-              afficher_prix: true,
-              photos_urls: Array.isArray(photosUrls) ? photosUrls : [],
-              photo_principale_url: photoPrincipaleUrl || null,
+              bien_id: bien.id,
+              user_id: dbUserId,
+              resultat_json: parsed,
             })
             .select("id")
             .single();
-          console.log("[generate] INSERT biens:", { bien, bienError });
+          console.log("[generate] INSERT generations:", { generation, genError });
+          generationId = generation?.id ?? null;
 
-          if (!bien) {
-            console.error("[generate] INSERT biens échoué — INSERT generations annulé");
-          } else {
-            const { data: generation, error: genError } = await supabaseAdmin
-              .from("generations")
-              .insert({
-                bien_id: bien.id,
-                user_id: dbUser.id,
-                resultat_json: parsed,
-              })
-              .select("id")
-              .single();
-            console.log("[generate] INSERT generations:", { generation, genError });
-            generationId = generation?.id ?? null;
-
-            revalidatePath("/dashboard");
-            console.log("[generate] revalidatePath /dashboard appelé");
-          }
+          revalidatePath("/dashboard");
+          console.log("[generate] revalidatePath /dashboard appelé");
         }
       }
     } catch (err) {
-      console.error("[generate] Exception dans le bloc Supabase:", err);
+      console.error("[generate] Exception dans le bloc Supabase INSERT:", err);
     }
 
     console.log("[generate] réponse finale _generationId:", generationId);
