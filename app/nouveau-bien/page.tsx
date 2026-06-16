@@ -151,9 +151,12 @@ export default function NouveauBienPage() {
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
-      if (!resp.ok) throw new Error("server");
       const data = await resp.json();
-      if (data.error) throw new Error("server");
+      if (!resp.ok || data.error) {
+        setErreurGeneration(true);
+        setErreur(data.error ?? "La génération a échoué, merci de réessayer.");
+        return;
+      }
       localStorage.setItem("studio_immo_resultat", JSON.stringify(data));
       localStorage.setItem("studio_immo_bien", JSON.stringify({ titre, ville, prix, surface, description, afficherPrix }));
       localStorage.setItem("studio_immo_agence", JSON.stringify({ nomAgence, telephone }));
