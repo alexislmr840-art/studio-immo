@@ -205,10 +205,7 @@ export default function DashboardMain({ prenom, greeting, createdAt, stats, dern
                     <p style={{ fontSize: "11px", color: "#6B7280", margin: "0 0 10px" }}>
                       {[bien.ville, bien.surface].filter(Boolean).join(" · ")}
                     </p>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span style={{ background: "#F1EBFF", color: "#6D28D9", borderRadius: "20px", fontSize: "10px", padding: "2px 9px", fontWeight: 500 }}>
-                        {bien.latestGenId !== null ? "IA générée" : "Sans stratégie"}
-                      </span>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
                       <Link href={`/dashboard/biens`} style={{ fontSize: "11.5px", color: "#7C3AED", fontWeight: 500, textDecoration: "none" }}>
                         Voir →
                       </Link>

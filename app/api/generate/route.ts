@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "Utilisateur introuvable." }, { status: 500 });
     }
 
-    if (dbUser.plan === "free") {
+    if (dbUser.plan === "free" || dbUser.plan === "gratuit") {
       const { data: creditsRestants } = await supabaseAdmin
         .rpc("use_credits", { uid: dbUser.id, amount: 500 });
       console.log("[generate] crédits restants:", creditsRestants);

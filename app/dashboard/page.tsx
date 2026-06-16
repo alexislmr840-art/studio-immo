@@ -50,7 +50,7 @@ export default async function DashboardPage() {
             .eq("user_id", dbUser.id),
         ]);
 
-const allBiens = biensResult.data ?? [];
+        const allBiens = biensResult.data ?? [];
         const totalBiens = biensResult.count ?? 0;
         const totalCampagnes = gensResult.count ?? 0;
 
@@ -77,8 +77,8 @@ const allBiens = biensResult.data ?? [];
           credits: dbUser.credits ?? 500,
         };
       }
-    } catch (e) {
-      console.log("[DASH-ERROR]", JSON.stringify(e instanceof Error ? e.message : e));
+    } catch {
+      // silently ignore — stats stay at defaults
     }
   }
 
