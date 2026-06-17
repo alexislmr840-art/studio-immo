@@ -91,7 +91,7 @@ function buildConfirmationEmail(firstName: string, plan: string): string {
 </html>`;
 }
 
-export const config = { api: { bodyParser: false } };
+export const dynamic = "force-dynamic";
 
 function creditsForPlan(plan: string): number {
   if (plan === "solo") return 1000;
