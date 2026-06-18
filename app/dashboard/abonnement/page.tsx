@@ -29,12 +29,12 @@ export default function AbonnementPage() {
   ];
 
   return (
-    <main className="flex-1 px-6 py-8 lg:px-8">
+    <main className="flex-1 px-6 py-8 lg:px-8" style={{ background: "#F4F3F7" }}>
       <div style={{ maxWidth: "900px" }}>
 
         <div className="mb-8">
-          <p className="label mb-1" style={{ color: "var(--txt-4)" }}>Compte</p>
-          <h1 className="font-bold text-white tracking-tight" style={{ fontSize: "24px", letterSpacing: "-0.025em" }}>
+          <p className="label mb-1" style={{ color: "#9CA3AF" }}>Compte</p>
+          <h1 className="font-bold tracking-tight" style={{ fontSize: "24px", letterSpacing: "-0.025em", color: "#111827" }}>
             Abonnement
           </h1>
         </div>
@@ -43,19 +43,19 @@ export default function AbonnementPage() {
         <div
           className="rounded-2xl p-6 mb-6"
           style={{
-            background: "linear-gradient(135deg, rgba(201,168,76,0.08) 0%, rgba(201,168,76,0.03) 100%)",
-            border: "1px solid var(--gold-20)",
+            background: "linear-gradient(135deg, rgba(124,58,237,0.06) 0%, rgba(124,58,237,0.02) 100%)",
+            border: "1.5px solid #E0E0E8",
           }}
         >
           <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
             <div>
-              <p className="label mb-1" style={{ color: "var(--gold)" }}>Plan actuel</p>
-              <h2 className="font-bold text-white mb-1" style={{ fontSize: "22px" }}>Gratuit</h2>
-              <p style={{ fontSize: "13px", color: "var(--txt-3)" }}>
+              <p className="label mb-1" style={{ color: "#7C3AED" }}>Plan actuel</p>
+              <h2 className="font-bold mb-1" style={{ fontSize: "22px", color: "#111827" }}>Gratuit</h2>
+              <p style={{ fontSize: "13px", color: "#6B7280" }}>
                 {remaining} génération{remaining > 1 ? "s" : ""} restante{remaining > 1 ? "s" : ""} ce mois
               </p>
             </div>
-            <Link href="/tarifs" className="btn btn-primary" style={{ padding: "10px 18px" }}>
+            <Link href="/tarifs" className="btn" style={{ padding: "10px 18px", background: "#7C3AED", color: "#ffffff" }}>
               Passer à Pro →
             </Link>
           </div>
@@ -63,17 +63,17 @@ export default function AbonnementPage() {
           {/* Progress bar */}
           <div>
             <div className="flex justify-between mb-1.5">
-              <p style={{ fontSize: "12px", color: "var(--txt-4)" }}>Générations utilisées</p>
-              <p style={{ fontSize: "12px", fontWeight: 600, color: pct > 70 ? "var(--warn)" : "var(--txt-3)" }}>
+              <p style={{ fontSize: "12px", color: "#9CA3AF" }}>Générations utilisées</p>
+              <p style={{ fontSize: "12px", fontWeight: 600, color: pct > 70 ? "var(--warn)" : "#374151" }}>
                 {creditsUsed} / {total}
               </p>
             </div>
-            <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--bg-4)" }}>
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: "#F3F4F6" }}>
               <div
                 className="h-full rounded-full transition-all duration-1000"
                 style={{
                   width: `${pct}%`,
-                  background: pct > 70 ? "var(--warn)" : "var(--gold)",
+                  background: pct > 70 ? "var(--warn)" : "#7C3AED",
                 }}
               />
             </div>
@@ -81,21 +81,25 @@ export default function AbonnementPage() {
         </div>
 
         {/* Feature comparison */}
-        <div className="card overflow-hidden mb-6">
-          <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--border-s)" }}>
-            <h2 className="font-semibold text-white" style={{ fontSize: "14px" }}>Comparaison des plans</h2>
+        <div className="overflow-hidden mb-6" style={{ background: "#ffffff", border: "1.5px solid #E0E0E8", borderRadius: "14px" }}>
+          <div className="px-5 py-4" style={{ borderBottom: "1px solid #E0E0E8" }}>
+            <h2 className="font-semibold" style={{ fontSize: "14px", color: "#111827" }}>Comparaison des plans</h2>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--border-s)" }}>
-                  <th className="px-5 py-3.5 text-left label" style={{ color: "var(--txt-4)", width: "40%" }}>Fonctionnalité</th>
+                <tr style={{ borderBottom: "1px solid #E0E0E8" }}>
+                  <th className="px-5 py-3.5 text-left label" style={{ color: "#9CA3AF", width: "40%" }}>Fonctionnalité</th>
                   {["Gratuit", "Solo · 39€/mois", "Équipe · 79€/mois"].map((plan, i) => (
                     <th key={plan} className="px-4 py-3.5 text-center"
-                        style={{ fontSize: "12px", fontWeight: 700, color: i === 0 ? "var(--gold)" : "var(--txt-3)" }}>
+                        style={{ fontSize: "12px", fontWeight: 700, color: i === 0 ? "#7C3AED" : "#111827" }}>
                       {plan}
-                      {i === 0 && <div className="inline-block ml-1.5 badge badge-gold" style={{ fontSize: "9px" }}>Actuel</div>}
+                      {i === 0 && (
+                        <span className="inline-block ml-1.5" style={{ fontSize: "9px", fontWeight: 600, background: "#EDE9FE", color: "#5B21B6", border: "1px solid #DDD6FE", borderRadius: "20px", padding: "1px 6px" }}>
+                          Actuel
+                        </span>
+                      )}
                     </th>
                   ))}
                 </tr>
@@ -105,16 +109,16 @@ export default function AbonnementPage() {
                   <tr
                     key={label}
                     style={{
-                      borderBottom: i < FEATURES_COMPARE.length - 1 ? "1px solid var(--border-s)" : "none",
-                      background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)",
+                      borderBottom: i < FEATURES_COMPARE.length - 1 ? "1px solid #E0E0E8" : "none",
+                      background: i % 2 === 0 ? "transparent" : "#F9FAFB",
                     }}
                   >
-                    <td className="px-5 py-3" style={{ fontSize: "13px", color: "var(--txt-2)" }}>{label}</td>
+                    <td className="px-5 py-3" style={{ fontSize: "13px", color: "#111827" }}>{label}</td>
                     {[gratuit, solo, equipe].map((val, j) => (
                       <td key={j} className="px-4 py-3 text-center" style={{
                         fontSize: "13px",
                         fontWeight: val === "✓" || val === "Illimité" ? 600 : 400,
-                        color: val === "—" ? "var(--txt-4)" : val === "✓" ? "var(--ok)" : val === "Illimité" ? "var(--gold)" : "var(--txt-2)",
+                        color: val === "—" ? "#9CA3AF" : val === "✓" ? "#16a34a" : val === "Illimité" ? "#7C3AED" : "#374151",
                       }}>
                         {val}
                       </td>
@@ -144,25 +148,27 @@ export default function AbonnementPage() {
               key={name}
               className="rounded-2xl p-5 flex flex-col"
               style={{
-                background: highlight ? "var(--bg-2)" : "var(--bg-1)",
-                border: highlight ? "1px solid var(--gold-30)" : "1px solid var(--border-s)",
+                background: "#ffffff",
+                border: highlight ? "1.5px solid #7C3AED" : "1.5px solid #E0E0E8",
               }}
             >
               {highlight && (
-                <div className="badge badge-gold mb-3 self-start">Le plus populaire</div>
+                <div className="mb-3 self-start" style={{ fontSize: "11px", fontWeight: 600, background: "#EDE9FE", color: "#5B21B6", border: "1px solid #DDD6FE", borderRadius: "20px", padding: "3px 10px" }}>
+                  Le plus populaire
+                </div>
               )}
               <div className="flex items-baseline gap-1 mb-1">
-                <span className="font-bold text-white" style={{ fontSize: "32px", letterSpacing: "-0.04em" }}>{price}</span>
-                <span style={{ fontSize: "13px", color: "var(--txt-4)" }}>{period}</span>
+                <span className="font-bold" style={{ fontSize: "32px", letterSpacing: "-0.04em", color: "#111827" }}>{price}</span>
+                <span style={{ fontSize: "13px", color: "#9CA3AF" }}>{period}</span>
               </div>
-              <p className="font-medium text-white mb-1" style={{ fontSize: "15px" }}>{name}</p>
-              <p style={{ fontSize: "12px", color: "var(--txt-4)", marginBottom: "16px" }}>{desc}</p>
+              <p className="font-medium mb-1" style={{ fontSize: "15px", color: "#111827" }}>{name}</p>
+              <p style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "16px" }}>{desc}</p>
               <Link
                 href="/tarifs"
                 className="btn mt-auto"
                 style={highlight
-                  ? { background: "var(--gold)", color: "#0a0a0a", padding: "10px" }
-                  : { background: "var(--bg-3)", color: "var(--txt-1)", border: "1px solid var(--border)", padding: "10px" }
+                  ? { background: "#7C3AED", color: "#ffffff", padding: "10px" }
+                  : { background: "#F9FAFB", color: "#374151", border: "1px solid #E0E0E8", padding: "10px" }
                 }
               >
                 Choisir {name} →
@@ -171,7 +177,7 @@ export default function AbonnementPage() {
           ))}
         </div>
 
-        <p className="text-center" style={{ fontSize: "12px", color: "var(--txt-4)" }}>
+        <p className="text-center" style={{ fontSize: "12px", color: "#9CA3AF" }}>
           Paiement sécurisé · Sans engagement · Résiliation en un clic · 14 jours satisfait ou remboursé
         </p>
       </div>
