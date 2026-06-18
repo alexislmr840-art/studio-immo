@@ -4,18 +4,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function AbonnementPage() {
-  const [creditsUsed, setCreditsUsed] = useState(0);
+  const [credits, setCredits] = useState<number | null>(null);
 
   useEffect(() => {
-    const r = localStorage.getItem("studio_immo_resultat");
-    if (r) {
-      try { setCreditsUsed(JSON.parse(r)?.publications?.length ?? 0); } catch { /* ignore */ }
-    }
+    fetch("/api/me/credits")
+      .then((r) => r.json())
+      .then((data) => setCredits(data.credits ?? 0))
+      .catch(() => setCredits(0));
   }, []);
-
-  const total = 10;
-  const remaining = Math.max(total - creditsUsed, 0);
-  const pct = Math.min((creditsUsed / total) * 100, 100);
 
   const FEATURES_COMPARE = [
     { label: "Biens / mois", gratuit: "1", solo: "10", equipe: "30" },
@@ -195,15 +191,15 @@ export default function AbonnementPage() {
             <div>
               <p style={{ fontSize: "13px", fontWeight: 600, color: "#111827", marginBottom: "2px" }}>Plan actuel — Gratuit</p>
               <p style={{ fontSize: "12px", color: "#6B7280" }}>
-                {remaining} génération{remaining > 1 ? "s" : ""} restante{remaining > 1 ? "s" : ""} ce mois
+                {credits === null ? "Chargement…" : `${credits} crédits restants · 500 crédits par génération`}
               </p>
             </div>
-            <span style={{ fontSize: "12px", fontWeight: 600, color: pct > 70 ? "var(--warn)" : "#374151" }}>
-              {creditsUsed} / {total}
+            <span style={{ fontSize: "20px", fontWeight: 700, color: "#111827" }}>
+              {credits === null ? "—" : credits >= 500 ? "1 génération" : "0 génération"}
             </span>
           </div>
           <div style={{ height: "6px", borderRadius: "99px", background: "#F3F4F6", overflow: "hidden" }}>
-            <div style={{ height: "100%", borderRadius: "99px", width: `${pct}%`, background: pct > 70 ? "var(--warn)" : "#7C3AED", transition: "width 1s ease" }} />
+            <div style={{ height: "100%", borderRadius: "99px", width: credits === null ? "0%" : `${Math.min((credits / 500) * 100, 100)}%`, background: "#7C3AED", transition: "width 1s ease" }} />
           </div>
         </div>
 
