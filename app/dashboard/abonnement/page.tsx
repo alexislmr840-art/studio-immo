@@ -187,20 +187,28 @@ export default function AbonnementPage() {
 
         {/* ── Barre de progression plan actuel ── */}
         <div style={{ background: "#ffffff", border: "1.5px solid #E0E0E8", borderRadius: "14px", padding: "20px 24px", marginBottom: "24px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
-            <div>
-              <p style={{ fontSize: "13px", fontWeight: 600, color: "#111827", marginBottom: "2px" }}>Plan actuel — Gratuit</p>
-              <p style={{ fontSize: "12px", color: "#6B7280" }}>
-                {credits === null ? "Chargement…" : `${credits} crédits restants · 500 crédits par génération`}
-              </p>
-            </div>
-            <span style={{ fontSize: "20px", fontWeight: 700, color: "#111827" }}>
-              {credits === null ? "—" : credits >= 500 ? "1 génération" : "0 génération"}
-            </span>
-          </div>
-          <div style={{ height: "6px", borderRadius: "99px", background: "#F3F4F6", overflow: "hidden" }}>
-            <div style={{ height: "100%", borderRadius: "99px", width: credits === null ? "0%" : `${Math.min((credits / 500) * 100, 100)}%`, background: "#7C3AED", transition: "width 1s ease" }} />
-          </div>
+          {(() => {
+            const generationsDispo = credits === null ? null : Math.floor(credits / 500);
+            const barWidth = credits === null ? "0%" : credits >= 500 ? "100%" : `${Math.min((credits / 500) * 100, 100)}%`;
+            return (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
+                  <div>
+                    <p style={{ fontSize: "13px", fontWeight: 600, color: "#111827", marginBottom: "2px" }}>Plan actuel — Gratuit</p>
+                    <p style={{ fontSize: "12px", color: "#6B7280" }}>
+                      {credits === null ? "Chargement…" : `${credits} crédits restants · 500 crédits par génération`}
+                    </p>
+                  </div>
+                  <span style={{ fontSize: "20px", fontWeight: 700, color: "#111827" }}>
+                    {generationsDispo === null ? "—" : `${generationsDispo} génération${generationsDispo > 1 ? "s" : ""}`}
+                  </span>
+                </div>
+                <div style={{ height: "6px", borderRadius: "99px", background: "#F3F4F6", overflow: "hidden" }}>
+                  <div style={{ height: "100%", borderRadius: "99px", width: barWidth, background: "#7C3AED", transition: "width 1s ease" }} />
+                </div>
+              </>
+            );
+          })()}
         </div>
 
         {/* ── Footer ── */}
