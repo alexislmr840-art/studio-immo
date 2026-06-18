@@ -1,248 +1,260 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { CheckoutButton } from "./CheckoutButton";
 
-type Feature = string | { label: string; badge: string };
-
-const PLANS: {
-  id: "solo" | "equipe"; name: string; price: string; desc: string; highlight: boolean;
-  badge: string | null; features: Feature[]; cta: string;
-}[] = [
+const FAQ_ITEMS = [
   {
-    id: "solo",
-    name: "Solo",
-    price: "39",
-    desc: "L'essentiel pour les agents indépendants qui veulent se démarquer sur les réseaux.",
-    highlight: false,
-    badge: null,
-    features: [
-      "10 biens par mois",
-      "5 campagnes par bien",
-      "Visuels PNG 1080×1350 px",
-      "Facebook, Instagram, Stories",
-      "Logo agence sur visuels",
-      "1 utilisateur",
-      "Support par email",
-    ],
-    cta: "Commencer avec Solo",
+    q: "Comment fonctionne Studio Immo ?",
+    a: "Vous entrez les informations de votre bien et vos photos, et l'IA génère une campagne complète (posts Facebook, Instagram, Stories et visuels) en quelques secondes.",
   },
   {
-    id: "equipe",
-    name: "Équipe",
-    price: "79",
-    desc: "Puissance illimitée pour les agences et équipes qui gèrent plusieurs mandats.",
-    highlight: true,
-    badge: "Le plus populaire",
-    features: [
-      "30 biens par mois",
-      "5 campagnes par bien",
-      "Visuels PNG 1080×1350 px",
-      "Facebook, Instagram, Stories",
-      "Logo agence sur visuels",
-      "Jusqu'à 10 utilisateurs",
-      "Historique des campagnes",
-      { label: "Analytics réseaux sociaux (vues, j'aime, portée)", badge: "Bientôt disponible" },
-      "Support prioritaire",
-    ],
-    cta: "Commencer avec Équipe",
+    q: "Ai-je besoin de compétences techniques ?",
+    a: "Non, aucune. Tout est automatique, vous n'avez qu'à copier-coller ou publier directement vos contenus.",
+  },
+  {
+    q: "Puis-je tester gratuitement ?",
+    a: "Oui, le plan gratuit vous offre une génération complète, sans carte bancaire requise.",
+  },
+  {
+    q: "Les visuels sont-ils à mon nom ?",
+    a: "Oui, le logo de votre agence est automatiquement intégré sur chaque visuel généré.",
+  },
+  {
+    q: "Puis-je résilier à tout moment ?",
+    a: "Oui, sans engagement et en un clic depuis votre espace personnel.",
+  },
+  {
+    q: "Les textes sont-ils personnalisés ?",
+    a: "Oui, chaque campagne est rédigée sur mesure selon les caractéristiques précises de votre bien.",
   },
 ];
 
-const FAQ = [
-  {
-    q: "Qu'est-ce qu'une génération ?",
-    a: "Une génération = une stratégie complète pour un bien : 5 campagnes, 10 publications et 10 visuels PNG prêts à publier.",
-  },
-  {
-    q: "Puis-je changer de plan à tout moment ?",
-    a: "Oui. Vous pouvez upgrader ou résilier depuis votre espace paramètres. Le changement est effectif immédiatement, sans pénalité.",
-  },
-  {
-    q: "Les visuels sont-ils vraiment personnalisés ?",
-    a: "Absolument. Votre logo, le nom de votre agence, vos photos et les informations du bien sont intégrés automatiquement dans chaque visuel.",
-  },
-  {
-    q: "Qu'est-ce que la garantie 14 jours ?",
-    a: "Si Studio Immo ne vous convient pas dans les 14 premiers jours suivant votre abonnement, nous vous remboursons intégralement, sans question.",
-  },
-];
+function CheckIcon() {
+  return (
+    <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#EDE9FE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="3" strokeLinecap="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+  );
+}
 
 export default function TarifsPage() {
   const { isSignedIn } = useUser();
-  return (
-    <div style={{ background: "var(--bg-base)", minHeight: "100vh" }}>
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-      {/* Header */}
-      <header
-        className="glass sticky top-0 z-50"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
-      >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: "var(--gold)" }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" strokeWidth="2.5" strokeLinecap="round">
+  const toggle = (i: number) => setOpenIndex(openIndex === i ? null : i);
+
+  return (
+    <div style={{ background: "#F4F3F7", minHeight: "100vh" }}>
+      <style>{`
+        .tarif-card { transition: all 0.25s ease; }
+        .tarif-card:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(124,58,237,0.12) !important; border-color: #C4B5FD !important; }
+        .tarif-card-featured { transition: all 0.25s ease; }
+        .tarif-card-featured:hover { transform: translateY(-8px); box-shadow: 0 20px 48px rgba(124,58,237,0.28) !important; }
+        .faq-chevron { transition: transform 0.2s ease; flex-shrink: 0; margin-left: 12px; }
+        .faq-chevron.open { transform: rotate(180deg); }
+      `}</style>
+
+      {/* ── Navbar ─────────────────────────────────────────────── */}
+      <header style={{ background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid #E0E0E8", position: "sticky", top: 0, zIndex: 50 }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: "56px" }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+            <div style={{ width: "28px", height: "28px", background: "#7C3AED", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
               </svg>
             </div>
-            <span className="font-bold text-white" style={{ fontSize: "15px" }}>
-              Studio <span style={{ color: "var(--gold)" }}>Immo</span>
+            <span style={{ fontWeight: 700, fontSize: "15px", color: "#111827" }}>
+              Studio <span style={{ color: "#7C3AED" }}>Immo</span>
             </span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/connexion" className="btn btn-ghost" style={{ padding: "8px 14px", fontSize: "13px" }}>Connexion</Link>
-            <Link href="/connexion" className="btn btn-primary" style={{ padding: "8px 16px", fontSize: "13px" }}>Essai gratuit →</Link>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <Link href="/connexion" style={{ padding: "8px 14px", fontSize: "13px", fontWeight: 600, color: "#6B7280", textDecoration: "none", borderRadius: "8px" }}>
+              Connexion
+            </Link>
+            <Link href="/connexion" style={{ padding: "8px 16px", fontSize: "13px", fontWeight: 600, background: "#7C3AED", color: "#fff", textDecoration: "none", borderRadius: "8px" }}>
+              Essai gratuit →
+            </Link>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-20">
+      {/* ── Hero ─────────────────────────────────────────────── */}
+      <div style={{ position: "relative", padding: "56px 32px 100px", textAlign: "center", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #2D1B69, #1E1B2E)" }} />
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "url(https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=60)",
+          backgroundSize: "cover", backgroundPosition: "center",
+          opacity: 0.18, filter: "blur(2px)",
+        }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(124,58,237,0.5), rgba(30,27,46,0.85))" }} />
 
-        {/* Hero */}
-        <div className="text-center mb-16">
-          <p className="label mb-4" style={{ color: "var(--gold)" }}>Tarifs</p>
-          <h1 className="font-bold text-white tracking-tight mb-4" style={{ fontSize: "clamp(32px, 5vw, 52px)", letterSpacing: "-0.03em" }}>
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <span style={{
+            display: "inline-block", marginBottom: "20px",
+            background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)",
+            color: "#fff", fontSize: "11px", fontWeight: 600,
+            padding: "5px 14px", borderRadius: "20px",
+            textTransform: "uppercase", letterSpacing: "0.05em",
+          }}>
+            Tarifs
+          </span>
+          <h1 style={{ color: "#fff", fontSize: "32px", fontWeight: 700, marginBottom: "14px", letterSpacing: "-0.02em" }}>
             Choisissez votre plan
           </h1>
-          <p style={{ fontSize: "16px", color: "var(--txt-3)", lineHeight: 1.7 }}>
-            Sans engagement · Résiliation en un clic · 10 générations gratuites pour commencer
+          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "14px", lineHeight: 1.7 }}>
+            Sans engagement · Résiliation en un clic · 1 génération gratuite pour commencer
           </p>
         </div>
+      </div>
 
-        {/* Plans */}
-        <div className="grid gap-6 lg:grid-cols-2 max-w-3xl mx-auto mb-16">
-          {PLANS.map((plan) => (
-            <div
-              key={plan.name}
-              className="relative flex flex-col rounded-2xl p-8"
-              style={{
-                background: plan.highlight
-                  ? "linear-gradient(160deg, rgba(201,168,76,0.06) 0%, rgba(201,168,76,0.02) 100%)"
-                  : "var(--bg-1)",
-                border: plan.highlight ? "1px solid var(--gold-30)" : "1px solid var(--border-s)",
-                boxShadow: plan.highlight ? "var(--shadow-gold)" : "none",
-              }}
+      {/* ── Cartes de prix ───────────────────────────────────── */}
+      <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "0 24px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px", marginTop: "-70px", position: "relative", zIndex: 3, marginBottom: "60px" }}>
+
+          {/* Card Gratuit */}
+          <div className="tarif-card" style={{ background: "#fff", border: "1.5px solid #E0E0E8", borderRadius: "16px", padding: "28px 22px" }}>
+            <p style={{ fontSize: "11px", fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Gratuit</p>
+            <div style={{ marginBottom: "4px" }}>
+              <span style={{ fontSize: "36px", fontWeight: 700, color: "#111827", letterSpacing: "-0.03em" }}>0€</span>
+              <span style={{ fontSize: "13px", color: "#9CA3AF" }}>/mois</span>
+            </div>
+            <p style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "20px" }}>Pour tester sans engagement</p>
+            <Link
+              href="/sign-up"
+              style={{ display: "block", textAlign: "center", padding: "11px", background: "#F3F4F6", color: "#374151", borderRadius: "10px", fontSize: "13px", fontWeight: 600, marginBottom: "22px", textDecoration: "none" }}
             >
-              {plan.badge && (
-                <div
-                  className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 font-bold"
-                  style={{ background: "var(--gold)", color: "#0a0a0a", fontSize: "11px" }}
-                >
-                  {plan.badge}
+              Créer mon compte →
+            </Link>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {["1 bien inclus", "Toutes les fonctionnalités", "Aucune carte requise", "Accès immédiat"].map((f) => (
+                <div key={f} style={{ display: "flex", alignItems: "center", gap: "9px", fontSize: "13px", color: "#374151" }}>
+                  <CheckIcon />{f}
                 </div>
-              )}
+              ))}
+            </div>
+          </div>
 
-              <div className="mb-6">
-                <p className="label mb-2" style={{ color: "var(--txt-4)" }}>{plan.name}</p>
-                <div className="flex items-baseline gap-1.5 mb-3">
-                  <span className="font-bold text-white" style={{ fontSize: "52px", letterSpacing: "-0.05em", lineHeight: 1 }}>
-                    {plan.price}€
-                  </span>
-                  <span style={{ fontSize: "15px", color: "var(--txt-4)" }}>/ mois</span>
-                </div>
-                <p style={{ fontSize: "13px", color: "var(--txt-3)", lineHeight: 1.6 }}>{plan.desc}</p>
-              </div>
-
-              <ul className="flex-1 space-y-3 mb-7">
-                {plan.features.map((f, i) => {
-                  const label = typeof f === "string" ? f : f.label;
-                  const badge = typeof f === "string" ? null : f.badge;
-                  return (
-                    <li key={i} className="flex items-center gap-3" style={{ fontSize: "13px", color: "var(--txt-2)" }}>
-                      <div
-                        className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full"
-                        style={{ background: "var(--ok-10)" }}
-                      >
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" strokeWidth="3" strokeLinecap="round">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                      </div>
-                      <span>{label}</span>
-                      {badge && (
-                        <span
-                          className="rounded-full px-2 py-0.5 font-semibold"
-                          style={{ fontSize: "10px", background: "rgba(201,168,76,0.12)", color: "#c9a84c", border: "1px solid rgba(201,168,76,0.25)", whiteSpace: "nowrap" }}
-                        >
-                          {badge}
-                        </span>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-
+          {/* Card Solo */}
+          <div className="tarif-card" style={{ background: "#fff", border: "1.5px solid #E0E0E8", borderRadius: "16px", padding: "28px 22px" }}>
+            <p style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Solo</p>
+            <div style={{ marginBottom: "4px" }}>
+              <span style={{ fontSize: "36px", fontWeight: 700, color: "#111827", letterSpacing: "-0.03em" }}>39€</span>
+              <span style={{ fontSize: "13px", color: "#9CA3AF" }}>/mois</span>
+            </div>
+            <p style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "20px" }}>L&apos;essentiel pour les agents indépendants</p>
+            <div style={{ marginBottom: "22px" }}>
               <CheckoutButton
-                plan={plan.id}
+                plan="solo"
                 isLoggedIn={isSignedIn ?? false}
                 isCurrentPlan={false}
-                accent={plan.highlight}
+                accent={false}
+                buttonStyle={{ width: "100%", padding: "11px", background: "#fff", color: "#7C3AED", border: "1.5px solid #7C3AED", borderRadius: "10px", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                label="Choisir Solo"
               />
             </div>
-          ))}
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {["10 biens par mois", "5 campagnes par bien", "Visuels PNG 1080×1350", "Facebook, Instagram, Stories", "Logo agence sur visuels", "1 utilisateur"].map((f) => (
+                <div key={f} style={{ display: "flex", alignItems: "center", gap: "9px", fontSize: "13px", color: "#374151" }}>
+                  <CheckIcon />{f}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Card Équipe (featured) */}
+          <div className="tarif-card-featured" style={{ background: "#fff", border: "2px solid #7C3AED", borderRadius: "16px", padding: "28px 22px", position: "relative", boxShadow: "0 8px 24px rgba(124,58,237,0.18)" }}>
+            <div style={{ position: "absolute", top: "-12px", left: "50%", transform: "translateX(-50%)", background: "#7C3AED", color: "#fff", fontSize: "10px", fontWeight: 700, padding: "4px 14px", borderRadius: "20px", textTransform: "uppercase", whiteSpace: "nowrap", letterSpacing: "0.04em" }}>
+              ★ Le plus populaire
+            </div>
+            <p style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Équipe</p>
+            <div style={{ marginBottom: "4px" }}>
+              <span style={{ fontSize: "36px", fontWeight: 700, color: "#111827", letterSpacing: "-0.03em" }}>79€</span>
+              <span style={{ fontSize: "13px", color: "#9CA3AF" }}>/mois</span>
+            </div>
+            <p style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "20px" }}>Pour les agences et équipes</p>
+            <div style={{ marginBottom: "22px" }}>
+              <CheckoutButton
+                plan="equipe"
+                isLoggedIn={isSignedIn ?? false}
+                isCurrentPlan={false}
+                accent={true}
+                buttonStyle={{ width: "100%", padding: "11px", background: "#7C3AED", color: "#fff", border: "none", borderRadius: "10px", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                label="Choisir Équipe →"
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {[
+                { text: "30 biens par mois", bold: false, bientot: false },
+                { text: "5 campagnes par bien", bold: false, bientot: false },
+                { text: "Visuels PNG 1080×1350", bold: false, bientot: false },
+                { text: "Facebook, Instagram, Stories", bold: false, bientot: false },
+                { text: "Logo agence sur visuels", bold: false, bientot: false },
+                { text: "Jusqu'à 10 utilisateurs", bold: false, bientot: false },
+                { text: "Historique des campagnes", bold: false, bientot: false },
+                { text: "Analytics réseaux sociaux", bold: true, bientot: true },
+                { text: "Support prioritaire", bold: false, bientot: false },
+              ].map(({ text, bold, bientot }) => (
+                <div key={text} style={{ display: "flex", alignItems: "center", gap: "9px", fontSize: "13px", color: "#374151", fontWeight: bold ? 600 : 400 }}>
+                  <CheckIcon />
+                  {text}
+                  {bientot && (
+                    <span style={{ background: "#EDE9FE", color: "#5B21B6", fontSize: "9px", fontWeight: 700, padding: "1px 6px", borderRadius: "10px", whiteSpace: "nowrap" }}>
+                      Bientôt disponible
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Free plan mention */}
-        <div
-          className="rounded-2xl p-5 text-center mb-16"
-          style={{ background: "var(--bg-1)", border: "1px solid var(--border-s)" }}
-        >
-          <p className="font-semibold text-white mb-1" style={{ fontSize: "15px" }}>
-            Commencez gratuitement
-          </p>
-          <p style={{ fontSize: "13px", color: "var(--txt-3)", marginBottom: "14px" }}>
-            10 générations offertes dès la création de votre compte. Aucune carte bancaire requise.
-          </p>
-          <Link href="/connexion" className="btn btn-primary" style={{ padding: "10px 22px" }}>
-            Créer un compte gratuit →
-          </Link>
-        </div>
-
-        {/* Guarantees */}
-        <div className="grid gap-4 sm:grid-cols-3 mb-16">
-          {[
-            { icon: "🔒", title: "Paiement sécurisé", desc: "Transactions chiffrées par Stripe, le leader mondial du paiement en ligne." },
-            { icon: "↩️", title: "14 jours satisfait ou remboursé", desc: "Pas convaincu ? On vous rembourse intégralement, sans condition." },
-            { icon: "⚡", title: "Accès immédiat", desc: "Votre abonnement est actif dès la confirmation du paiement." },
-          ].map(({ icon, title, desc }) => (
-            <div key={title} className="rounded-2xl p-5 text-center" style={{ background: "var(--bg-1)", border: "1px solid var(--border-s)" }}>
-              <div className="text-2xl mb-3">{icon}</div>
-              <p className="font-semibold text-white mb-1.5" style={{ fontSize: "13px" }}>{title}</p>
-              <p style={{ fontSize: "12px", color: "var(--txt-4)", lineHeight: 1.6 }}>{desc}</p>
+        {/* ── FAQ Accordéon ───────────────────────────────────── */}
+        <div style={{ maxWidth: "700px", margin: "0 auto", paddingBottom: "60px" }}>
+          <h2 style={{ fontSize: "24px", fontWeight: 700, color: "#111827", textAlign: "center", marginBottom: "32px" }}>
+            Questions fréquentes
+          </h2>
+          {FAQ_ITEMS.map(({ q, a }, i) => (
+            <div key={i} style={{ background: "#fff", border: "1.5px solid #E0E0E8", borderRadius: "12px", marginBottom: "12px", overflow: "hidden" }}>
+              <button
+                onClick={() => toggle(i)}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 20px", fontSize: "15px", fontWeight: 600, color: "#111827", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" }}
+              >
+                {q}
+                <svg
+                  className={`faq-chevron${openIndex === i ? " open" : ""}`}
+                  width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round"
+                >
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              {openIndex === i && (
+                <div style={{ padding: "0 20px 18px", fontSize: "14px", color: "#6B7280", lineHeight: 1.6 }}>
+                  {a}
+                </div>
+              )}
             </div>
           ))}
         </div>
+      </div>
 
-        {/* FAQ */}
-        <div>
-          <h2 className="font-bold text-white text-center mb-8" style={{ fontSize: "24px", letterSpacing: "-0.025em" }}>
-            Questions fréquentes
-          </h2>
-          <div className="space-y-3 max-w-2xl mx-auto">
-            {FAQ.map(({ q, a }) => (
-              <div key={q} className="card p-5">
-                <p className="font-semibold text-white mb-2" style={{ fontSize: "14px" }}>{q}</p>
-                <p style={{ fontSize: "13px", color: "var(--txt-3)", lineHeight: 1.7 }}>{a}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="px-6 py-8" style={{ borderTop: "1px solid var(--border-s)" }}>
-        <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md" style={{ background: "var(--gold)" }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" strokeWidth="2.5" strokeLinecap="round">
+      {/* ── Footer ──────────────────────────────────────────── */}
+      <footer style={{ borderTop: "1px solid #E0E0E8", padding: "24px", background: "#fff" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+            <div style={{ width: "24px", height: "24px", background: "#7C3AED", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
               </svg>
             </div>
-            <span className="font-bold text-white text-sm">Studio Immo</span>
+            <span style={{ fontWeight: 700, fontSize: "14px", color: "#111827" }}>Studio Immo</span>
           </Link>
-          <p style={{ fontSize: "11px", color: "var(--txt-4)" }}>
-            © 2026 Studio Immo · Marketing immobilier automatisé
-          </p>
+          <p style={{ fontSize: "11px", color: "#9CA3AF" }}>© 2026 Studio Immo · Marketing immobilier automatisé</p>
         </div>
       </footer>
     </div>
