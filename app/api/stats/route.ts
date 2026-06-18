@@ -50,7 +50,7 @@ export async function GET() {
   }
 
   // Crédits
-  const maxCredits = dbUser.plan === "equipe" ? 9999 : dbUser.plan === "solo" ? 1000 : 200;
+  const maxCredits = dbUser.plan === "equipe" ? 50000 : dbUser.plan === "solo" ? 5000 : 500;
 
   return Response.json({
     totalBiens,

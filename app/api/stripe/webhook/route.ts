@@ -36,7 +36,7 @@ function buildConfirmationEmail(firstName: string, plan: string): string {
           <!-- Body -->
           <tr>
             <td style="padding:40px 40px 32px;">
-              <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#111827;">Bienvenue, ${firstName}&nbsp;! 🎉</h1>
+              <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#111827;">${firstName ? `Bienvenue ${firstName}&nbsp;!` : "Bienvenue&nbsp;!"} 🎉</h1>
               <p style="margin:0 0 24px;font-size:16px;color:#6B7280;line-height:1.6;">
                 Votre abonnement <strong style="color:#7C3AED;">${planLabel}</strong> est maintenant actif.<br />
                 Vous avez accès à toutes les fonctionnalités de Studio Immo Pro.
@@ -94,8 +94,8 @@ function buildConfirmationEmail(firstName: string, plan: string): string {
 export const dynamic = "force-dynamic";
 
 function creditsForPlan(plan: string): number {
-  if (plan === "solo") return 1000;
-  if (plan === "equipe") return 999999;
+  if (plan === "solo") return 5000;
+  if (plan === "equipe") return 50000;
   return 500;
 }
 
@@ -158,7 +158,7 @@ export async function POST(req: Request) {
           const clerk = await clerkClient();
           const user = await clerk.users.getUser(clerkId);
           const email = user.emailAddresses[0]?.emailAddress;
-          const firstName = user.firstName ?? "là";
+          const firstName = user.firstName ?? "";
 
           if (email) {
             await resend.emails.send({
