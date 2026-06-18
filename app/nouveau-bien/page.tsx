@@ -63,6 +63,7 @@ export default function NouveauBienPage() {
     try { return JSON.parse(localStorage.getItem("studio_immo_agence") || "{}").telephone || ""; } catch { return ""; }
   });
   const [afficherPrix, setAfficherPrix] = useState(true);
+  const [afficherLogo, setAfficherLogo] = useState(true);
   const [photos, setPhotos] = useState<string[]>([]);
   const [logo, setLogo] = useState("");
   const [photoPrincipale, setPhotoPrincipale] = useState(0);
@@ -147,7 +148,7 @@ export default function NouveauBienPage() {
     try {
       const resp = await fetch("/api/generate", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ titre, ville, prix, surface, description, telephone, photosUrls, photoPrincipaleUrl }),
+        body: JSON.stringify({ titre, ville, prix, surface, description, telephone, photosUrls, photoPrincipaleUrl, afficherPrix, afficherLogo }),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -158,7 +159,7 @@ export default function NouveauBienPage() {
         return;
       }
       localStorage.setItem("studio_immo_resultat", JSON.stringify(data));
-      localStorage.setItem("studio_immo_bien", JSON.stringify({ titre, ville, prix, surface, description, afficherPrix }));
+      localStorage.setItem("studio_immo_bien", JSON.stringify({ titre, ville, prix, surface, description, afficherPrix, afficherLogo }));
       localStorage.setItem("studio_immo_agence", JSON.stringify({ nomAgence, telephone }));
       localStorage.setItem("studio_immo_photo_principale", String(finalPrincipalIdx));
       localStorage.setItem("studio_immo_photos_urls", JSON.stringify(photosUrls));
@@ -445,6 +446,37 @@ export default function NouveauBienPage() {
               )}
               <input type="file" accept="image/*" onChange={handleLogo} style={{ display: "none" }}/>
             </label>
+
+            {logo && (
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "16px 0", borderTop: "1px solid #ECEAF0",
+              }}>
+                <div>
+                  <p style={{ fontSize: "14px", color: "#15131D", fontWeight: 500, margin: "0 0 3px" }}>
+                    Afficher le logo sur les visuels
+                  </p>
+                  <p style={{ fontSize: "12.5px", color: "#8B85A0", margin: 0 }}>
+                    Votre logo sera superposé en haut à gauche
+                  </p>
+                </div>
+                <div
+                  onClick={() => setAfficherLogo((v) => !v)}
+                  style={{
+                    width: "42px", height: "24px", borderRadius: "20px", flexShrink: 0,
+                    background: afficherLogo ? "#7C3AED" : "#D6D2E0",
+                    position: "relative", cursor: "pointer", transition: "background 0.2s",
+                  }}
+                >
+                  <div style={{
+                    position: "absolute", width: "18px", height: "18px", borderRadius: "50%",
+                    background: "white", top: "3px",
+                    left: afficherLogo ? "21px" : "3px",
+                    transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                  }} />
+                </div>
+              </div>
+            )}
           </section>
 
           {/* ── SECTION 3 : Les photos ───────────────────────── */}

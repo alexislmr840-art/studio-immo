@@ -32,6 +32,7 @@ interface Bien {
   surface: string;
   description: string;
   afficherPrix: boolean;
+  afficherLogo: boolean;
 }
 
 interface Agence {
@@ -64,6 +65,59 @@ const ONGLETS: { key: Onglet; label: string }[] = [
   { key: "instagram", label: "Instagram" },
   { key: "story",     label: "Story"     },
 ];
+
+/* ── Génération PNG téléchargeable ──────────────────────────── */
+async function genererVisuelPNG(
+  photoUrl: string,
+  logoDataUrl: string,
+  afficherLogo: boolean,
+  nomFichier: string,
+): Promise<void> {
+  const photo = new Image();
+  photo.crossOrigin = "anonymous";
+  await new Promise<void>((resolve, reject) => {
+    photo.onload = () => resolve();
+    photo.onerror = () => reject(new Error("Photo inaccessible"));
+    photo.src = photoUrl;
+  });
+
+  const canvas = document.createElement("canvas");
+  canvas.width  = photo.naturalWidth;
+  canvas.height = photo.naturalHeight;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(photo, 0, 0);
+
+  if (afficherLogo && logoDataUrl) {
+    const logoImg = new Image();
+    logoImg.crossOrigin = "anonymous";
+    await new Promise<void>((res) => {
+      logoImg.onload = () => res();
+      logoImg.onerror = () => res();
+      logoImg.src = logoDataUrl;
+    });
+    if (logoImg.naturalWidth > 0) {
+      const w = canvas.width * 0.18;
+      const h = (logoImg.naturalHeight / logoImg.naturalWidth) * w;
+      ctx.globalAlpha = 0.55;
+      ctx.drawImage(logoImg, 0, 0, w, h);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) { reject(new Error("Échec de la génération PNG")); return; }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = nomFichier;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      resolve();
+    }, "image/png");
+  });
+}
 
 /* ── Photo album (style Facebook) ───────────────────────────── */
 function PhotoAlbum({ photos }: { photos: string[] }) {
@@ -120,10 +174,10 @@ function PhotoAlbum({ photos }: { photos: string[] }) {
 
 /* ── CampagneCard ────────────────────────────────────────────── */
 function CampagneCard({
-  pub, index, photos, photoPrincipale, agence, logo, onUpdate, datePlanifiee, onPlanifier,
+  pub, index, photos, photoPrincipale, agence, logo, afficherLogo, titreBien, onUpdate, datePlanifiee, onPlanifier,
 }: {
   pub: Publication; index: number; photos: string[]; photoPrincipale: number;
-  agence: Agence | null; logo: string;
+  agence: Agence | null; logo: string; afficherLogo: boolean; titreBien: string;
   onUpdate: (field: Onglet, value: string) => Promise<void>;
   datePlanifiee?: string;
   onPlanifier: (date: string) => Promise<void>;
@@ -145,6 +199,7 @@ function CampagneCard({
   const [editValue, setEditValue]         = useState("");
   const [editSaving, setEditSaving]       = useState(false);
   const [editSaved,   setEditSaved]       = useState(false);
+  const [downloading, setDownloading]     = useState(false);
 
   useEffect(() => {
     if (datePlanifiee) { setDateSauvegardee(datePlanifiee); setDate(toDateTimeLocal(datePlanifiee)); }
@@ -178,6 +233,20 @@ function CampagneCard({
       setTimeout(() => setEditSaved(false), 2000);
     } catch { /* état local déjà mis à jour */ }
     finally { setEditSaving(false); }
+  }
+
+  async function handleTelecharger() {
+    if (!cover) return;
+    setDownloading(true);
+    try {
+      const nom = `studio-immo-${titreBien.toLowerCase().replace(/\s+/g, "-")}.png`;
+      await genererVisuelPNG(cover, logo, afficherLogo, nom);
+    } catch (e) {
+      console.error("[télécharger] erreur:", e);
+      alert("Impossible de générer le visuel, réessayez.");
+    } finally {
+      setDownloading(false);
+    }
   }
 
   async function confirmerPlanif() {
@@ -307,6 +376,26 @@ function CampagneCard({
               <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> Copié !</>
             ) : (
               <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copier</>
+            )}
+          </button>
+
+          <button
+            onClick={handleTelecharger}
+            disabled={downloading || !cover}
+            className="btn"
+            style={{ background: "#ffffff", border: "1px solid #E0E0E8", color: "#374151", padding: "9px 14px", opacity: downloading || !cover ? 0.5 : 1 }}
+          >
+            {downloading ? (
+              "Génération…"
+            ) : (
+              <>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Télécharger
+              </>
             )}
           </button>
 
@@ -623,6 +712,8 @@ export default function ResultatsPage() {
                 photoPrincipale={photoPrincipale}
                 agence={agence}
                 logo={logo}
+                afficherLogo={bien?.afficherLogo !== false}
+                titreBien={bien?.titre ?? ""}
                 onUpdate={(field, value) => updatePublication(idx, field, value)}
                 datePlanifiee={planifications[idx]}
                 onPlanifier={(date) => planifier(idx, date)}

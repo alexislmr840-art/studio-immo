@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { titre, ville, prix, surface, description, photosUrls, photoPrincipaleUrl } = body;
+    const { titre, ville, prix, surface, description, photosUrls, photoPrincipaleUrl, afficherPrix, afficherLogo } = body;
 
     const { userId } = await auth();
     if (!userId) {
@@ -109,7 +109,8 @@ Règles :
         prix: prix || null,
         surface: surface || null,
         description: description || null,
-        afficher_prix: true,
+        afficher_prix: afficherPrix ?? true,
+        afficher_logo: afficherLogo ?? true,
         photos_urls: Array.isArray(photosUrls) ? photosUrls : [],
         photo_principale_url: photoPrincipaleUrl || null,
       })
