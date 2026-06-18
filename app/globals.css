@@ -148,8 +148,8 @@ body {
 
 /* Cards */
 .card {
-  background: var(--bg-1);
-  border: 1px solid var(--border-s);
+  background: #ffffff;
+  border: 1.5px solid #E0E0E8;
   border-radius: var(--radius-lg);
   transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
 }

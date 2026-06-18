@@ -74,32 +74,32 @@ function PhotoAlbum({ photos }: { photos: string[] }) {
   const extra = Math.max(0, photos.length - maxShow);
   const n = shown.length;
 
-  const img = (src: string, h: string, style?: CSSProperties) => (
-    <img src={src} alt="" style={{ width: "100%", height: h, maxHeight: h, objectFit: "cover", display: "block", ...style }} />
+  const img = (src: string, h: string) => (
+    <img src={src} alt="" style={{ width: "100%", height: h, objectFit: "cover", objectPosition: "center 30%", display: "block" }} />
   );
 
   if (n === 1) return img(shown[0], "220px");
 
   if (n === 2) return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px" }}>
-      {shown.map((p, i) => <div key={i}>{img(p, "180px")}</div>)}
+      {shown.map((p, i) => <div key={i} style={{ overflow: "hidden" }}>{img(p, "160px")}</div>)}
     </div>
   );
 
   if (n === 3) return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-      {img(shown[0], "160px")}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px" }}>
-        {img(shown[1], "120px")}
-        {img(shown[2], "120px")}
+      {img(shown[0], "200px")}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px", overflow: "hidden" }}>
+        {img(shown[1], "110px")}
+        {img(shown[2], "110px")}
       </div>
     </div>
   );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-      {img(shown[0], "160px")}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "2px" }}>
+      {img(shown[0], "200px")}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "2px", overflow: "hidden" }}>
         {shown.slice(1).map((p, i) => {
           const isLast = i === 2 && extra > 0;
           return (
@@ -265,7 +265,11 @@ function CampagneCard({
             )}
           </div>
 
-          {orderedPhotos.length > 0 && <PhotoAlbum photos={orderedPhotos} />}
+          {orderedPhotos.length > 0 && (
+            <div style={{ maxHeight: "280px", overflow: "hidden" }}>
+              <PhotoAlbum photos={orderedPhotos} />
+            </div>
+          )}
         </div>
 
         {/* Action buttons */}

@@ -180,9 +180,11 @@ export async function POST(req: Request) {
         if (sub.status !== "active") break;
 
         const priceId = sub.items.data[0]?.price.id;
-        let plan = "free";
+        let plan: string | null = null;
         if (priceId === process.env.STRIPE_PRICE_SOLO) plan = "solo";
         if (priceId === process.env.STRIPE_PRICE_EQUIPE) plan = "equipe";
+
+        if (!plan) break;
 
         await supabaseAdmin
           .from("users")
@@ -195,7 +197,7 @@ export async function POST(req: Request) {
         const sub = event.data.object as Stripe.Subscription;
         await supabaseAdmin
           .from("users")
-          .update({ plan: "free", stripe_subscription_id: null })
+          .update({ plan: "gratuit", stripe_subscription_id: null, credits: 500 })
           .eq("stripe_customer_id", sub.customer as string);
         break;
       }

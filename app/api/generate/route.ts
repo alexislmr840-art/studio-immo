@@ -27,15 +27,6 @@ export async function POST(request: Request) {
       return Response.json({ error: "Utilisateur introuvable." }, { status: 500 });
     }
 
-    if (dbUser.plan === "free" || dbUser.plan === "gratuit") {
-      const { data: creditsRestants } = await supabaseAdmin
-        .rpc("use_credits", { uid: dbUser.id, amount: 500 });
-      console.log("[generate] crédits restants:", creditsRestants);
-      if (creditsRestants === null || creditsRestants === undefined) {
-        return Response.json({ error: "Crédits insuffisants. Rechargez votre plan pour continuer." }, { status: 402 });
-      }
-    }
-
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const prompt = `Tu es un expert en marketing immobilier, réseaux sociaux et copywriting.
@@ -93,6 +84,19 @@ Règles :
 
     const content = completion.choices[0].message.content;
     const parsed = JSON.parse(content || "{}");
+
+    if (!Array.isArray(parsed.publications)) {
+      return Response.json({ error: "Génération invalide, merci de réessayer." }, { status: 500 });
+    }
+
+    if (dbUser.plan === "gratuit") {
+      const { data: creditsRestants } = await supabaseAdmin
+        .rpc("use_credits", { uid: dbUser.id, amount: 500 });
+      console.log("[generate] crédits restants:", creditsRestants);
+      if (creditsRestants === null || creditsRestants === undefined) {
+        return Response.json({ error: "Crédits insuffisants. Rechargez votre plan pour continuer." }, { status: 402 });
+      }
+    }
 
     let generationId: string | null = null;
 
