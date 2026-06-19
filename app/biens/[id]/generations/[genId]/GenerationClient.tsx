@@ -11,7 +11,6 @@ interface Publication {
   accroche: string;
   facebook: string;
   instagram: string;
-  story: string;
   ideeVisuelA: string;
   ideeVisuelB: string;
 }
@@ -126,12 +125,11 @@ export function GenerationClient({ resultat, bien, bienId, dateGeneration }: Pro
                 "{pub.accroche}"
               </p>
 
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
                 {(
                   [
                     { key: "facebook", label: "📘 Facebook", bg: "bg-blue-50", btnBg: "bg-blue-950 text-white", textColor: "text-blue-950" },
                     { key: "instagram", label: "📸 Instagram", bg: "bg-pink-50", btnBg: "bg-pink-600 text-white", textColor: "text-pink-700" },
-                    { key: "story", label: "📱 Story", bg: "bg-amber-50", btnBg: "bg-amber-400 text-blue-950", textColor: "text-blue-950" },
                   ] as const
                 ).map(({ key, label, bg, btnBg, textColor }) => {
                   const copyId = `${index}-${key}`;

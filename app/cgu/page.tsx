@@ -80,7 +80,7 @@ export default function CguPage() {
             <p>Studio Immo propose les fonctionnalités suivantes :</p>
             <ul className="mt-3 space-y-2 list-none">
               {[
-                "Génération automatisée de stratégies de publication sur les réseaux sociaux (Facebook, Instagram, Stories) à partir de données d'un bien immobilier, via l'IA (OpenAI GPT-4o mini)",
+                "Génération automatisée de stratégies de publication sur les réseaux sociaux (Facebook, Instagram) à partir de données d'un bien immobilier, via l'IA (OpenAI GPT-4o mini)",
                 "Création de visuels PNG téléchargeables (format 1 080 × 1 350 px) composés des photos du bien et des éléments de l'agence",
                 "Planification des publications (date et heure)",
                 "Stockage des campagnes générées dans un espace personnel",

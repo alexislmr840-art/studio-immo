@@ -8,7 +8,7 @@ import { CheckoutButton } from "./CheckoutButton";
 const FAQ_ITEMS = [
   {
     q: "Comment fonctionne Studio Immo ?",
-    a: "Vous entrez les informations de votre bien et vos photos, et l'IA génère une campagne complète (posts Facebook, Instagram, Stories et visuels) en quelques secondes.",
+    a: "Vous entrez les informations de votre bien et vos photos, et l'IA génère une campagne complète (posts Facebook, Instagram et visuels) en quelques secondes.",
   },
   {
     q: "Ai-je besoin de compétences techniques ?",
@@ -159,7 +159,7 @@ export default function TarifsPage() {
               />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {["10 biens par mois", "5 campagnes par bien", "Visuels PNG 1080×1350", "Facebook, Instagram, Stories", "Logo agence sur visuels", "1 utilisateur"].map((f) => (
+              {["10 biens par mois", "5 campagnes par bien", "Visuels PNG 1080×1350", "Facebook, Instagram", "Logo agence sur visuels", "1 utilisateur"].map((f) => (
                 <div key={f} style={{ display: "flex", alignItems: "center", gap: "9px", fontSize: "13px", color: "#374151" }}>
                   <CheckIcon />{f}
                 </div>
@@ -193,7 +193,7 @@ export default function TarifsPage() {
                 { text: "30 biens par mois", bold: false, bientot: false },
                 { text: "5 campagnes par bien", bold: false, bientot: false },
                 { text: "Visuels PNG 1080×1350", bold: false, bientot: false },
-                { text: "Facebook, Instagram, Stories", bold: false, bientot: false },
+                { text: "Facebook, Instagram", bold: false, bientot: false },
                 { text: "Logo agence sur visuels", bold: false, bientot: false },
                 { text: "Jusqu'à 10 utilisateurs", bold: false, bientot: false },
                 { text: "Historique des campagnes", bold: false, bientot: false },

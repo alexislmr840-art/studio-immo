@@ -12,7 +12,6 @@ interface Publication {
   accroche: string;
   facebook: string;
   instagram: string;
-  story: string;
   ideeVisuelA: string;
   ideeVisuelB: string;
 }
@@ -40,7 +39,7 @@ interface Agence {
   telephone: string;
 }
 
-type Onglet = "facebook" | "instagram" | "story";
+type Onglet = "facebook" | "instagram";
 
 function toDateTimeLocal(iso: string): string {
   try {
@@ -63,7 +62,6 @@ function getInitials(name: string): string {
 const ONGLETS: { key: Onglet; label: string }[] = [
   { key: "facebook",  label: "Facebook"  },
   { key: "instagram", label: "Instagram" },
-  { key: "story",     label: "Story"     },
 ];
 
 /* ── Génération PNG téléchargeable ──────────────────────────── */

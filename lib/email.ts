@@ -51,7 +51,7 @@ export async function sendWelcomeEmail(to: string, prenom?: string) {
                 Nous sommes ravis de vous accueillir sur <strong style="color:#ffffff;">Studio Immo</strong>.
               </p>
               <p style="margin:0 0 16px;color:rgba(255,255,255,0.7);font-size:15px;line-height:1.7;">
-                Studio Immo génère en quelques secondes une <strong style="color:#c9a84c;">stratégie marketing complète</strong> pour vos biens immobiliers&nbsp;: publications Facebook, légendes Instagram, Stories et idées visuelles — tout est prêt à publier.
+                Studio Immo génère en quelques secondes une <strong style="color:#c9a84c;">stratégie marketing complète</strong> pour vos biens immobiliers&nbsp;: publications Facebook, légendes Instagram et idées visuelles — tout est prêt à publier.
               </p>
               <p style="margin:0 0 32px;color:rgba(255,255,255,0.7);font-size:15px;line-height:1.7;">
                 Pour commencer, vous bénéficiez d'<strong style="color:#ffffff;">1 génération gratuite</strong>. Il suffit de renseigner votre bien et l'IA s'occupe du reste.

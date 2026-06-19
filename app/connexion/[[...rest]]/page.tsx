@@ -94,7 +94,7 @@ export default function ConnexionPage() {
           </h2>
 
           <p className="text-base leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-            Générez automatiquement vos posts Facebook, Instagram et Stories
+            Générez automatiquement vos posts Facebook et Instagram
             grâce à l'IA — en quelques clics, sans formation.
           </p>
 

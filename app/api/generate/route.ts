@@ -56,7 +56,6 @@ Format exact :
       "accroche": "",
       "facebook": "",
       "instagram": "",
-      "story": "",
       "ideeVisuelA": "",
       "ideeVisuelB": ""
     }
@@ -72,7 +71,6 @@ Règles :
 - Les accroches doivent arrêter quelqu'un qui scrolle.
 - Les publications doivent vendre le bénéfice, pas seulement décrire le bien.
 - Instagram doit avoir des hashtags.
-- Story doit être très courte et directe.
 - Évite les phrases génériques.
 - Les idées visuelles doivent être concrètes.`;
 

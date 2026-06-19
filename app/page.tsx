@@ -115,7 +115,7 @@ function SectionHero() {
           </h1>
 
           <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.55)", lineHeight: 1.7, marginBottom: "32px" }}>
-            Studio Immo transforme chaque mandat en stratégie sociale complète — posts Facebook, Instagram, Stories et visuels PNG — en 15 secondes.
+            Studio Immo transforme chaque mandat en stratégie sociale complète — posts Facebook, Instagram et visuels PNG — en 15 secondes.
           </p>
 
           <div style={{ display: "flex", gap: "12px", marginBottom: "28px" }}>
@@ -231,7 +231,7 @@ function SectionHero() {
             {[
               { label: "Post Facebook", color: "#1877f2" },
               { label: "Post Instagram", color: "#bc1888" },
-              { label: "Story", color: "#f59e0b" },
+              { label: "Accroche", color: "#f59e0b" },
               { label: "Visuel PNG", color: "#10b981" },
             ].map(({ label, color }) => (
               <div key={label} style={{
@@ -265,7 +265,7 @@ function SectionHero() {
 }
 
 /* ── Section 2 : Tabs demo ───────────────────────────────────── */
-const TABS = ["Facebook", "Instagram", "Stories", "Visuels"] as const;
+const TABS = ["Facebook", "Instagram", "Visuels"] as const;
 
 function SectionTabs() {
   const [active, setActive] = useState<typeof TABS[number]>("Facebook");
@@ -299,7 +299,7 @@ function SectionTabs() {
         </div>
 
         {/* Cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
           {/* Card Facebook */}
           <div style={{ background: "white", border: "1px solid #e5e7eb", borderRadius: "16px", overflow: "hidden", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
             <div style={{ padding: "14px 14px 0" }}>
@@ -337,36 +337,6 @@ function SectionTabs() {
                 {[["❤️", "892"], ["💬", "47"]].map(([ico, n]) => (
                   <span key={n} style={{ fontSize: "11px", color: "#6b7280" }}>{ico} {n}</span>
                 ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Card Story */}
-          <div style={{
-            background: "linear-gradient(160deg, #1a1a2e 0%, #0f0f1a 100%)",
-            border: "1px solid rgba(124,58,237,0.2)", borderRadius: "16px",
-            minHeight: "260px", padding: "20px 16px",
-            display: "flex", flexDirection: "column", justifyContent: "space-between",
-            overflow: "hidden", position: "relative",
-          }}>
-            <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${HOUSE_3})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.18 }} />
-            <div style={{ position: "relative" }}>
-              <div style={{ display: "flex", gap: "4px", marginBottom: "16px" }}>
-                {[70, 100, 40].map((w, i) => (
-                  <div key={i} style={{ height: "2px", flex: w, background: i === 0 ? "#7C3AED" : "rgba(255,255,255,0.25)", borderRadius: "2px" }} />
-                ))}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-                <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, color: "white" }}>A</div>
-                <p style={{ fontSize: "11px", fontWeight: 600, color: "white", margin: 0 }}>agence_immo</p>
-              </div>
-            </div>
-            <div style={{ position: "relative", textAlign: "center" }}>
-              <p style={{ fontSize: "10px", fontWeight: 600, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "6px" }}>Nouveau bien</p>
-              <p style={{ fontSize: "22px", fontWeight: 800, color: "white", lineHeight: 1.1, letterSpacing: "-0.025em", marginBottom: "8px" }}>Villa<br/>120m²</p>
-              <p style={{ fontSize: "13px", fontWeight: 700, color: "#a78bfa", marginBottom: "12px" }}>385 000 €</p>
-              <div style={{ background: "#7C3AED", borderRadius: "20px", padding: "7px 18px", display: "inline-block", fontSize: "11px", fontWeight: 700, color: "white" }}>
-                Voir l'annonce ↗
               </div>
             </div>
           </div>
@@ -516,7 +486,7 @@ function SectionSteps() {
     },
     {
       n: "2", title: "Résultats générés",
-      sub: "L'IA produit 5 campagnes complètes avec accroches, textes FB/IG/Story et idées visuelles.",
+      sub: "L'IA produit 5 campagnes complètes avec accroches, textes Facebook/Instagram et idées visuelles.",
       screen: (
         <svg viewBox="0 0 280 160" style={{ width: "100%", borderRadius: "10px" }}>
           <rect width="280" height="160" fill="#111118"/>

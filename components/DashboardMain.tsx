@@ -45,8 +45,8 @@ const CONSEILS = [
   },
   {
     emoji: "📱",
-    titre: "Une Story par semaine suffit",
-    texte: "Une Story hebdomadaire bien ciblée avec prix et CTA direct suffit à maintenir la visibilité de votre agence.",
+    titre: "Un post Instagram par semaine suffit",
+    texte: "Un post Instagram hebdomadaire bien ciblé avec prix et CTA direct suffit à maintenir la visibilité de votre agence.",
   },
   {
     emoji: "💬",

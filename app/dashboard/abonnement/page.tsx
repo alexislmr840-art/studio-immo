@@ -17,7 +17,7 @@ export default function AbonnementPage() {
     { label: "Biens / mois", gratuit: "1", solo: "10", equipe: "30" },
     { label: "Campagnes par bien", gratuit: "5", solo: "5", equipe: "5" },
     { label: "Visuels PNG 1080×1350", gratuit: "✓", solo: "✓", equipe: "✓" },
-    { label: "Facebook, Instagram, Stories", gratuit: "✓", solo: "✓", equipe: "✓" },
+    { label: "Facebook, Instagram", gratuit: "✓", solo: "✓", equipe: "✓" },
     { label: "Logo agence sur visuels", gratuit: "✓", solo: "✓", equipe: "✓" },
     { label: "Agents simultanés", gratuit: "1", solo: "1", equipe: "10" },
     { label: "Historique des campagnes", gratuit: "—", solo: "—", equipe: "✓" },
@@ -125,7 +125,7 @@ export default function AbonnementPage() {
               <Feature text="1 bien/mois" ok={true} />
               <Feature text="5 campagnes par bien" ok={true} />
               <Feature text="Visuels PNG 1080×1350" ok={true} />
-              <Feature text="Facebook, Instagram, Stories" ok={true} />
+              <Feature text="Facebook, Instagram" ok={true} />
               <Feature text="Plusieurs agents" ok={false} />
               <Feature text="Analytics" ok={false} />
             </div>
@@ -149,7 +149,7 @@ export default function AbonnementPage() {
               <Feature text="10 biens/mois" ok={true} />
               <Feature text="5 campagnes par bien" ok={true} />
               <Feature text="Visuels PNG 1080×1350" ok={true} />
-              <Feature text="Facebook, Instagram, Stories" ok={true} />
+              <Feature text="Facebook, Instagram" ok={true} />
               <Feature text="Logo agence sur visuels" ok={true} />
               <Feature text="Analytics" ok={false} />
             </div>
@@ -177,7 +177,7 @@ export default function AbonnementPage() {
               <Feature text="30 biens/mois" ok={true} />
               <Feature text="5 campagnes par bien" ok={true} />
               <Feature text="Visuels PNG 1080×1350" ok={true} />
-              <Feature text="Facebook, Instagram, Stories" ok={true} />
+              <Feature text="Facebook, Instagram" ok={true} />
               <Feature text="Logo agence sur visuels" ok={true} />
               <Feature text="Jusqu'à 10 agents" ok={true} bold={true} />
               <Feature text="Analytics & historique" ok={true} bold={true} />

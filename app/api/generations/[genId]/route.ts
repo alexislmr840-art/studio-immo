@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
-const ALLOWED_FIELDS = ["facebook", "instagram", "story", "accroche"];
+const ALLOWED_FIELDS = ["facebook", "instagram", "accroche"];
 
 export async function PATCH(
   req: Request,
