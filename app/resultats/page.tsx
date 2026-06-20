@@ -198,6 +198,8 @@ function CampagneCard({
   const [editSaving, setEditSaving]       = useState(false);
   const [editSaved,   setEditSaved]       = useState(false);
   const [downloading, setDownloading]     = useState(false);
+  const [publishing,  setPublishing]      = useState(false);
+  const [published,   setPublished]       = useState(false);
 
   useEffect(() => {
     if (datePlanifiee) { setDateSauvegardee(datePlanifiee); setDate(toDateTimeLocal(datePlanifiee)); }
@@ -244,6 +246,33 @@ function CampagneCard({
       alert("Impossible de générer le visuel, réessayez.");
     } finally {
       setDownloading(false);
+    }
+  }
+
+  async function handlePublier() {
+    setPublishing(true);
+    try {
+      const resp = await fetch("/api/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: pub[onglet],
+          imageUrl: cover || undefined,
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.success) {
+        console.error("[publier] erreur:", data);
+        alert("Échec de la publication : " + (data.error || "erreur inconnue"));
+        return;
+      }
+      setPublished(true);
+      setTimeout(() => setPublished(false), 3000);
+    } catch (e) {
+      console.error("[publier] exception:", e);
+      alert("Échec de la publication : erreur inconnue");
+    } finally {
+      setPublishing(false);
     }
   }
 
@@ -414,17 +443,21 @@ function CampagneCard({
           </button>
 
           <button
+            onClick={handlePublier}
+            disabled={publishing || published}
             className="btn"
-            style={{ background: "#F3F4F6", color: "#9CA3AF", border: "1px solid #E0E0E8", padding: "9px 14px", cursor: "not-allowed" }}
-            title="Intégration Meta disponible prochainement"
+            style={{
+              background: published ? "var(--ok-10)" : "#7C3AED",
+              color:      published ? "var(--ok)"    : "#ffffff",
+              border:     published ? "1px solid rgba(34,197,94,0.2)" : "none",
+              padding: "9px 14px",
+              opacity: publishing ? 0.7 : 1,
+            }}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/>
             </svg>
-            Publier
-            <span style={{ background: "#E5E7EB", color: "#9CA3AF", fontSize: "9px", borderRadius: "4px", padding: "1px 5px" }}>
-              Bientôt
-            </span>
+            {publishing ? "Publication…" : published ? "✓ Publié" : "Publier"}
           </button>
         </div>
 
